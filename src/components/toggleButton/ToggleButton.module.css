@@ -1,0 +1,47 @@
+.toggleButton {
+    padding: 10px 20px;
+    background-color: #ddd;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+    border-radius: 20px;
+    width: 45px;
+  height: 20px;
+  position: relative;
+
+
+  }
+  .toggleButton.on .circle  {
+    width: 16px;
+    height: 16px;
+    background-color: black;
+    border-radius: 50%;
+    position: absolute;
+    transition: left 0.3s ease;
+    left: 2px;
+    top: 2px;
+
+  }
+  .toggleButton.off .circle  {
+    width: 16px;
+    height: 16px;
+    background-color: black;
+    border-radius: 50%;
+    position: absolute;
+    transition: left 0.3s ease;
+    left: 27px;
+    top: 2px;
+
+  }
+  .toggleButton.on {
+    background-color: #F7A600;
+    color: white;
+  }
+  
+  .toggleButton.off {
+    background-color: #ddd;
+    color: white;
+  }
+
+  
