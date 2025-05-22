@@ -50,7 +50,7 @@ const OrderScreen = ({ params }) => {
     return (
       <div className="flex justify-center items-center h-screen overflow-y-auto">
         <h1 className="font-lato-bold text-2xl text-red-500">
-          Une erreur s'est produite
+          Une erreur s&apos;est produite
         </h1>
         <button
           className="ml-3 bg-[#F7A600] px-3 py-2 rounded text-white"
@@ -234,7 +234,7 @@ const OrderScreen = ({ params }) => {
 
                   <div className="flex flex-row items-center mt-2.5">
                     <span className="font-lato-bold text-lg">
-                      Nombre d'article:
+                      Nombre d&apos;article:
                     </span>
                     <span className="font-lato-regular text-lg ml-2.5">
                       {order.orderItems?.length +

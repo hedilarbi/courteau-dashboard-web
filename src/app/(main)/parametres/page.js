@@ -185,7 +185,7 @@ const SettingsScreen = () => {
     return (
       <div className="flex justify-center items-center h-screen">
         <h1 className="font-lato-bold text-2xl text-red-500">
-          Une erreur s'est produite
+          Une erreur s&apos;est produite
         </h1>
         <button
           className="ml-3 bg-[#F7A600] px-3 py-2 rounded text-white"
@@ -326,7 +326,9 @@ const SettingsScreen = () => {
             </div>
 
             <div className="mt-5">
-              <h3 className="font-lato-bold text-xl">Heure d'ouverture:</h3>
+              <h3 className="font-lato-bold text-xl">
+                Heure d&apos;ouverture:
+              </h3>
               {Object.keys(restaurant.settings?.emploie_du_temps || {}).map(
                 (day) => (
                   <div key={day} className="my-2.5">

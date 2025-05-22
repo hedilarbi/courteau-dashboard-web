@@ -147,7 +147,7 @@ const UsersScreen = () => {
     return (
       <div className="flex justify-center items-center min-h-screen">
         <h1 className="font-lato-bold text-2xl text-red-500">
-          Une erreur s'est produite
+          Une erreur s&apos;est produite
         </h1>
         <button
           className="ml-3 bg-[#F7A600] px-3 py-2 rounded text-white"
