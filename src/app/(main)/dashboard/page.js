@@ -77,46 +77,26 @@ const Page = () => {
 
   if (isLoading) {
     return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
+      <div className="flex justify-center items-center h-screen">
         <Spinner />
       </div>
     );
   }
 
   return (
-    <div style={{ padding: "24px", flex: 1 }}>
-      <div
-        style={{
-          flex: 1,
-          overflowY: "auto",
-          paddingBottom: "20px",
-          maxHeight: "calc(100vh - 48px)", // Adjust height to fit within the viewport
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <h1 style={{ fontSize: "40px" }}>Accueil</h1>
-          <div style={{ display: "flex", gap: "24px" }}>
+    <div className="p-6 flex-1">
+      <div className="flex-1 overflow-y-auto pb-5 max-h-[calc(100vh-48px)]">
+        <div className="flex space-between items-center">
+          <h1 className="text-4xl">Accueil</h1>
+          <div className="flex gap-6">
             <StaffCard name={name} />
           </div>
         </div>
         {/* <HomeFilter /> */}
         <StatsContainer usersCount={usersCount} role={role} />
 
-        <div style={{ marginTop: "20px" }}>
-          <h2 style={{ fontSize: "30px" }}>Statistiques</h2>
+        <div className="mt-5">
+          <h2 className="text-5xl">Statistiques</h2>
           <div className="flex space-x-4 item mt-4">
             <button onClick={() => setDateFilterType("date")}>
               <span
@@ -143,9 +123,7 @@ const Page = () => {
           </div>
           {dateFilterType === "date" && (
             <div className="mt-4">
-              <h3 style={{ fontSize: "16px" }} className="mt-2">
-                Sélectionner une date
-              </h3>
+              <h3 className="mt-2 text-lg">Sélectionner une date</h3>
               <input
                 type="date"
                 value={date.toISOString().split("T")[0]}
@@ -162,9 +140,7 @@ const Page = () => {
           )}
           {dateFilterType === "interval" && (
             <div className="mt-4 ">
-              <h3 style={{ fontSize: "16px" }} className="mt-2">
-                Sélectionner un intervalle
-              </h3>
+              <h3 className="mt-2 text-lg">Sélectionner un intervalle</h3>
               <input
                 type="date"
                 value={from.toISOString().split("T")[0]}
@@ -186,26 +162,15 @@ const Page = () => {
             </div>
           )}
           {isDataFetching && (
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                height: "100vh",
-              }}
-            >
+            <div className="flex justify-center items-center h-screen">
               <Spinner />
             </div>
           )}
           {!isDataFetching &&
             restaurantsStats.map((restaurant, index) => (
-              <div key={index} style={{ marginTop: "20px" }}>
-                <h3 style={{ fontSize: "20px" }}>
-                  {restaurant.restaurantName}
-                </h3>
-                <div
-                  style={{ display: "flex", gap: "20px", marginTop: "15px" }}
-                >
+              <div key={index} className="mt-5">
+                <h3 className="text-2xl">{restaurant.restaurantName}</h3>
+                <div className="flex gap-5 mt-4">
                   <StatsCard
                     title="Commande"
                     stat={restaurant.ordersCount}

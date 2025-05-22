@@ -29,14 +29,7 @@ const DashboardLayout = ({ children }) => {
 
   if (isLoading) {
     return (
-      <div
-        style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
+      <div className="flex flex-col items-center justify-center w-screen h-screen bg-slate-50">
         <Spinner />
       </div>
     );
