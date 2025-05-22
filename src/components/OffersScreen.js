@@ -116,22 +116,16 @@ const OffersScreen = ({ data, role, restaurant }) => {
 
       {showFailModel && <FailModal error={error} />}
       {isLoading && <SpinnerModal />}
-      {role === "admin" ? (
-        <div className="mt-4 flex w-full justify-between">
-          <SearchBar />
-          <button
-            className="flex bg-pr items-center w-1/5 justify-center gap-3 rounded-md font-roboto font-bold "
-            onClick={() => setShowCreateOfferModal(true)}
-          >
-            <FaPlus />
-            Ajouter
-          </button>
-        </div>
-      ) : (
-        <div className="mt-4 flex w-full justify-between">
-          <SearchBar />
-        </div>
-      )}
+
+      <div className="mt-4 flex w-full justify-between">
+        <button
+          className="flex bg-pr items-center w-1/5 justify-center gap-3 rounded-md font-roboto font-bold py-3"
+          onClick={() => setShowCreateOfferModal(true)}
+        >
+          <FaPlus />
+          Ajouter
+        </button>
+      </div>
 
       <div className="flex-1 overflow-y-auto bg-white shadow-default mt-6">
         {offers.length > 0 ? (

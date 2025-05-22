@@ -16,6 +16,7 @@ const MenuItemsDetails = ({ item }) => {
   const [data, setData] = useState(item);
   const [updateMode, setUpdateMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [dataIsFetching, setDataIsFetching] = useState(true);
   const [error, setError] = useState(null);
   const [showSuccessModel, setShowSuccessModel] = useState(false);
   const [showFailModel, setShowFailModel] = useState(false);

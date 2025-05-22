@@ -13,13 +13,17 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const UpdateToppingModal = ({
   setShowUpdateToppingModal,
-  setToppings,
+
   topping,
+  setRefresh,
 }) => {
   const inputImageRef = useRef(null);
   const [image, setImage] = useState(topping.image);
   const [name, setName] = useState(topping.name);
-  const [category, setCategory] = useState(topping.category);
+  const [category, setCategory] = useState({
+    value: topping.category._id,
+    label: topping.category.name,
+  });
   const [price, setPrice] = useState(topping.price);
   const [isLoading, setIsloading] = useState(true);
   const [categoriesNames, setCategoriesNames] = useState([]);
@@ -102,12 +106,9 @@ const UpdateToppingModal = ({
       if (!response.ok) {
         throw new Error("HTTP error " + response.status);
       }
-      const data = await response.json();
 
-      setToppings((prev) =>
-        prev.map((top) => (top._id === data._id ? data : top))
-      );
       setShowSuccessModel(true);
+      setRefresh((prev) => prev + 1);
     } catch (err) {
       setError("Une erreur s'est produite");
       setShowFailModel(true);
@@ -191,8 +192,10 @@ const UpdateToppingModal = ({
                   <input
                     type="text"
                     id="name"
+                    value={name}
                     className="border border-gray-300 rounded-md w-full py-1 px-2 "
                     onChange={(e) => setName(e.target.value)}
+                    placeholder={name}
                   />
                 </div>
                 <div className="flex gap-2 items-center">
@@ -222,7 +225,7 @@ const UpdateToppingModal = ({
                     id="name"
                     className="border border-gray-300 rounded-md w-full py-1 px-2 "
                     onChange={(e) => setPrice(e.target.value)}
-                    value={price}
+                    placeholder={price}
                   />
                 </div>
               </div>

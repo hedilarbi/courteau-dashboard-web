@@ -8,6 +8,7 @@ import { BiSolidOffer } from "react-icons/bi";
 import { IoMdTrophy } from "react-icons/io";
 import { IoSettings, IoHome } from "react-icons/io5";
 import { HiBuildingStorefront } from "react-icons/hi2";
+import { AiFillNotification } from "react-icons/ai";
 
 const NavItemsList = () => {
   const NAV_ITEMS_LIST = [
@@ -52,6 +53,12 @@ const NavItemsList = () => {
       title: "Recompenses",
       path: `/recompenses`,
       icon: <IoMdTrophy size={24} />,
+    },
+    {
+      id: 11,
+      title: "Notifications",
+      path: `/notifications`,
+      icon: <AiFillNotification size={24} />,
     },
     {
       id: 8,

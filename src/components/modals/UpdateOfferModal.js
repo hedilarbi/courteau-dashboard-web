@@ -10,6 +10,7 @@ import SpinnerModal from "./SpinnerModal";
 import AddItemModal from "./AddItemModal";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import { getOffer } from "@/services/OffersServices";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -19,13 +20,8 @@ const UpdateOfferModal = ({ setShowUpdateOfferModal, setOffers, offer }) => {
   const [name, setName] = useState(offer.name);
   const [price, setPrice] = useState(offer.price);
   const [expireDate, setExpireDate] = useState(new Date(offer.expireAt));
-  const [items, setItems] = useState(
-    offer.items.map((item) => ({
-      item: { _id: item.item._id, label: item.item.name },
-      quantity: item.quantity,
-      size: item.size,
-    }))
-  );
+
+  const [items, setItems] = useState([]);
   const [isLoading, setIsloading] = useState(true);
   const [itemsNames, setItemsNames] = useState([]);
   const [error, setError] = useState(null);
@@ -37,15 +33,33 @@ const UpdateOfferModal = ({ setShowUpdateOfferModal, setOffers, offer }) => {
 
   const fetchData = async () => {
     try {
-      const response = await getItemsNames();
-      if (response?.status) {
+      const [itemsResponse, offerResponse] = await Promise.all([
+        getItemsNames(),
+        getOffer(offer._id),
+      ]);
+
+      if (itemsResponse?.status) {
         let list = [];
-        response.data.map((item) => {
+        itemsResponse.data.map((item) => {
           list.push({ value: item._id, label: item.name, prices: item.prices });
         });
         setItemsNames(list);
       } else {
         console.error("Categories data not found:", categoriesResponse.message);
+      }
+      if (offerResponse?.status) {
+        let list = [];
+        offerResponse.data.items.map((item) => {
+          list.push({
+            item: {
+              _id: item.item._id,
+              label: item.item.name,
+            },
+            size: item.size,
+            quantity: item.quantity,
+          });
+        });
+        setItems(list);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -77,11 +91,6 @@ const UpdateOfferModal = ({ setShowUpdateOfferModal, setOffers, offer }) => {
   };
 
   const updateOffer = async () => {
-    if (!image) {
-      setError("Image de l'offre manquante");
-
-      return;
-    }
     if (!name) {
       setError("nom de l'offre manquante");
 

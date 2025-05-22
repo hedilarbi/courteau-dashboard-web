@@ -12,9 +12,12 @@ const Page = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const { restaurant, role } = useSelector(selectStaffData);
+  const [refresh, setRefresh] = useState(0);
 
   const fetchData = async () => {
     try {
+      setIsLoading(true);
+
       if (role === "admin") {
         const response = await getToppings();
         if (response.status) {
@@ -39,7 +42,7 @@ const Page = () => {
 
   useEffect(() => {
     fetchData();
-  }, []);
+  }, [refresh]);
   return (
     <div className="w-full h-full p-4  flex flex-col relative">
       <h1 className="text-2xl font-roboto font-semibold text-text-dark-gray">
@@ -50,7 +53,12 @@ const Page = () => {
           <Spinner />
         </div>
       ) : (
-        <ToppingsScreen data={data} role={role} restaurant={restaurant} />
+        <ToppingsScreen
+          data={data}
+          role={role}
+          restaurant={restaurant}
+          setRefresh={setRefresh}
+        />
       )}
     </div>
   );

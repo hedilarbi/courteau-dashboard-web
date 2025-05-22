@@ -78,9 +78,8 @@ const SizesScreen = ({ data }) => {
         />
       )}
       <div className="mt-4 flex w-full justify-between">
-        <SearchBar />
         <button
-          className="flex bg-pr items-center w-1/5 justify-center gap-3 rounded-md font-roboto font-bold "
+          className="flex bg-pr items-center w-1/5 justify-center gap-3 rounded-md font-roboto font-bold py-3"
           onClick={() => setShowCreateSizeModal(true)}
         >
           <FaPlus />

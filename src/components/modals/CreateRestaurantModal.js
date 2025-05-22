@@ -24,22 +24,20 @@ const CreateRestaurantModal = ({
   const [showFailModel, setShowFailModel] = useState(false);
 
   const createRestaurant = async () => {
-    fromAddress(address.label)
-      .then(({ results }) => {
-        const { lat, lng } = results[0].geometry.location;
-        setLocation({
-          latitude: lat,
-          longitude: lng,
-        });
-      })
-      .catch(console.error);
-
-    setAddingIsLoading(true);
     try {
+      setAddingIsLoading(true);
+
+      const coordsResponse = await fromAddress(address.label);
+
+      const { lat, lng } = coordsResponse.results[0].geometry.location;
+
       const response = await createRestaurantService(
         name,
         address.label,
-        location,
+        {
+          latitude: lat,
+          longitude: lng,
+        },
         phoneNumber
       );
       if (response.status) {
@@ -54,6 +52,7 @@ const CreateRestaurantModal = ({
     } catch (error) {
       setAddingIsLoading(false);
       setError("Une erreur s'est produite");
+      console.log(error);
       setShowFailModel(true);
     }
   };
@@ -83,10 +82,10 @@ const CreateRestaurantModal = ({
       {showFailModel && <FailModal error={error} />}
       {addingIsLoading && <SpinnerModal />}
 
-      <div className=" bg-white p-4 w-4/5  overflow-y-auto rounded-md flex flex-col ">
+      <div className=" bg-white p-4 w-4/5  overflow-y-auto rounded-md flex flex-col h-2/3 ">
         <div className="flex justify-between items-center">
           <h1 className="text-2xl font-roboto font-semibold text-text-dark-gray">
-            Creer un restaurant
+            Ajouter un restaurant
           </h1>
           <button onClick={() => setShowCreateRestaurantModal(false)}>
             <MdOutlineClose size={32} />

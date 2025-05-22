@@ -1,3 +1,4 @@
+import { dateToDDMMMYYYY } from "@/utils/dateFormatters";
 import React from "react";
 
 const UserGeneralInfo = ({ data }) => {
@@ -20,7 +21,7 @@ const UserGeneralInfo = ({ data }) => {
       <div className="space-y-2">
         <div className="flex space-x-2">
           <p className="font-semibold">Cree le:</p>
-          <p>{data.createdAt.toString()} </p>
+          <p>{dateToDDMMMYYYY(data.createdAt)} </p>
         </div>
         <div className="flex space-x-2">
           <p className="font-semibold">Points de fidelite:</p>

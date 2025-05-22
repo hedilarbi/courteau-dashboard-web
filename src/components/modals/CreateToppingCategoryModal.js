@@ -6,7 +6,7 @@ import SuccessModal from "./SuccessModal";
 import { createToppingCategory } from "@/services/ToppingsServices";
 
 const CreateToppingCategoryModal = ({
-  setShowCreateToppingCategoryModal,
+  setShowCreateCategoryModal,
   setCategories,
 }) => {
   const [category, setCategory] = useState(null);
@@ -40,7 +40,7 @@ const CreateToppingCategoryModal = ({
     if (showSuccessModel) {
       const timer = setTimeout(() => {
         setShowSuccessModel(false);
-        setShowCreateToppingCategoryModal(false);
+        setShowCreateCategoryModal(false);
       }, 1000);
 
       return () => clearTimeout(timer);
@@ -56,7 +56,7 @@ const CreateToppingCategoryModal = ({
           <h1 className="text-2xl font-roboto font-semibold text-text-dark-gray">
             Ajouter une categorie de personnalisation
           </h1>
-          <button onClick={() => setShowCreateToppingCategoryModal(false)}>
+          <button onClick={() => setShowCreateCategoryModal(false)}>
             <MdOutlineClose size={32} />
           </button>
         </div>

@@ -40,6 +40,7 @@ const Page = () => {
     } catch (e) {
       console.error(e);
       setError("Erreur de connexion");
+      setIsLoading(false);
     }
   };
 

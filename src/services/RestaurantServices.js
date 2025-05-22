@@ -307,6 +307,90 @@ const updateRestaurantToppingAvailability = async (id, toppingId) => {
     };
   }
 };
+const getRestaurantsSettings = async () => {
+  try {
+    let getRestaurantsResponse = await axios.get(
+      `${API_URL}/restaurants/settings`
+    );
+
+    if (getRestaurantsResponse?.status === 200) {
+      return {
+        status: true,
+        message: "users data",
+        data: getRestaurantsResponse?.data,
+      };
+    } else {
+      return {
+        status: false,
+        messge: getRestaurantsResponse.data.error,
+      };
+    }
+  } catch (error) {
+    return {
+      status: false,
+      message: error.message,
+    };
+  }
+};
+
+const updateSettings = async (id, settings) => {
+  try {
+    let response = await axios.put(
+      `${API_URL}/restaurants/update/settings/${id}`,
+      {
+        settings,
+      }
+    );
+
+    if (response?.status === 200) {
+      return {
+        status: true,
+        message: "user deleted",
+        data: response?.data,
+      };
+    } else {
+      return {
+        status: false,
+        messge: "error",
+      };
+    }
+  } catch (error) {
+    console.log(error);
+    return {
+      status: false,
+      message: error.message,
+    };
+  }
+};
+
+const sendNotifications = async (title, body, item) => {
+  try {
+    let response = await axios.post(`${API_URL}/notifiers/notifications`, {
+      title,
+      body,
+      item,
+    });
+
+    if (response?.status === 200) {
+      return {
+        status: true,
+        message: "user deleted",
+        data: response?.data,
+      };
+    } else {
+      return {
+        status: false,
+        messge: "error",
+      };
+    }
+  } catch (error) {
+    console.log(error);
+    return {
+      status: false,
+      message: error.message,
+    };
+  }
+};
 
 export {
   createRestaurantService,
@@ -321,4 +405,7 @@ export {
   updateRestaurantItemAvailability,
   updateRestaurantOfferAvailability,
   updateRestaurantToppingAvailability,
+  getRestaurantsSettings,
+  updateSettings,
+  sendNotifications,
 };

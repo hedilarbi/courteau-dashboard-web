@@ -20,6 +20,7 @@ const CreateSizeModal = ({ setShowCreateSizeModal, setSizes }) => {
     setIsLoading(true);
     try {
       const response = await createSize(size);
+
       if (response.status) {
         setSizes((prev) => [...prev, response.data]);
         setIsLoading(false);

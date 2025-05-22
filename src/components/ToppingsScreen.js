@@ -14,7 +14,7 @@ import UpdateToppingModal from "./modals/UpdateToppingModal";
 import ToggleButton from "./toggleButton/ToggleButton";
 import { updateRestaurantToppingAvailability } from "@/services/RestaurantServices";
 
-const ToppingsScreen = ({ data, role, restaurant }) => {
+const ToppingsScreen = ({ data, role, restaurant, setRefresh }) => {
   const [toppings, setToppings] = useState(data);
   const [showDeleteWarningModal, setShowDeleteWarningModal] = useState(false);
   const [selectedTopping, setSelectedTopping] = useState(null);
@@ -30,11 +30,8 @@ const ToppingsScreen = ({ data, role, restaurant }) => {
     try {
       const response = await deleteToppingService(selectedTopping);
       if (response.status) {
-        setToppings((prev) =>
-          prev.filter((item) => item._id !== selectedTopping)
-        );
-        setIsLoading(false);
         setShowSuccessModel(true);
+        setRefresh((prev) => prev + 1);
       } else {
         setIsLoading(false);
         setError(response.message);
@@ -114,6 +111,7 @@ const ToppingsScreen = ({ data, role, restaurant }) => {
           setShowUpdateToppingModal={setShowUpdateToppingModal}
           topping={selectedTopping}
           setToppings={setToppings}
+          setRefresh={setRefresh}
         />
       )}
       {showCreateToppingModal && (
@@ -124,9 +122,8 @@ const ToppingsScreen = ({ data, role, restaurant }) => {
       )}
       {role === "admin" ? (
         <div className="mt-4 flex w-full justify-between">
-          <SearchBar />
           <button
-            className="flex bg-pr items-center w-1/5 justify-center gap-3 rounded-md font-roboto font-bold "
+            className="flex bg-pr items-center w-1/5 justify-center gap-3 rounded-md font-roboto font-bold py-3 "
             onClick={() => setShowCreateToppingModal(true)}
           >
             <FaPlus />
@@ -134,7 +131,7 @@ const ToppingsScreen = ({ data, role, restaurant }) => {
           </button>
           <Link
             href="/personnalisations/categories"
-            className="flex bg-pr items-center w-1/5 justify-center gap-3 rounded-md font-roboto font-bold"
+            className="flex bg-pr items-center w-1/5 justify-center gap-3 rounded-md font-roboto font-bold py-3"
           >
             Categories
           </Link>

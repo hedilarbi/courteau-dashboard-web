@@ -1,8 +1,8 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { FaTrash, FaPlus, FaPen } from "react-icons/fa";
+import { FaTrash, FaPlus } from "react-icons/fa";
 import SearchBar from "./SearchBar";
-import Image from "next/image";
+
 import CreateCategoryModal from "./modals/CreateCategoryModal";
 import DeleteWarningModal from "./modals/DeleteWarningModal";
 import SpinnerModal from "./modals/SpinnerModal";
@@ -10,8 +10,9 @@ import SuccessModal from "./modals/SuccessModal";
 import FailModal from "./modals/FailModal";
 import { deleteCategoryService } from "@/services/MenuItemServices";
 import UpdateCategoryModal from "./modals/UpdateCategoryModal";
+import CreateToppingCategoryModal from "./modals/CreateToppingCategoryModal";
 
-const CategoriesScreen = ({ data }) => {
+const ToppingCategoriesScreen = ({ data }) => {
   const [categories, setCategories] = useState(data);
   const [showCreateCategoryModal, setShowCreateCategoryModal] = useState(false);
   const [showDeleteWarningModal, setShowDeleteWarningModal] = useState(false);
@@ -80,7 +81,7 @@ const CategoriesScreen = ({ data }) => {
         />
       )}
       {showCreateCategoryModal && (
-        <CreateCategoryModal
+        <CreateToppingCategoryModal
           setShowCreateCategoryModal={setShowCreateCategoryModal}
           setCategories={setCategories}
         />
@@ -89,8 +90,9 @@ const CategoriesScreen = ({ data }) => {
       {showSuccessModel && <SuccessModal />}
       {showFailModel && <FailModal error={error} />}
       <div className="mt-4 flex w-full justify-between">
+        <SearchBar />
         <button
-          className="flex bg-pr items-center w-1/5 justify-center gap-3 rounded-md font-roboto font-bold py-3 "
+          className="flex bg-pr items-center w-1/5 justify-center gap-3 rounded-md font-roboto font-bold "
           onClick={() => setShowCreateCategoryModal(true)}
         >
           <FaPlus />
@@ -109,26 +111,10 @@ const CategoriesScreen = ({ data }) => {
                     : "bg-white flex items-center gap-10 px-5 py-4"
                 }
               >
-                <Image
-                  src={category.image}
-                  width={100}
-                  height={100}
-                  alt="perso"
-                  className="w-36 h-28 object-cover rounded-md"
-                />
                 <p className="text-text-dark-gray font-roboto font-normal w-1/3 truncate flex-1">
                   {category.name}
                 </p>
 
-                <button
-                  className="text-primary-blue"
-                  onClick={() => {
-                    setSelectedCategory(category);
-                    setShowUpdateCategoryModal(true);
-                  }}
-                >
-                  <FaPen size={26} />
-                </button>
                 <button
                   className="text-warning-red"
                   onClick={() => {
@@ -153,4 +139,4 @@ const CategoriesScreen = ({ data }) => {
   );
 };
 
-export default CategoriesScreen;
+export default ToppingCategoriesScreen;

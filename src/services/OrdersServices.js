@@ -176,6 +176,54 @@ const updatePrice = async (id, price) => {
     };
   }
 };
+const getOrderFiltred = async (filters) => {
+  try {
+    let getOrderResponse = await axios.get(`${API_URL}/orders/filter`, {
+      params: { ...filters },
+    });
+
+    if (getOrderResponse?.status === 200) {
+      return {
+        status: true,
+        message: "users data",
+        data: getOrderResponse?.data,
+      };
+    } else {
+      return {
+        status: false,
+        messge: getOrderResponse?.data?.error || "error",
+      };
+    }
+  } catch (error) {
+    return {
+      status: false,
+      message: error.message,
+    };
+  }
+};
+const getRestaurantList = async () => {
+  try {
+    let response = await axios.get(`${API_URL}/restaurants/list`);
+
+    if (response?.status === 200) {
+      return {
+        status: true,
+        message: "users data",
+        data: response?.data,
+      };
+    } else {
+      return {
+        status: false,
+        messge: "error",
+      };
+    }
+  } catch {
+    return {
+      status: false,
+      message: error.message,
+    };
+  }
+};
 
 export {
   getOrders,
@@ -185,4 +233,6 @@ export {
   updateStatus,
   orderDelivered,
   updateStatusAndPrice,
+  getOrderFiltred,
+  getRestaurantList,
 };

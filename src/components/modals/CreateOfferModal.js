@@ -116,7 +116,8 @@ const CreateOfferModal = ({ setShowCreateOfferModal, setOffers }) => {
         throw new Error("HTTP error " + response.status);
       }
       const data = await response.json();
-      setOffers((prev) => [data, ...prev]);
+      console.log(data);
+      setOffers((prev) => [data.data, ...prev]);
       setShowSuccessModel(true);
       setAddingIsLoading(false);
     } catch (err) {
@@ -218,7 +219,7 @@ const CreateOfferModal = ({ setShowCreateOfferModal, setOffers }) => {
                     onChange={(e) => setName(e.target.value)}
                   />
                 </div>
-                <div className="flex gap-2 ">
+                <div className="flex gap-2 items-center">
                   <label
                     htmlFor="description"
                     className="text-text-dark-gray font-roboto font-semibold"
