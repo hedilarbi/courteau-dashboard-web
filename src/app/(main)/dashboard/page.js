@@ -86,11 +86,10 @@ const Page = () => {
   return (
     <div className="p-6 flex-1">
       <div className="flex-1 overflow-y-auto pb-5 max-h-[calc(100vh-48px)]">
-        <div className="flex space-between items-center">
+        <div className="w-full flex justify-between items-center">
           <h1 className="text-4xl">Accueil</h1>
-          <div className="flex gap-6">
-            <StaffCard name={name} />
-          </div>
+
+          <StaffCard name={name} />
         </div>
         {/* <HomeFilter /> */}
         <StatsContainer usersCount={usersCount} role={role} />
