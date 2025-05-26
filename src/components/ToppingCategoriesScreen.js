@@ -11,6 +11,7 @@ import FailModal from "./modals/FailModal";
 import { deleteCategoryService } from "@/services/MenuItemServices";
 import UpdateCategoryModal from "./modals/UpdateCategoryModal";
 import CreateToppingCategoryModal from "./modals/CreateToppingCategoryModal";
+import { deleteToppingCategoryService } from "@/services/ToppingsServices";
 
 const ToppingCategoriesScreen = ({ data }) => {
   const [categories, setCategories] = useState(data);
@@ -27,7 +28,8 @@ const ToppingCategoriesScreen = ({ data }) => {
   const deleteCategory = async () => {
     setIsLoading(true);
     try {
-      const response = await deleteCategoryService(selectedCategory);
+      console.log("Selected Category:", selectedCategory);
+      const response = await deleteToppingCategoryService(selectedCategory);
       if (response.status) {
         setCategories((prev) =>
           prev.filter((category) => category._id !== selectedCategory)
@@ -36,7 +38,8 @@ const ToppingCategoriesScreen = ({ data }) => {
         setShowSuccessModel(true);
       } else {
         setIsLoading(false);
-        setError(response.message);
+        console.log(response.message);
+        setError(response.message.message);
         setShowFailModel(true);
       }
     } catch (error) {
@@ -90,9 +93,8 @@ const ToppingCategoriesScreen = ({ data }) => {
       {showSuccessModel && <SuccessModal />}
       {showFailModel && <FailModal error={error} />}
       <div className="mt-4 flex w-full justify-between">
-        <SearchBar />
         <button
-          className="flex bg-pr items-center w-1/5 justify-center gap-3 rounded-md font-roboto font-bold "
+          className="flex bg-pr items-center w-1/5 justify-center gap-3 rounded-md font-roboto font-bold py-3"
           onClick={() => setShowCreateCategoryModal(true)}
         >
           <FaPlus />

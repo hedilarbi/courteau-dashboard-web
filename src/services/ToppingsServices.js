@@ -132,10 +132,38 @@ const deleteToppingService = async (id) => {
   }
 };
 
+const deleteToppingCategoryService = async (id) => {
+  try {
+    let deleteToppingCategoryResponse = await axios.delete(
+      `${API_URL}/toppingCategories/delete/${id}`
+    );
+
+    if (deleteToppingCategoryResponse?.status === 200) {
+      return {
+        status: true,
+        message: "users data",
+        data: deleteToppingCategoryResponse?.data,
+      };
+    } else {
+      return {
+        status: false,
+        message: deleteToppingCategoryResponse.message,
+      };
+    }
+  } catch (error) {
+    console.log(error);
+    return {
+      status: false,
+      message: error.message,
+    };
+  }
+};
+
 export {
   getToppings,
   createToppingCategory,
   getToppingsCategories,
   createTopping,
   deleteToppingService,
+  deleteToppingCategoryService,
 };

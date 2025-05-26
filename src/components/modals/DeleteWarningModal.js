@@ -2,6 +2,15 @@ import React from "react";
 import ModalWrapper from "./ModalWrapper";
 import { RiErrorWarningFill } from "react-icons/ri";
 const DeleteWarningModal = ({ message, setShowDeleteWarningModal, action }) => {
+  const actionButtonText = message.includes(
+    "Etes-vous sûr de vouloir activer cet utilisateur"
+  )
+    ? "Activer"
+    : message.includes("Etes-vous sûr de vouloir desactiver cet utilisateur")
+    ? "Desactiver"
+    : message.includes("Etes-vous sûr de vouloir supprimer cet utilisateur")
+    ? "Supprimer"
+    : "Confirmer";
   return (
     <ModalWrapper zindex={10}>
       <div className="bg-white w-2/5 rounded-md flex flex-col items-center p-6">
@@ -26,7 +35,7 @@ const DeleteWarningModal = ({ message, setShowDeleteWarningModal, action }) => {
             className="text-white bg-warning-red rounded-md py-2 px-6 font-roboto font-semibold"
             onClick={action}
           >
-            Supprimer
+            {actionButtonText}
           </button>
         </div>
       </div>

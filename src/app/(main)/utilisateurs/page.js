@@ -187,7 +187,7 @@ const UsersScreen = () => {
           message={
             userId.isBanned
               ? `Etes-vous sûr de vouloir activer cet utilisateur ?`
-              : `Etes-vous sûr de vouloir bannir cet utilisateur ?`
+              : `Etes-vous sûr de vouloir desactiver cet utilisateur ?`
           }
           action={handleBanUser}
         />
