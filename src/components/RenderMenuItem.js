@@ -41,7 +41,7 @@ const RenderMenuItem = ({
 
         <span className="font-lato-regular text-lg w-1/4">{menuItemName}</span>
 
-        <div className="font-lato-regular text-lg w-[10%] flex flex-col">
+        <div className="font-lato-regular text-lg w-[20%] flex flex-col">
           {prices.map((price, i) => (
             <span key={i}>{price.size}</span>
           ))}
