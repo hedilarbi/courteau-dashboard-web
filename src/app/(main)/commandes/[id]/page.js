@@ -9,6 +9,8 @@ import Spinner from "@/components/spinner/Spinner";
 import React from "react";
 import { dateToDDMMYYYYHHMM } from "@/utils/dateFormatters";
 import GoBackButton from "@/components/GoBackButton";
+import { FaPrint } from "react-icons/fa";
+import { Printer, render, Text } from "react-thermal-printer";
 
 const OrderScreen = ({ params }) => {
   const { id } = params;
@@ -38,6 +40,28 @@ const OrderScreen = ({ params }) => {
     }
   };
 
+  const handlePrint = async () => {
+    try {
+      const data = await render(
+        <Printer type="epson">
+          <Text>Hello World</Text>
+        </Printer>
+      );
+
+      const port = await window.navigator.serial.requestPort();
+      await port.open({ baudRate: 9600 });
+
+      const writer = port.writable?.getWriter();
+      if (writer != null) {
+        await writer.write(data);
+        writer.releaseLock();
+      }
+    } catch (error) {
+      console.error("Error printing:", error);
+      alert("Une erreur s'est produite lors de l'impression.");
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="flex-1 flex justify-center items-center bg-[#f5f5f5] h-screen">
@@ -64,11 +88,16 @@ const OrderScreen = ({ params }) => {
 
   return (
     <div className="flex-1 bg-[#f5f5f5] h-screen overflow-y-auto">
-      <div className="flex gap-4 items-center  p-4">
-        <GoBackButton />
-        <h2 className="text-2xl font-roboto font-semibold ">
-          Commande {order.code}
-        </h2>
+      <div className="flex gap-4 items-center  justify-between p-4">
+        <div className="flex items-center gap-2">
+          <GoBackButton />
+          <h2 className="text-2xl font-roboto font-semibold ">
+            Commande {order.code}
+          </h2>
+        </div>
+        <button className=" bg-black p-5 rounded-md" onClick={handlePrint}>
+          <FaPrint size={38} color="#F7A600" />
+        </button>
       </div>
 
       <div className="flex-1 pb-10">
