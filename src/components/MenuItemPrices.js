@@ -16,6 +16,15 @@ const MenuItemPrices = ({
     setNewPrices(newPrices);
   };
 
+  const handleupdatePrice = (index, value) => {
+    const updatedPrices = [...newPrices];
+    updatedPrices[index].price = parseFloat(value);
+    if (isNaN(updatedPrices[index].price)) {
+      updatedPrices[index].price = 0;
+    }
+    setNewPrices(updatedPrices);
+  };
+
   return (
     <>
       {showAddPriceModel && (
@@ -35,7 +44,16 @@ const MenuItemPrices = ({
                 className="border border-pr rounded-md py-1 px-2 flex items-center gap-2 font-roboto"
               >
                 <p className="font-bold">{price.size} :</p>
-                <p>{parseFloat(price.price).toFixed(2)} $</p>
+
+                <input
+                  type="number"
+                  name=""
+                  id=""
+                  value={price.price}
+                  className="w-16 text-center border border-pr rounded-md"
+                  onChange={() => handleupdatePrice(index, event.target.value)}
+                />
+                <p>$</p>
                 <button
                   className="text-warning-red"
                   onClick={() => deletePrice(index)}

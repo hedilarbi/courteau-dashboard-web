@@ -113,11 +113,16 @@ const MenuItemsDetails = ({ item }) => {
       _id: item.value,
     }));
 
+    const formattedPrices = newPrices.map((newPrice) => ({
+      ...newPrice,
+      price: parseFloat(newPrice.price).toFixed(2),
+    }));
+
     const formData = new FormData();
     formData.append("name", newName);
     formData.append("description", newDescription);
     formData.append("category", newCategory.value);
-    formData.append("prices", JSON.stringify(newPrices));
+    formData.append("prices", JSON.stringify(formattedPrices));
     formData.append("customization", JSON.stringify(customization));
     if (newImage) {
       formData.append("file", newImage);

@@ -35,6 +35,7 @@ const Page = () => {
 
         router.push("/dashboard");
       } else {
+        console.error(response);
         setError(response.message);
       }
     } catch (e) {
