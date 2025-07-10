@@ -103,7 +103,7 @@ const CreateOfferModal = ({ setShowCreateOfferModal, setOffers }) => {
     formData.append("customizations", JSON.stringify([]));
     formData.append("name", name);
     formData.append("price", price);
-    formData.append("expireAt", expireDate.toLocaleDateString());
+    formData.append("expireAt", expireDate.toISOString());
     formData.append("file", image);
     setAddingIsLoading(true);
     try {
