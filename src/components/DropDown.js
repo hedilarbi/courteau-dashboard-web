@@ -16,7 +16,7 @@ const DropDown = ({ value, setter, list, placeholder }) => {
       </button>
       {isDropDownOpen && (
         <div
-          className=" absolute   bg-white border border-black h-28 overflow-y-auto"
+          className=" absolute   bg-white border border-black h-40 overflow-y-auto"
           style={{ width: containerRef.current.offsetWidth }}
         >
           <ul className="">

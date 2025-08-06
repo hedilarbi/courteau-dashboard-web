@@ -6,9 +6,10 @@ import { GiNotebook } from "react-icons/gi";
 import { MdRestaurantMenu } from "react-icons/md";
 import { BiSolidOffer } from "react-icons/bi";
 import { IoMdTrophy } from "react-icons/io";
-import { IoSettings, IoHome } from "react-icons/io5";
+import { IoSettings, IoHome, IoTicketSharp } from "react-icons/io5";
 import { HiBuildingStorefront } from "react-icons/hi2";
 import { AiFillNotification } from "react-icons/ai";
+import { FaStar } from "react-icons/fa6";
 
 const NavItemsList = () => {
   const NAV_ITEMS_LIST = [
@@ -53,6 +54,18 @@ const NavItemsList = () => {
       title: "Recompenses",
       path: `/recompenses`,
       icon: <IoMdTrophy size={24} />,
+    },
+    {
+      id: 20,
+      title: "Vedettes",
+      path: `/vedettes`,
+      icon: <FaStar size={24} />,
+    },
+    {
+      id: 15,
+      title: "Codes Promotions",
+      path: `/codes-promotions`,
+      icon: <IoTicketSharp size={24} />,
     },
     {
       id: 11,

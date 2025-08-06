@@ -1,16 +1,14 @@
 "use client";
 import Image from "next/image";
-import React, { useEffect } from "react";
+import React from "react";
 import logo from "../../public/logo.png";
 import NavItemsList from "@/constants/navItemsList";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { IoLogOut } from "react-icons/io5";
-import { useDispatch, useSelector } from "react-redux";
-import { selectStaffData, setStaffData } from "@/redux/slices/StaffSlice";
-import NavItemListCashier from "@/constants/navItemsListCashier";
-import { getStaffData, logout } from "@/actions";
-import Spinner from "./spinner/Spinner";
+
+import { logout } from "@/actions";
+
 import { useRouter } from "next/navigation";
 
 const NavBar = () => {
@@ -19,7 +17,6 @@ const NavBar = () => {
   const router = useRouter();
   const list = NavItemsList();
   const currentPath = pathname.split("/")[1];
-  const list2 = NavItemListCashier();
 
   const logoutStaff = async () => {
     await logout();
