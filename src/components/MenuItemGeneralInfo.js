@@ -32,64 +32,70 @@ const MenuItemGeneralInfo = ({
   };
 
   return (
-    <div className="flex bg-white shadow-default rounded-md mt-4 font-roboto space-x-4 p-4">
-      {updateMode ? (
-        <div onClick={handleImageClick}>
-          <input
-            type="file"
-            onChange={handleImageChange}
-            accept="image/*"
-            className="hidden"
-            ref={inputImageRef}
-          />
-
+    <div className="flex flex-col md:flex-row gap-6 items-start">
+      <div className="md:w-1/3 w-full">
+        <input
+          type="file"
+          onChange={handleImageChange}
+          accept="image/*"
+          className="hidden"
+          ref={inputImageRef}
+        />
+        <div
+          className={`relative rounded-xl border border-gray-200 overflow-hidden shadow-sm ${
+            updateMode ? "cursor-pointer group" : ""
+          }`}
+          onClick={updateMode ? handleImageClick : undefined}
+        >
           <Image
             src={imagePreview || data.image}
-            alt="preview"
-            width={200}
-            height={200}
-            className="w-48 h-48 object-cover rounded-md"
+            alt={data.name}
+            width={800}
+            height={600}
+            className="w-full h-full object-cover max-h-64"
           />
+          {updateMode && (
+            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition flex items-center justify-center text-white text-sm font-semibold">
+              Changer l&apos;image
+            </div>
+          )}
         </div>
-      ) : (
-        <Image
-          src={data.image}
-          width={200}
-          height={200}
-          alt="article"
-          className="object-cover rounded-md w-48 h-48 "
-        />
-      )}
+      </div>
 
-      <div className="flex flex-col justify-between text-text-dark-gray w-1/2">
-        <div className="flex w-full ">
-          <p className="font-semibold">Nom:</p>
+      <div className="flex-1 grid grid-cols-1 gap-4 text-text-dark-gray">
+        <div className="flex flex-col gap-1">
+          <label className="text-sm text-text-light-gray">Nom</label>
           {updateMode ? (
             <input
               type="text"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
-              className="ml-2 border-pr border rounded-md px-1 w-full"
+              className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-pr"
+              placeholder="Nom de l'article"
             />
           ) : (
-            <p className="ml-2"> {data.name}</p>
+            <p className="text-lg font-semibold">{data.name}</p>
           )}
         </div>
-        <div className="flex w-full">
-          <p className="font-semibold">Description:</p>
+
+        <div className="flex flex-col gap-1">
+          <label className="text-sm text-text-light-gray">Description</label>
           {updateMode ? (
             <textarea
-              type="textArea"
               value={newDescription}
               onChange={(e) => setNewDescription(e.target.value)}
-              className="ml-2 border-pr border rounded-md px-1 w-full"
+              className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-pr min-h-[120px]"
+              placeholder="Décrivez l'article"
             />
           ) : (
-            <p className="ml-2">{data.description}</p>
+            <p className="text-sm leading-relaxed">
+              {data.description || "Aucune description renseignée"}
+            </p>
           )}
         </div>
-        <div className="flex gap-2 items-center ">
-          <p className="font-semibold">Categorie:</p>
+
+        <div className="flex flex-col gap-1">
+          <label className="text-sm text-text-light-gray">Catégorie</label>
           {updateMode ? (
             <DropDown
               value={newCategory}
@@ -98,7 +104,9 @@ const MenuItemGeneralInfo = ({
               placeholder={"Selectionner une categorie"}
             />
           ) : (
-            <p className="">{data.category?.name}</p>
+            <p className="font-semibold">
+              {data.category?.name || "Non catégorisé"}
+            </p>
           )}
         </div>
       </div>

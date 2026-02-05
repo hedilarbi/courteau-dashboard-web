@@ -7,7 +7,7 @@ const GoBackButton = () => {
   const router = useRouter();
   return (
     <button
-      className="bg-pr text-black  p-2 font-roboto font-semibold rounded-full"
+      className="bg-black text-pr  p-2 font-roboto font-semibold rounded-full"
       onClick={() => router.back()}
     >
       <FaArrowLeftLong />

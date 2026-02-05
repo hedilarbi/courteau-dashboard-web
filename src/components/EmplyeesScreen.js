@@ -84,63 +84,81 @@ const EmplyeesScreen = ({ data }) => {
       {showSuccessModel && <SuccessModal />}
       {showFailModel && <FailModal error={error} />}
       {isLoading && <SpinnerModal />}
-      <div className="mt-4 flex w-full justify-between">
-        <SearchBar />
-        <button
-          className="flex bg-pr items-center w-1/5 justify-center gap-3 rounded-md font-roboto font-bold "
-          onClick={() => setShowCreateStaffModal(true)}
-        >
-          <FaPlus />
-          Ajouter
-        </button>
-      </div>
-      <div className="flex-1 overflow-y-auto bg-white shadow-default mt-6">
-        {data.length > 0 ? (
-          <ul>
-            {staffs.map((staff, index) => (
-              <li
-                key={staff._id}
-                className={
-                  index % 2 === 0
-                    ? "bg-pr bg-opacity-70 flex items-center justify-between px-5 py-4 space-x-12"
-                    : "bg-white flex items-center justify-between px-5 py-4 space-x-12"
-                }
+      <div className="mt-4 flex flex-col gap-4 w-full">
+        <div className="bg-gradient-to-r from-pr to-[#111827] text-white rounded-2xl shadow-lg p-6 flex flex-col gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h2 className="text-3xl font-semibold">Employés</h2>
+              <p className="text-sm opacity-90">
+                Recherchez, modifiez ou ajoutez un membre du staff.
+              </p>
+            </div>
+            <div className="flex flex-wrap gap-2 items-center">
+              <span className="px-3 py-1 rounded-full text-xs bg-white/15 border border-white/20">
+                {staffs.length} employé(s)
+              </span>
+              <button
+                className="flex bg-white items-center justify-center gap-2 rounded-md font-roboto font-semibold py-2 px-4 text-[#111827] shadow-sm hover:brightness-95 transition"
+                onClick={() => setShowCreateStaffModal(true)}
               >
-                <p className="text-text-dark-gray font-roboto font-normal w-1/6">
-                  {staff.name}
-                </p>
-                <p className="text-text-dark-gray font-roboto font-normal flex-1">
-                  {staff.role}
-                </p>
-
-                <button
-                  className="text-primary-blue"
-                  onClick={() => {
-                    setSelectedStaff(staff);
-                    setShowUpdateStaffModal(true);
-                  }}
-                >
-                  <FaPen size={20} color="" />
-                </button>
-                <button
-                  className="text-warning-red"
-                  onClick={() => {
-                    setSelectedStaff(staff._id);
-                    setShowDeleteWarningModal(true);
-                  }}
-                >
-                  <FaTrash size={22} />
-                </button>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div className="flex-col flex justify-center items-center w-full h-full ">
-            <h1 className="text-xl font-roboto font-semibold text-text-dark-gray ">
-              Aucun employé trouvé
-            </h1>
+                <FaPlus />
+                Ajouter
+              </button>
+            </div>
           </div>
-        )}
+        </div>
+        <div className="bg-white shadow-default rounded-xl border border-gray-100 overflow-hidden">
+          {staffs.length > 0 ? (
+            <div className="overflow-x-auto">
+              <div className="min-w-[800px]">
+                <div className="grid grid-cols-[1.4fr,1fr,0.8fr] bg-gray-50 text-xs uppercase tracking-wide text-text-light-gray px-4 py-3">
+                  <span>Nom</span>
+                  <span>Rôle</span>
+                  <span className="text-right">Actions</span>
+                </div>
+                <div className="h-[calc(100vh-220px)] overflow-y-auto divide-y divide-gray-100">
+                  {staffs.map((staff) => (
+                    <div
+                      key={staff._id}
+                      className="grid grid-cols-[1.4fr,1fr,0.8fr] items-center px-4 py-3 text-sm hover:bg-gray-50 transition"
+                    >
+                      <p className="font-semibold text-text-dark-gray truncate">
+                        {staff.name}
+                      </p>
+                      <p className="text-text-dark-gray capitalize">
+                        {staff.role}
+                      </p>
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          className="p-2 rounded-md bg-pr/10 text-pr hover:bg-pr/20 transition"
+                          onClick={() => {
+                            setSelectedStaff(staff);
+                            setShowUpdateStaffModal(true);
+                          }}
+                        >
+                          <FaPen size={16} />
+                        </button>
+                        <button
+                          className="p-2 rounded-md bg-warning-red/10 text-warning-red hover:bg-warning-red/20 transition"
+                          onClick={() => {
+                            setSelectedStaff(staff._id);
+                            setShowDeleteWarningModal(true);
+                          }}
+                        >
+                          <FaTrash size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className="py-10 text-center text-text-light-gray text-sm">
+              Aucun employé trouvé.
+            </div>
+          )}
+        </div>
       </div>
     </>
   );

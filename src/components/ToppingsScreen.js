@@ -13,6 +13,7 @@ import { deleteToppingService } from "@/services/ToppingsServices";
 import UpdateToppingModal from "./modals/UpdateToppingModal";
 import ToggleButton from "./toggleButton/ToggleButton";
 import { updateRestaurantToppingAvailability } from "@/services/RestaurantServices";
+import { HiMiniPencil } from "react-icons/hi2";
 
 const ToppingsScreen = ({ data, role, restaurant, setRefresh }) => {
   const [toppings, setToppings] = useState(data);
@@ -121,20 +122,39 @@ const ToppingsScreen = ({ data, role, restaurant, setRefresh }) => {
         />
       )}
       {role === "admin" ? (
-        <div className="mt-4 flex w-full justify-between">
-          <button
-            className="flex bg-pr items-center w-1/5 justify-center gap-3 rounded-md font-roboto font-bold py-3 "
-            onClick={() => setShowCreateToppingModal(true)}
-          >
-            <FaPlus />
-            Ajouter
-          </button>
-          <Link
-            href="/personnalisations/categories"
-            className="flex bg-pr items-center w-1/5 justify-center gap-3 rounded-md font-roboto font-bold py-3"
-          >
-            Categories
-          </Link>
+        <div className="mt-4 flex w-full flex-col gap-3">
+          <div className="bg-gradient-to-r from-pr to-[#111827] text-white rounded-2xl shadow-lg p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <p className="text-3xl font-semibold">Personnalisations</p>
+              <p className="text-sm opacity-90">
+                Gérez vos options et catégories.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="px-3 py-1 rounded-full text-xs bg-white/15 border border-white/20">
+                {toppings.length} personnalisation(s)
+              </span>
+              <button
+                className="flex bg-pr items-center justify-center gap-2 rounded-md font-roboto font-semibold py-2 px-4 text-[#111827] shadow-sm hover:brightness-95 transition"
+                onClick={() => setShowCreateToppingModal(true)}
+              >
+                <FaPlus />
+                Ajouter
+              </button>
+              <Link
+                href="/personnalisations/categories"
+                className="flex bg-black border border-white/25 items-center justify-center gap-2 rounded-md font-roboto font-semibold py-2 px-4 text-white hover:bg-white/15 transition"
+              >
+                Categories
+              </Link>
+              <Link
+                href="/personnalisations/groupes-de-personnalisations"
+                className="flex bg-black items-center justify-center gap-2 rounded-md font-roboto font-semibold py-2 px-4 text-white shadow-sm hover:brightness-95 transition"
+              >
+                Gérer les groupes
+              </Link>
+            </div>
+          </div>
         </div>
       ) : (
         <div className="mt-4 flex w-full justify-between">
@@ -142,76 +162,105 @@ const ToppingsScreen = ({ data, role, restaurant, setRefresh }) => {
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto bg-white shadow-default mt-6 ">
-        {data.length > 0 ? (
-          <ul>
-            {toppings.map((topping, index) => (
-              <li
-                key={topping._id}
-                className={
-                  index % 2 === 0
-                    ? "bg-pr bg-opacity-50 flex items-center justify-between px-5 py-4"
-                    : "bg-white flex items-center justify-between px-5 py-4"
-                }
-              >
-                <Image
-                  src={role === "admin" ? topping.image : topping.topping.image}
-                  width={100}
-                  height={100}
-                  alt="perso"
-                />
-                <p className="text-text-dark-gray font-roboto font-normal w-1/5 ">
-                  {role === "admin" ? topping.name : topping.topping.name}
-                </p>
-                <p className="text-text-dark-gray font-roboto font-normal w-1/6 ">
-                  {role === "admin"
-                    ? topping.price.toFixed(2)
-                    : topping.topping.price.toFixed(2)}{" "}
-                  $
-                </p>
-                <p className="text-text-dark-gray font-roboto font-normal w-1/5 ">
-                  {role === "admin"
-                    ? topping.category.name
-                    : topping.topping.category.name}
-                </p>
-                {role !== "admin" && (
-                  <ToggleButton
-                    isToggled={topping.availability}
-                    setIsToggled={() => updateAvailability(topping._id)}
-                  />
-                )}
-                {role === "admin" && (
-                  <button
-                    className="text-primary-blue"
-                    onClick={() => {
-                      setSelectedTopping(topping);
-                      setShowUpdateToppingModal(true);
-                    }}
+      <div className="flex-1 mt-6 bg-white rounded-xl shadow-default border border-gray-100 overflow-hidden">
+        <div className="overflow-x-auto">
+          <div className="min-w-[880px]">
+            <div
+              className={
+                role === "admin"
+                  ? "grid grid-cols-[120px,1.4fr,0.8fr,1fr,0.6fr] bg-gray-50 text-xs uppercase tracking-wide text-text-light-gray px-4 py-3"
+                  : "grid grid-cols-[120px,1.4fr,0.8fr,1fr,0.8fr,0.6fr] bg-gray-50 text-xs uppercase tracking-wide text-text-light-gray px-4 py-3"
+              }
+            >
+              <span>Image</span>
+              <span>Nom</span>
+              <span>Prix</span>
+              <span>Catégorie</span>
+              {role !== "admin" && <span>Disponibilité</span>}
+              <span className="text-right">Actions</span>
+            </div>
+            {toppings.length > 0 ? (
+              <div className="max-h-[65vh] overflow-y-auto divide-y divide-gray-100">
+                {toppings.map((topping) => (
+                  <div
+                    key={topping._id}
+                    className={
+                      role === "admin"
+                        ? "grid grid-cols-[120px,1.4fr,0.8fr,1fr,0.6fr] items-center px-4 py-3 text-sm"
+                        : "grid grid-cols-[120px,1.4fr,0.8fr,1fr,0.8fr,0.6fr] items-center px-4 py-3 text-sm"
+                    }
                   >
-                    <FaPen size={24} color="" />
-                  </button>
-                )}
-                {role === "admin" && (
-                  <button
-                    className="text-warning-red"
-                    onClick={() => {
-                      setSelectedTopping(topping._id);
-                      setShowDeleteWarningModal(true);
-                    }}
-                  >
-                    <FaTrash size={26} />
-                  </button>
-                )}
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div className="flex-col flex justify-center items-center w-full h-full ">
-            <h1 className="text-xl font-roboto font-semibold text-text-dark-gray ">
-              Aucune Personnalisations
-            </h1>
+                    <div className="h-16 w-20 relative overflow-hidden rounded-md">
+                      <Image
+                        src={
+                          role === "admin"
+                            ? topping.image
+                            : topping.topping.image
+                        }
+                        alt="perso"
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
+                    <p className="font-semibold text-text-dark-gray truncate">
+                      {role === "admin" ? topping.name : topping.topping.name}
+                    </p>
+                    <p className="font-semibold text-pr">
+                      {role === "admin"
+                        ? topping.price.toFixed(2)
+                        : topping.topping.price.toFixed(2)}{" "}
+                      $
+                    </p>
+                    <p className="text-text-light-gray">
+                      {role === "admin"
+                        ? topping.category.name
+                        : topping.topping.category.name}
+                    </p>
+                    {role !== "admin" && (
+                      <div className="flex items-center">
+                        <ToggleButton
+                          isToggled={topping.availability}
+                          setIsToggled={() => updateAvailability(topping._id)}
+                        />
+                      </div>
+                    )}
+                    <div className="flex items-center justify-end gap-3">
+                      {role === "admin" && (
+                        <>
+                          <button
+                            className="p-2 rounded-md bg-pr/10 text-pr hover:bg-pr/20 transition"
+                            onClick={() => {
+                              setSelectedTopping(topping);
+                              setShowUpdateToppingModal(true);
+                            }}
+                          >
+                            <HiMiniPencil size={18} />
+                          </button>
+                          <button
+                            className="p-2 rounded-md bg-warning-red/10 text-warning-red hover:bg-warning-red/20 transition"
+                            onClick={() => {
+                              setSelectedTopping(topping._id);
+                              setShowDeleteWarningModal(true);
+                            }}
+                          >
+                            <FaTrash size={16} />
+                          </button>
+                        </>
+                      )}
+                      {role !== "admin" && (
+                        <span className="text-xs text-text-light-gray">-</span>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-10 text-center text-text-light-gray text-sm">
+                Aucune personnalisation disponible.
+              </div>
+            )}
           </div>
-        )}
+        </div>
       </div>
     </>
   );

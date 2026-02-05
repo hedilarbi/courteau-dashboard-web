@@ -3,14 +3,13 @@ import { getStaffMembers } from "@/services/staffServices";
 
 import React from "react";
 
+export const dynamic = "force-dynamic";
+
 const page = async () => {
   const { data } = await getStaffMembers();
 
   return (
-    <div className="w-full h-full p-4  flex flex-col relative">
-      <h1 className="text-2xl font-roboto font-semibold text-text-dark-gray">
-        Employes
-      </h1>
+    <div className="w-full h-full p-4 max-h-screen overflow-y-auto flex flex-col relative">
       <EmplyeesScreen data={data} />
     </div>
   );

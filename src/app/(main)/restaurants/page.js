@@ -4,14 +4,13 @@ import { getRestaurants } from "@/services/RestaurantServices";
 
 import React from "react";
 
+export const dynamic = "force-dynamic";
+
 const page = async () => {
   const { data } = await getRestaurants();
 
   return (
-    <div className="w-full h-full p-4  flex flex-col relative">
-      <h1 className="text-2xl font-roboto font-semibold text-text-dark-gray">
-        Restaurants
-      </h1>
+    <div className="w-full h-full p-4  flex flex-col relative max-h-screen overflow-y-auto">
       <RestaurantsScreen data={data} />
     </div>
   );

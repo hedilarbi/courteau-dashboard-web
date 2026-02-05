@@ -105,7 +105,7 @@ const PromoCodes = () => {
     );
   }
   return (
-    <div className="bg-[#f5f5f5] h-screen overflow-y-auto ">
+    <div className="bg-[#f5f7fb] min-h-screen overflow-y-auto font-roboto">
       {deleteWarningModelState && (
         <DeleteWarningModal
           setShowDeleteWarningModal={setDeleteWarningModelState}
@@ -124,90 +124,96 @@ const PromoCodes = () => {
           setRefresh={setRefresh}
         />
       )}
-      <div className="flex-1 p-5">
-        <div className="flex items-center justify-between mb-5">
-          <h1 className="text-2xl font-roboto font-semibold text-text-dark-gray">
-            Codes Promotions
-          </h1>
-          <button
-            className="bg-[#F7A600] px-6 py-3 rounded text-black font-roboto font-semibold"
-            onClick={() => setShowCreateModal(true)}
-          >
-            Ajouter un code
-          </button>
-        </div>
-        <div className="flex-1">
-          {promoCodes.length > 0 ? (
-            <div className="w-full mt-4 border border-black overflow-y-auto h-[calc(100vh-250px)] ">
-              <div className="flex flex-row gap-12 items-center justify-between py-3 px-2.5 bg-[#F7A600]">
-                <span className="font-lato-bold text-base w-[15%]">Code</span>
-                <span className="font-lato-bold text-base w-[10%] ">Type</span>
-                <span className="font-lato-bold text-base w-[10%] ">
-                  Valeur
+      <div className="max-w-6xl mx-auto px-5 py-6 flex flex-col gap-4">
+        <div className="bg-gradient-to-r from-pr to-[#111827] text-white rounded-2xl shadow-lg p-6 flex flex-col gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <h1 className="text-3xl font-semibold">Codes Promotions</h1>
+              <p className="text-sm opacity-90 mt-1">
+                Gérez vos codes, usages et valeurs.
+              </p>
+            </div>
+            <div className="flex items-center gap-3">
+              <div className="flex flex-wrap gap-2 text-xs">
+                <span className="bg-white/15 border border-white/20 rounded-full px-3 py-1">
+                  {promoCodes.length} code(s)
                 </span>
-                <span className="font-lato-bold text-base w-[10%]">
-                  Utilisation
-                </span>
-                <span className="font-lato-bold text-base w-[15%] ">
-                  Usage par utilisateur
-                </span>
-                <span className="font-lato-bold text-base flex-1">
-                  Date de fin
-                </span>
-                <span className="font-lato-bold text-base">Actions</span>
               </div>
+              <button
+                className="bg-white text-[#111827] px-4 py-2 rounded-md shadow-sm font-semibold hover:brightness-95 transition"
+                onClick={() => setShowCreateModal(true)}
+              >
+                Ajouter un code
+              </button>
+            </div>
+          </div>
+        </div>
 
-              {promoCodes.map((promoCode, index) => (
-                <div
-                  key={promoCode._id}
-                  className={`flex flex-row gap-12 items-center justify-between py-3 px-2.5 ${
-                    index % 2 ? "bg-transparent" : "bg-[rgba(247,166,0,0.3)]"
-                  }`}
-                >
-                  <span className={`font-lato-regular text-base w-[15%] `}>
-                    {promoCode.code}
-                  </span>
-                  <span className={`font-lato-regular text-base w-[10%] `}>
-                    {promoCode.type === "percent"
-                      ? "Pourcentage"
-                      : promoCode.type === "amount"
-                      ? "Montant"
-                      : "Article gratuit"}
-                  </span>
-                  <span className="font-lato-regular text-base w-[10%] ">
-                    {promoCode.type === "percent"
-                      ? promoCode.percent + "%"
-                      : promoCode.type === "amount"
-                      ? promoCode.amount + "$"
-                      : promoCode.freeItem.name}
-                  </span>
-                  <span className="font-lato-regular text-base w-[10%] ">
-                    {promoCode.totalUsage} fois
-                  </span>
-                  <span className="font-lato-regular text-base w-[15%] ">
-                    {promoCode.usagePerUser
-                      ? ` ${promoCode.usagePerUser}`
-                      : "Illimité"}
-                  </span>
-
-                  <span className="font-lato-regular text-base flex-1">
-                    {dateToDDMMYYYYHHMM(promoCode.endDate)}
-                  </span>
-
-                  <button
-                    className="flex justify-center items-center"
-                    onClick={() => handleShowDeleteWarning(promoCode)}
-                  >
-                    <FaTrash color="#F31A1A" size={24} />
-                  </button>
+        <div className="bg-white rounded-xl shadow-default border border-gray-100 overflow-hidden">
+          {promoCodes.length > 0 ? (
+            <div className="overflow-x-auto">
+              <div className="min-w-[1020px]">
+                <div className="grid grid-cols-[1fr,1fr,0.8fr,0.8fr,0.8fr,1fr,0.6fr] bg-gray-50 text-xs uppercase tracking-wide text-text-light-gray px-4 py-3">
+                  <span>Code</span>
+                  <span>Type</span>
+                  <span>Valeur</span>
+                  <span>Utilisation</span>
+                  <span>Usage / utilisateur</span>
+                  <span>Date de fin</span>
+                  <span className="text-right">Actions</span>
                 </div>
-              ))}
+
+                <div className="h-[calc(100vh-220px)] overflow-y-auto divide-y divide-gray-100">
+                  {promoCodes.map((promoCode) => (
+                    <div
+                      key={promoCode._id}
+                      className="grid grid-cols-[1fr,1fr,0.8fr,0.8fr,0.8fr,1fr,0.6fr] items-center px-4 py-3 text-sm hover:bg-gray-50 transition"
+                    >
+                      <span className="font-semibold text-text-dark-gray truncate">
+                        {promoCode.code}
+                      </span>
+                      <span className="text-text-dark-gray">
+                        {promoCode.type === "percent"
+                          ? "Pourcentage"
+                          : promoCode.type === "amount"
+                          ? "Montant"
+                          : "Article gratuit"}
+                      </span>
+                      <span className="font-semibold text-pr">
+                        {promoCode.type === "percent"
+                          ? `${promoCode.percent}%`
+                          : promoCode.type === "amount"
+                          ? `${promoCode.amount}$`
+                          : promoCode.freeItem.name}
+                      </span>
+                      <span className="text-text-dark-gray">
+                        {promoCode.totalUsage} fois
+                      </span>
+                      <span className="text-text-dark-gray">
+                        {promoCode.usagePerUser
+                          ? promoCode.usagePerUser
+                          : "Illimité"}
+                      </span>
+                      <span className="text-text-light-gray">
+                        {dateToDDMMYYYYHHMM(promoCode.endDate)}
+                      </span>
+
+                      <div className="flex items-center justify-end">
+                        <button
+                          className="p-2 rounded-md bg-warning-red/10 text-warning-red hover:bg-warning-red/20 transition"
+                          onClick={() => handleShowDeleteWarning(promoCode)}
+                        >
+                          <FaTrash size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           ) : (
-            <div className="bg-white flex-1 mt-5 rounded-xl flex justify-center items-center h-[calc(100vh-250px)]">
-              <h2 className="font-lato-bold text-2xl">
-                Aucun code promotionnel
-              </h2>
+            <div className="py-10 text-center text-text-light-gray text-sm">
+              Aucun code promotionnel.
             </div>
           )}
         </div>

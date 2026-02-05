@@ -24,38 +24,59 @@ const NavBar = () => {
   };
 
   return (
-    <div className="w-1/4 bg-[#2E2E2E] h-full  overflow-y-auto flex flex-col">
-      <div className="flex justify-center bg-black py-2">
-        <Image src={logo} alt="logo" width={150} height={80} />
+    <div className="w-1/4 bg-[#0f172a] h-full overflow-y-auto flex flex-col border-r border-white/5 shadow-xl">
+      <div className="flex flex-col items-center gap-2 bg-gradient-to-r from-pr to-[#111827] py-4 px-3 shadow">
+        <div className="bg-white/10 border border-white/20 rounded-xl px-4 py-2 flex items-center gap-3 w-full justify-center">
+          <Image src={logo} alt="logo" width={130} height={64} />
+        </div>
       </div>
 
-      <ul className="mt-2 space-y-2 flex-1 overflow-y-auto ">
-        {list.map((item) => (
-          <li key={item.id} className="bg-pr">
-            <Link
-              href={`${item.path}`}
-              className={
-                "/" + currentPath === item.path
-                  ? "px-4 py-4 flex items-center bg-pr font-roboto font-semibold text-black "
-                  : "px-4 py-4  flex items-center hover:bg-pr hover:text-black font-roboto font-semibold bg-[#2E2E2E] text-pr"
-              }
-            >
-              {item.icon}
-              <span className="ml-2">{item.title}</span>
-            </Link>
-          </li>
-        ))}
+      <ul className="mt-3 flex-1 overflow-y-auto px-3 space-y-1">
+        {list.map((item) => {
+          const isActive = "/" + currentPath === item.path;
+          return (
+            <li key={item.id}>
+              <Link
+                href={`${item.path}`}
+                className={`group flex items-center gap-3 rounded-lg px-3 py-3 transition ${
+                  isActive
+                    ? "bg-pr text-[#0f172a] shadow-md"
+                    : "text-white/80 hover:bg-white/5 hover:text-white"
+                }`}
+              >
+                <span
+                  className={`flex h-9 w-9 items-center justify-center rounded-lg border ${
+                    isActive
+                      ? "border-[#0f172a] bg-white/20"
+                      : "border-white/10 bg-white/5"
+                  }`}
+                >
+                  {item.icon}
+                </span>
+                <div className="flex flex-col leading-tight">
+                  <span className="font-roboto font-semibold text-sm">
+                    {item.title}
+                  </span>
+                  <span className="text-[11px] text-white/50 group-hover:text-white/70">
+                    {item.subtitle || ""}
+                  </span>
+                </div>
+                {isActive && (
+                  <span className="ml-auto h-2 w-2 rounded-full bg-[#0f172a]" />
+                )}
+              </Link>
+            </li>
+          );
+        })}
       </ul>
 
-      <div className="bg-black py-4 w-full px-4 ">
+      <div className="bg-[#0b1120] py-4 w-full px-4 border-t border-white/5">
         <button
           onClick={logoutStaff}
-          className="flex  bg-black  border-2 border-pr rounded-md items-center justify-between  px-4 py-2 w-full "
+          className="flex bg-white/5 border border-white/10 rounded-lg items-center justify-between px-4 py-2 w-full text-white hover:border-pr hover:bg-pr/10 transition"
         >
-          <span className="font-roboto font-semibold text-lg text-pr">
-            Déconnexion
-          </span>
-          <IoLogOut size={36} color="#F7A600" />
+          <span className="font-roboto font-semibold text-sm">Déconnexion</span>
+          <IoLogOut size={22} color="#F7A600" />
         </button>
       </div>
     </div>

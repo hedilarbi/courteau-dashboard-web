@@ -198,181 +198,228 @@ const SettingsScreen = () => {
   }
 
   return (
-    <div className="bg-[#f5f5f5]  h-screen overflow-y-auto relative">
+    <div className="bg-[#f5f7fb]  max-h-screen overflow-y-auto relative font-roboto">
       <ToastNotification
         type={toastData.type}
         message={toastData.message}
         show={toastData.show}
       />
 
-      <div className="p-5">
-        <h1 className="font-bebas-neue text-4xl">Paramètre</h1>
-
-        {restaurants.map((restaurant, index) => (
-          <div
-            key={index}
-            className={`border-b-2 border-black pb-5 ${
-              index === restaurants.length - 1 ? "border-b-0" : ""
-            }`}
-          >
-            <h2 className="font-lato-bold text-2xl mt-5">{restaurant.name}</h2>
-
-            <div className="flex items-center mt-5">
-              <span className="font-lato-bold text-xl">Ouvert:</span>
-              <label className="relative inline-flex items-center cursor-pointer ml-5">
-                <input
-                  type="checkbox"
-                  className="sr-only peer"
-                  checked={restaurant?.settings?.open}
-                  onChange={() =>
-                    setRestaurants((prev) =>
-                      prev.map((r, i) =>
-                        i === index
-                          ? {
-                              ...r,
-                              settings: {
-                                ...r.settings,
-                                open: !r.settings.open,
-                              },
-                            }
-                          : r
-                      )
-                    )
-                  }
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#F7A600]"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center mt-5">
-              <span className="font-lato-bold text-xl">Livraison:</span>
-              <label className="relative inline-flex items-center cursor-pointer ml-5">
-                <input
-                  type="checkbox"
-                  className="sr-only peer"
-                  checked={restaurant.settings?.delivery}
-                  onChange={() =>
-                    setRestaurants((prev) =>
-                      prev.map((r, i) =>
-                        i === index
-                          ? {
-                              ...r,
-                              settings: {
-                                ...r.settings,
-                                delivery: !r.settings.delivery,
-                              },
-                            }
-                          : r
-                      )
-                    )
-                  }
-                />
-                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#F7A600]"></div>
-              </label>
-            </div>
-
-            <div className="flex items-center mt-5">
-              <span className="font-lato-bold text-xl">
-                Frais de livraison:
-              </span>
-              <input
-                type="number"
-                className="w-12 ml-5 p-1 bg-white rounded font-lato-regular text-lg"
-                value={restaurant?.settings?.delivery_fee}
-                onChange={(e) =>
-                  setRestaurants((prev) =>
-                    prev.map((r, i) =>
-                      i === index
-                        ? {
-                            ...r,
-                            settings: {
-                              ...r.settings,
-                              delivery_fee: e.target.value,
-                            },
-                          }
-                        : r
-                    )
-                  )
-                }
-              />
-              <span className="font-lato-bold text-xl ml-2">$</span>
-            </div>
-
-            <div className="flex items-center mt-5">
-              <span className="font-lato-bold text-xl">
-                Rayon de livraison:
-              </span>
-              <input
-                type="number"
-                className="w-12 ml-5 p-1 bg-white rounded font-lato-regular text-lg"
-                value={restaurant.settings?.delivery_range || ""}
-                onChange={(e) =>
-                  setRestaurants((prev) =>
-                    prev.map((r, i) =>
-                      i === index
-                        ? {
-                            ...r,
-                            settings: {
-                              ...r.settings,
-                              delivery_range: e.target.value,
-                            },
-                          }
-                        : r
-                    )
-                  )
-                }
-              />
-              <span className="font-lato-bold text-xl ml-2">km</span>
-            </div>
-
-            <div className="mt-5">
-              <h3 className="font-lato-bold text-xl">
-                Heure d&apos;ouverture:
-              </h3>
-              {Object.keys(restaurant.settings?.emploie_du_temps || {}).map(
-                (day) => (
-                  <div key={day} className="my-2.5">
-                    <span className="font-lato-regular text-lg capitalize">
-                      {day}:
-                    </span>
-                    <div className="flex items-center mt-2.5">
-                      <input
-                        type="time"
-                        className="bg-white rounded p-1 font-lato-regular text-lg mr-2.5"
-                        value={
-                          restaurant.settings.emploie_du_temps[day]?.open || ""
-                        }
-                        onChange={(e) =>
-                          handleTimeChange(day, "open", index, e.target.value)
-                        }
-                      />
-                      <span className="font-lato-regular text-lg">-</span>
-                      <input
-                        type="time"
-                        className="bg-white rounded p-1 font-lato-regular text-lg ml-2.5"
-                        value={
-                          restaurant.settings.emploie_du_temps[day]?.close || ""
-                        }
-                        onChange={(e) =>
-                          handleTimeChange(day, "close", index, e.target.value)
-                        }
-                      />
-                    </div>
-                  </div>
-                )
-              )}
-            </div>
-
-            <div className="flex justify-end mt-5">
-              <button
-                className="bg-[#F7A600] px-5 py-2.5 rounded font-lato-bold text-lg"
-                onClick={() => saveChanges(index)}
-              >
-                Sauvegarder
-              </button>
-            </div>
+      <div className=" mx-auto px-5 py-6 flex flex-col gap-4">
+        <div className="bg-gradient-to-r from-pr to-[#111827] text-white rounded-2xl shadow-lg p-6 flex flex-col gap-3">
+          <div>
+            <h1 className="text-3xl font-semibold">Paramètres</h1>
+            <p className="text-sm opacity-90 mt-1">
+              Horaires, livraison et frais par restaurant.
+            </p>
           </div>
-        ))}
+        </div>
+
+        <div className="space-y-6">
+          {restaurants.map((restaurant, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-xl shadow-default border border-gray-100 p-5 space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-text-dark-gray">
+                  {restaurant.name}
+                </h2>
+                <button
+                  className="bg-pr text-white px-4 py-2 rounded-md font-semibold shadow-sm hover:brightness-95 transition"
+                  onClick={() => saveChanges(index)}
+                >
+                  Sauvegarder
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                  <div>
+                    <p className="text-sm text-text-light-gray">Ouvert</p>
+                    <p className="text-sm font-semibold text-text-dark-gray">
+                      {restaurant.settings?.open ? "Oui" : "Non"}
+                    </p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={restaurant?.settings?.open}
+                      onChange={() =>
+                        setRestaurants((prev) =>
+                          prev.map((r, i) =>
+                            i === index
+                              ? {
+                                  ...r,
+                                  settings: {
+                                    ...r.settings,
+                                    open: !r.settings.open,
+                                  },
+                                }
+                              : r
+                          )
+                        )
+                      }
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pr"></div>
+                  </label>
+                </div>
+
+                <div className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-lg px-3 py-2">
+                  <div>
+                    <p className="text-sm text-text-light-gray">Livraison</p>
+                    <p className="text-sm font-semibold text-text-dark-gray">
+                      {restaurant.settings?.delivery ? "Active" : "Inactive"}
+                    </p>
+                  </div>
+                  <label className="relative inline-flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      className="sr-only peer"
+                      checked={restaurant.settings?.delivery}
+                      onChange={() =>
+                        setRestaurants((prev) =>
+                          prev.map((r, i) =>
+                            i === index
+                              ? {
+                                  ...r,
+                                  settings: {
+                                    ...r.settings,
+                                    delivery: !r.settings.delivery,
+                                  },
+                                }
+                              : r
+                          )
+                        )
+                      }
+                    />
+                    <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-pr"></div>
+                  </label>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm text-text-light-gray">
+                    Frais de livraison
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      className="w-24 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-pr"
+                      value={restaurant?.settings?.delivery_fee}
+                      onChange={(e) =>
+                        setRestaurants((prev) =>
+                          prev.map((r, i) =>
+                            i === index
+                              ? {
+                                  ...r,
+                                  settings: {
+                                    ...r.settings,
+                                    delivery_fee: e.target.value,
+                                  },
+                                }
+                              : r
+                          )
+                        )
+                      }
+                    />
+                    <span className="text-sm font-semibold text-text-dark-gray">
+                      $
+                    </span>
+                  </div>
+                </div>
+
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm text-text-light-gray">
+                    Rayon de livraison
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="number"
+                      className="w-24 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-pr"
+                      value={restaurant.settings?.delivery_range || ""}
+                      onChange={(e) =>
+                        setRestaurants((prev) =>
+                          prev.map((r, i) =>
+                            i === index
+                              ? {
+                                  ...r,
+                                  settings: {
+                                    ...r.settings,
+                                    delivery_range: e.target.value,
+                                  },
+                                }
+                              : r
+                          )
+                        )
+                      }
+                    />
+                    <span className="text-sm font-semibold text-text-dark-gray">
+                      km
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="mt-2">
+                <h3 className="text-sm font-semibold text-text-dark-gray uppercase tracking-wide">
+                  Heures d&apos;ouverture
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+                  {Object.keys(restaurant.settings?.emploie_du_temps || {}).map(
+                    (day) => (
+                      <div
+                        key={day}
+                        className="flex items-center justify-between bg-gray-50 border border-gray-200 rounded-md px-3 py-2"
+                      >
+                        <span className="text-sm font-semibold capitalize text-text-dark-gray">
+                          {day}
+                        </span>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="time"
+                            className="bg-white border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-pr"
+                            value={
+                              restaurant.settings.emploie_du_temps[day]?.open ||
+                              ""
+                            }
+                            onChange={(e) =>
+                              handleTimeChange(
+                                day,
+                                "open",
+                                index,
+                                e.target.value
+                              )
+                            }
+                          />
+                          <span className="text-sm text-text-light-gray">
+                            -
+                          </span>
+                          <input
+                            type="time"
+                            className="bg-white border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none focus:border-pr"
+                            value={
+                              restaurant.settings.emploie_du_temps[day]
+                                ?.close || ""
+                            }
+                            onChange={(e) =>
+                              handleTimeChange(
+                                day,
+                                "close",
+                                index,
+                                e.target.value
+                              )
+                            }
+                          />
+                        </div>
+                      </div>
+                    )
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

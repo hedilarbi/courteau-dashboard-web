@@ -87,330 +87,344 @@ const OrderScreen = ({ params }) => {
   }
 
   return (
-    <div className="flex-1 bg-[#f5f5f5] h-screen overflow-y-auto">
-      <div className="flex gap-4 items-center  justify-between p-4">
-        <div className="flex items-center gap-2">
-          <GoBackButton />
-          <h2 className="text-2xl font-roboto font-semibold ">
-            Commande {order.code}
-          </h2>
-        </div>
-        <button className=" bg-black p-5 rounded-md" onClick={handlePrint}>
-          <FaPrint size={38} color="#F7A600" />
-        </button>
-      </div>
+    <div className="flex-1 bg-[#f5f7fb] max-h-screen overflow-y-auto font-roboto">
+      <div className="max-w-6xl mx-auto px-5 py-6 flex flex-col gap-5">
+        <div className="bg-gradient-to-r from-pr to-[#111827] text-white rounded-2xl shadow-lg p-6 flex flex-col gap-4">
+          <div className="flex items-center justify-between gap-3 flex-wrap">
+            <div className="flex items-center gap-3">
+              <GoBackButton />
+              <div>
+                <p className="text-xs uppercase tracking-[0.2em] opacity-80">
+                  Commande
+                </p>
+                <div className="flex items-center gap-3">
+                  <h2 className="text-3xl font-semibold">#{order.code}</h2>
 
-      <div className="flex-1 pb-10">
-        <div className="flex-1 p-4">
-          {/* Instructions Section */}
-          <div>
-            <h2 className="font-lato-bold text-2xl mt-5">Instructions</h2>
-            <div className="bg-white rounded-xl p-4 mt-2.5">
-              <p className="font-lato-regular text-lg text-center">
-                {order.instructions ? order.instructions : "Aucune"}
-              </p>
-            </div>
-          </div>
-
-          {/* Articles Section */}
-          <div>
-            <h2 className="font-lato-bold text-2xl mt-5">Articles</h2>
-            {order.orderItems?.length > 0 ? (
-              <div className="mt-5 bg-white overflow-auto">
-                {order.orderItems?.map((item, index) => (
-                  <div
-                    key={item._id}
-                    className={`flex flex-row gap-12 items-center justify-between py-3 px-2.5 ${
-                      index % 2 ? "bg-transparent" : "bg-[rgba(247,166,0,0.3)]"
-                    }`}
-                  >
-                    <span className="font-lato-regular text-lg w-1/5 truncate">
-                      {item.item.name}
-                    </span>
-                    <span className="font-lato-regular text-lg w-[15%] truncate">
-                      {item.comment || ""}
-                    </span>
-                    <span className="font-lato-regular text-lg w-[10%]">
-                      {item.size}
-                    </span>
-                    <span className="font-lato-regular text-lg flex-1">
-                      {item.customizations?.map((custo) => custo.name + "/")}
-                    </span>
-                    <span className="font-lato-regular text-lg w-[15%]">
-                      {item.price.toFixed(2)} $
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="bg-white rounded-xl py-2.5 flex justify-center items-center mt-5">
-                <p className="font-lato-bold text-xl">Vide</p>
-              </div>
-            )}
-          </div>
-
-          {/* Offers Section */}
-          <div>
-            <h2 className="font-lato-bold text-2xl mt-5">Offres</h2>
-            {order.offers?.length > 0 ? (
-              <div className="mt-5 bg-white overflow-auto">
-                {order.offers?.map((item, index) => (
-                  <div
-                    key={item._id}
-                    className={`flex flex-row gap-12 items-center justify-between py-3 px-2.5 ${
-                      index % 2 ? "bg-transparent" : "bg-[rgba(247,166,0,0.3)]"
-                    }`}
-                  >
-                    <span className="font-lato-regular text-lg truncate">
-                      {item.offer?.name}
-                    </span>
-                    <div>
-                      {item.items?.map((offerItem, index) => (
-                        <div className="flex flex-row" key={index}>
-                          <span className="font-lato-regular text-lg truncate">
-                            {offerItem.item.name}
-                          </span>
-                          <span>(</span>
-                          {offerItem.customizations?.map((custo, i) => (
-                            <span className="font-lato-regular text-lg" key={i}>
-                              {custo.name},{" "}
-                            </span>
-                          ))}
-                          <span>)</span>
-                        </div>
-                      ))}
-                    </div>
-                    <span className="font-lato-regular text-lg truncate">
-                      {item.offer?.price.toFixed(2)} $
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="bg-white rounded-xl py-2.5 flex justify-center items-center mt-5">
-                <p className="font-lato-bold text-xl">Vide</p>
-              </div>
-            )}
-          </div>
-
-          {/* Rewards Section */}
-          <div>
-            <h2 className="font-lato-bold text-2xl mt-5">Récompense</h2>
-            {order.rewards?.length > 0 ? (
-              <div className="mt-5 bg-white overflow-auto">
-                {order.rewards?.map((item, index) => (
-                  <div
-                    key={index}
-                    className={`flex flex-row gap-12 items-center justify-between py-3 px-2.5 ${
-                      index % 2 ? "bg-transparent" : "bg-[rgba(247,166,0,0.3)]"
-                    }`}
-                  >
-                    <span className="font-lato-regular text-lg truncate">
-                      {item.item.name}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <div className="bg-white rounded-xl py-2.5 flex justify-center items-center mt-5">
-                <p className="font-lato-bold text-xl">Vide</p>
-              </div>
-            )}
-          </div>
-
-          {/* General Information Section */}
-          <div>
-            <h2 className="font-lato-bold text-2xl my-2.5">
-              Informations générale
-            </h2>
-            <div className="bg-white rounded-xl p-5 mt-2.5">
-              <div className="flex flex-row justify-between">
-                <div className="w-1/2">
-                  <div className="flex flex-row items-center">
-                    <span className="font-lato-bold text-lg">Etat:</span>
-
-                    <div className="flex flex-row items-center ml-2.5">
-                      <span
-                        className={`font-lato-regular text-lg ml-2.5 flex-1 ${setOrderStatusColor(
-                          order.status
-                        )}`}
-                      >
-                        {order.status}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-row items-center mt-2.5">
-                    <span className="font-lato-bold text-lg">Code:</span>
-                    <span className="font-lato-regular text-lg ml-2.5">
-                      {order.code}
-                    </span>
-                  </div>
-
-                  <div className="flex flex-row items-center mt-2.5">
-                    <span className="font-lato-bold text-lg">Type</span>
-                    <span className="font-lato-regular text-lg ml-2.5">
+                  <div className="flex flex-wrap gap-2 text-sm">
+                    <span className="bg-white/15 border border-white/20 rounded-full px-3 py-1">
                       {order.type === "delivery" ? "Livraison" : "Emporter"}
                     </span>
-                  </div>
-
-                  <div className="flex flex-row items-center mt-2.5">
-                    <span className="font-lato-bold text-lg">Crée le:</span>
-                    <span className="font-lato-regular text-lg ml-2.5">
-                      {dateToDDMMYYYYHHMM(order.createdAt)}
-                    </span>
-                  </div>
-
-                  <div className="flex flex-row items-center mt-2.5">
-                    <span className="font-lato-bold text-lg">
-                      Nombre d&apos;article:
-                    </span>
-                    <span className="font-lato-regular text-lg ml-2.5">
+                    <span className="bg-white/15 border border-white/20 rounded-full px-3 py-1">
                       {order.orderItems?.length +
                         order.offers?.length +
                         order.rewards?.length}{" "}
                       article(s)
                     </span>
-                  </div>
-                </div>
-
-                <div className="w-1/2">
-                  <div className="flex flex-row items-center">
-                    <span className="font-lato-bold text-lg">Totale:</span>
-
-                    <div className="flex flex-row items-center ml-2.5">
-                      <span className="font-lato-regular text-lg ml-2.5 flex-1">
-                        {parseFloat(order.total_price).toFixed(2)} $
-                      </span>
-                    </div>
-                  </div>
-
-                  <div className="flex flex-row items-center mt-2.5">
-                    <span className="font-lato-bold text-lg">Sous-totale:</span>
-                    <span className="font-lato-regular text-lg ml-2.5">
-                      {order.sub_total.toFixed(2)} $
-                    </span>
-                  </div>
-
-                  {order.discount > 0 && (
-                    <div className="flex flex-row items-center mt-2.5">
-                      <span className="font-lato-bold text-lg">
-                        Sous-totale apres remise:
-                      </span>
-                      <span className="font-lato-regular text-lg ml-2.5">
-                        {order.sub_total_after_discount?.toFixed(2)} $ (-{" "}
-                        {order.discount} %)
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="flex flex-row items-center mt-2.5">
-                    <span className="font-lato-bold text-lg">TVQ:</span>
-                    <span className="font-lato-regular text-lg ml-2.5">
-                      {tvq.toFixed(2)} $
-                    </span>
-                  </div>
-
-                  <div className="flex flex-row items-center mt-2.5">
-                    <span className="font-lato-bold text-lg">TPS:</span>
-                    <span className="font-lato-regular text-lg ml-2.5">
-                      {tps.toFixed(2)} $
-                    </span>
-                  </div>
-
-                  {order.type === "delivery" && (
-                    <div className="flex flex-row items-center mt-2.5">
-                      <span className="font-lato-bold text-lg">
-                        Frais de livraison:
-                      </span>
-                      <span className="font-lato-regular text-lg ml-2.5">
-                        {order.delivery_fee.toFixed(2)} $
-                      </span>
-                    </div>
-                  )}
-
-                  <div className="flex flex-row items-center mt-2.5">
-                    <span className="font-lato-bold text-lg">Pourboire:</span>
-                    <span className="font-lato-regular text-lg ml-2.5">
-                      {order.tip?.toFixed(2)} $
+                    <span className="bg-white/15 border border-white/20 rounded-full px-3 py-1">
+                      Total {parseFloat(order.total_price).toFixed(2)} $
                     </span>
                   </div>
                 </div>
+
+                <p className="text-sm opacity-90">
+                  Créée le {dateToDDMMYYYYHHMM(order.createdAt)}
+                </p>
               </div>
             </div>
-          </div>
-
-          {/* Client Information Section */}
-          <div>
-            <h2 className="font-lato-bold text-2xl mt-5">
-              Informations Client
-            </h2>
-            <div className="bg-white rounded-xl p-5 mt-2.5">
-              <div className="flex flex-row justify-between">
-                <div className="w-1/2">
-                  <div className="flex flex-row items-center">
-                    <span className="font-lato-bold text-lg">
-                      Nom & prénom:
-                    </span>
-                    <span className="font-lato-regular text-lg ml-2.5">
-                      {order.user?.name}
-                    </span>
-                  </div>
-
-                  <div className="flex flex-row items-center mt-2.5">
-                    <span className="font-lato-bold text-lg">Téléphone:</span>
-                    <span className="font-lato-regular text-lg ml-2.5">
-                      {order?.user?.phone_number}
-                    </span>
-                  </div>
-                </div>
-
-                <div className="w-1/2">
-                  <div className="flex flex-row items-center">
-                    <span className="font-lato-bold text-lg">E-mail:</span>
-                    <span className="font-lato-regular text-lg ml-2.5">
-                      {order.user?.email}
-                    </span>
-                  </div>
-
-                  <div className="flex flex-row mt-2.5">
-                    <span className="font-lato-bold text-lg">Adresse:</span>
-                    <span className="font-lato-regular text-lg ml-2.5 w-[70%] truncate">
-                      {order.address}
-                    </span>
-                  </div>
-                </div>
-              </div>
+            <div className="flex items-center gap-2">
+              <span
+                className={`px-3 py-1 rounded-full text-sm font-semibold ${setOrderStatusColor(
+                  order.status
+                )} bg-white/15 border border-white/25`}
+              >
+                {order.status}
+              </span>
+              <button
+                className="bg-white text-[#111827] p-3 rounded-md shadow-sm hover:brightness-95 transition flex items-center gap-2"
+                onClick={handlePrint}
+              >
+                <FaPrint size={18} />
+                <span className="text-sm font-semibold">Imprimer</span>
+              </button>
             </div>
           </div>
+        </div>
 
-          {/* Review Section */}
-          <div>
-            <h2 className="font-lato-bold text-2xl mt-5">Review</h2>
-            <div className="bg-white rounded-xl py-2.5 flex justify-center items-center mt-5">
-              {order.review?.status ? (
-                <div className="flex flex-row items-center w-full px-3">
-                  <div className="flex flex-row items-center w-1/3">
-                    <span className="font-lato-bold text-2xl mr-3">Note:</span>
-                    <span className="font-lato-bold text-2xl mr-3">
-                      {order.review.rating}
-                    </span>
-
-                    <FaStar color="#facc15" />
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2 space-y-4">
+            <section className="bg-white shadow-default rounded-xl p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-text-dark-gray">
+                  Articles
+                </h3>
+                <span className="text-xs text-text-light-gray">
+                  {order.orderItems?.length || 0} article(s)
+                </span>
+              </div>
+              {order.orderItems?.length > 0 ? (
+                <div className="border border-gray-100 rounded-lg overflow-hidden">
+                  <div className="grid grid-cols-12 bg-gray-50 text-xs uppercase tracking-wide text-text-light-gray px-4 py-2">
+                    <span className="col-span-3">Nom</span>
+                    <span className="col-span-3">Commentaire</span>
+                    <span className="col-span-2">Taille</span>
+                    <span className="col-span-3">Personnalisations</span>
+                    <span className="col-span-1 text-right">Prix</span>
                   </div>
-                  <div className="flex flex-row items-center">
-                    <span className="font-lato-bold text-2xl mr-3">
-                      Commentaire:
-                    </span>
-                    <span className="font-lato-regular text-2xl">
-                      {order.review.comment}
-                    </span>
+                  <div className="divide-y divide-gray-100">
+                    {order.orderItems?.map((item) => (
+                      <div
+                        key={item._id}
+                        className="grid grid-cols-12 items-center px-4 py-3 text-sm"
+                      >
+                        <span className="col-span-3 font-semibold text-text-dark-gray truncate">
+                          {item.item.name}
+                        </span>
+                        <span className="col-span-3 text-text-light-gray truncate">
+                          {item.comment || "—"}
+                        </span>
+                        <span className="col-span-2 text-text-dark-gray">
+                          {item.size}
+                        </span>
+                        <span className="col-span-3 text-text-light-gray">
+                          {item.customizations?.length
+                            ? item.customizations
+                                .map((custo) => custo.name)
+                                .join(", ")
+                            : "—"}
+                        </span>
+                        <span className="col-span-1 text-right font-semibold text-text-dark-gray">
+                          {item.price.toFixed(2)} $
+                        </span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ) : (
-                <span className="font-lato-bold text-xl">Aucune review</span>
+                <div className="text-sm text-text-light-gray text-center py-4">
+                  Aucun article
+                </div>
               )}
-            </div>
+            </section>
+
+            <section className="bg-white shadow-default rounded-xl p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-text-dark-gray">
+                  Offres
+                </h3>
+                <span className="text-xs text-text-light-gray">
+                  {order.offers?.length || 0} offre(s)
+                </span>
+              </div>
+              {order.offers?.length > 0 ? (
+                <div className="border border-gray-100 rounded-lg divide-y divide-gray-100">
+                  {order.offers?.map((item) => (
+                    <div key={item._id} className="p-4 space-y-2">
+                      <div className="flex items-center justify-between">
+                        <p className="font-semibold text-text-dark-gray">
+                          {item.offer?.name}
+                        </p>
+                        <p className="text-sm font-semibold text-pr">
+                          {item.offer?.price.toFixed(2)} $
+                        </p>
+                      </div>
+                      <div className="flex flex-wrap gap-2 text-sm text-text-light-gray">
+                        {item.items?.map((offerItem, index) => (
+                          <span
+                            key={index}
+                            className="bg-gray-50 border border-gray-200 rounded-full px-3 py-1"
+                          >
+                            {offerItem.item.name}
+                            {offerItem.customizations?.length
+                              ? ` (${offerItem.customizations
+                                  .map((c) => c.name)
+                                  .join(", ")})`
+                              : ""}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-sm text-text-light-gray text-center py-4">
+                  Aucune offre
+                </div>
+              )}
+            </section>
+
+            <section className="bg-white shadow-default rounded-xl p-5 space-y-3">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-text-dark-gray">
+                  Récompense
+                </h3>
+                <span className="text-xs text-text-light-gray">
+                  {order.rewards?.length || 0} récompense(s)
+                </span>
+              </div>
+              {order.rewards?.length > 0 ? (
+                <div className="flex flex-wrap gap-2">
+                  {order.rewards?.map((item, index) => (
+                    <span
+                      key={index}
+                      className="bg-gray-50 border border-gray-200 rounded-full px-3 py-1 text-sm text-text-dark-gray"
+                    >
+                      {item.item.name}
+                    </span>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-sm text-text-light-gray text-center py-4">
+                  Aucune récompense
+                </div>
+              )}
+            </section>
+          </div>
+
+          <div className="space-y-4">
+            <section className="bg-white shadow-default rounded-xl p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-text-dark-gray">
+                  Instructions
+                </h3>
+              </div>
+              <p className="text-sm text-text-dark-gray leading-relaxed bg-gray-50 border border-gray-100 rounded-md p-3">
+                {order.instructions ? order.instructions : "Aucune instruction"}
+              </p>
+            </section>
+
+            <section className="bg-white shadow-default rounded-xl p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-text-dark-gray">
+                  Informations générales
+                </h3>
+              </div>
+              <div className="space-y-2 text-sm text-text-dark-gray">
+                <div className="flex items-center justify-between">
+                  <span className="text-text-light-gray">Code</span>
+                  <span className="font-semibold">{order.code}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-text-light-gray">Type</span>
+                  <span className="font-semibold">
+                    {order.type === "delivery" ? "Livraison" : "Emporter"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-text-light-gray">
+                    Nombre d&apos;article
+                  </span>
+                  <span className="font-semibold">
+                    {order.orderItems?.length +
+                      order.offers?.length +
+                      order.rewards?.length}
+                  </span>
+                </div>
+              </div>
+            </section>
+
+            <section className="bg-white shadow-default rounded-xl p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-text-dark-gray">
+                  Paiement
+                </h3>
+              </div>
+              <div className="space-y-2 text-sm text-text-dark-gray">
+                <div className="flex items-center justify-between">
+                  <span className="text-text-light-gray">Sous-total</span>
+                  <span className="font-semibold">
+                    {order.sub_total.toFixed(2)} $
+                  </span>
+                </div>
+                {order.discount > 0 && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-text-light-gray">Remise</span>
+                    <span className="font-semibold">
+                      -{order.discount}% (
+                      {order.sub_total_after_discount?.toFixed(2)} $)
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-text-light-gray">TVQ</span>
+                  <span className="font-semibold">{tvq.toFixed(2)} $</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-text-light-gray">TPS</span>
+                  <span className="font-semibold">{tps.toFixed(2)} $</span>
+                </div>
+                {order.type === "delivery" && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-text-light-gray">
+                      Frais de livraison
+                    </span>
+                    <span className="font-semibold">
+                      {order.delivery_fee.toFixed(2)} $
+                    </span>
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-text-light-gray">Pourboire</span>
+                  <span className="font-semibold">
+                    {order.tip?.toFixed(2)} $
+                  </span>
+                </div>
+                <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                  <span className="text-text-light-gray font-semibold">
+                    Total
+                  </span>
+                  <span className="text-lg font-semibold text-pr">
+                    {parseFloat(order.total_price).toFixed(2)} $
+                  </span>
+                </div>
+              </div>
+            </section>
+
+            <section className="bg-white shadow-default rounded-xl p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-text-dark-gray">
+                  Client
+                </h3>
+              </div>
+              <div className="space-y-2 text-sm text-text-dark-gray">
+                <div className="flex items-center justify-between">
+                  <span className="text-text-light-gray">Nom & prénom</span>
+                  <span className="font-semibold">{order.user?.name}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-text-light-gray">Téléphone</span>
+                  <span className="font-semibold">
+                    {order?.user?.phone_number}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-text-light-gray">E-mail</span>
+                  <span className="font-semibold truncate">
+                    {order.user?.email}
+                  </span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-text-light-gray">Adresse</span>
+                  <span className="font-semibold text-sm leading-relaxed">
+                    {order.address || "—"}
+                  </span>
+                </div>
+              </div>
+            </section>
+
+            <section className="bg-white shadow-default rounded-xl p-5 space-y-4">
+              <div className="flex items-center justify-between">
+                <h3 className="text-lg font-semibold text-text-dark-gray">
+                  Review
+                </h3>
+              </div>
+              {order.review?.status ? (
+                <div className="flex items-center gap-3 text-text-dark-gray">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-text-light-gray">Note</span>
+                    <span className="text-lg font-semibold">
+                      {order.review.rating}
+                    </span>
+                    <FaStar color="#facc15" />
+                  </div>
+                  <div className="text-sm text-text-light-gray">|</div>
+                  <p className="text-sm">{order.review.comment}</p>
+                </div>
+              ) : (
+                <p className="text-sm text-text-light-gray">
+                  Aucune review pour cette commande.
+                </p>
+              )}
+            </section>
           </div>
         </div>
       </div>

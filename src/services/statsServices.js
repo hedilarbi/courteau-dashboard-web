@@ -1,8 +1,11 @@
+import { getToken } from "@/actions";
 import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 const getInitialStats = async (date, from, to) => {
+  const token = await getToken();
+  axios.defaults.headers.common["Authorization"] = `Bearer ${token.value}`;
   try {
     let getInitialStatsResponse = await axios.get(`${API_URL}/stats/initial`, {
       params: {

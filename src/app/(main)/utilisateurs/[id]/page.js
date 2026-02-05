@@ -9,7 +9,7 @@ const page = async ({ params }) => {
   const { data } = await getUser(params.id);
 
   return (
-    <div className="w-full h-full p-4  flex flex-col relative">
+    <div className="w-full h-full p-4  flex flex-col relative max-h-screen overflow-y-auto">
       <div className="flex gap-4 items-center">
         <GoBackButton />
         <h2 className="text-2xl font-roboto font-semibold ">

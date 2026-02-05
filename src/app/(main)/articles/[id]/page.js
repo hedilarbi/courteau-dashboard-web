@@ -3,6 +3,8 @@ import NavBackButton from "@/components/NavBackButton";
 import { getMenuItem } from "@/services/MenuItemServices";
 import React from "react";
 
+export const dynamic = "force-dynamic";
+
 const page = async ({ params }) => {
   const { data } = await getMenuItem(params.id);
 

@@ -29,28 +29,31 @@ const AddToppingModal = ({
   };
   return (
     <ModalWrapper zindex={20}>
-      <div className="w-1/3 bg-white p-4 h-2/5 relative overflow-y-auto rounded-md flex flex-col z-30">
-        <div className="flex justify-between items-center">
-          <h1 className="text-xl font-roboto font-semibold text-text-dark-gray">
-            Ajouter un article
-          </h1>
+      <div className="w-full max-w-md bg-white p-6 relative overflow-y-auto rounded-lg flex flex-col z-30 shadow-lg gap-4">
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-2xl font-roboto font-semibold text-text-dark-gray">
+              Ajouter une personnalisation
+            </h1>
+            <p className="text-sm text-text-light-gray">
+              Choisissez une personnalisation à associer à l&apos;article.
+            </p>
+          </div>
           <button onClick={() => setShowAddToppingModel(false)}>
-            <MdOutlineClose size={32} />
+            <MdOutlineClose size={28} />
           </button>
         </div>
-        <div className="h-6 text-center">
-          {error && (
-            <p className="text-warning-red text-xs font-roboto font-semibold">
-              {error}
-            </p>
-          )}
-        </div>
-        <div className="flex gap-2 flex-1  mt-4 ">
+        {error && (
+          <div className="border border-warning-red bg-warning-red bg-opacity-10 text-warning-red text-sm rounded-md px-3 py-2">
+            {error}
+          </div>
+        )}
+        <div className="flex flex-col gap-2">
           <label
-            htmlFor="categorie"
-            className="text-text-light-gray font-roboto font-semibold"
+            htmlFor="customization"
+            className="text-text-dark-gray font-roboto font-semibold"
           >
-            Taille
+            Personnalisation
           </label>
 
           <DropDown
@@ -61,9 +64,9 @@ const AddToppingModal = ({
           />
         </div>
 
-        <div className="w-full flex justify-center">
+        <div className="w-full flex justify-end">
           <button
-            className="bg-pr w-2/3  rounded-md p-2 mt-8 font-roboto font-semibold "
+            className="bg-pr text-white rounded-md px-6 py-2.5 mt-2 font-roboto font-semibold shadow-sm hover:brightness-95"
             onClick={addCustomization}
           >
             Ajouter

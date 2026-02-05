@@ -48,70 +48,80 @@ const AddItemModal = ({ setShowAddItemModal, itemsNames, setItems }) => {
 
   return (
     <ModalWrapper zindex={20}>
-      <div className="w-1/3 bg-white p-4   overflow-y-auto rounded-md  z-30">
-        <div className="flex justify-between items-center">
-          <h1 className="text-xl font-roboto font-semibold text-text-dark-gray">
-            Ajouter un article
-          </h1>
+      <div className="w-full max-w-xl bg-white p-6 overflow-y-auto rounded-lg shadow-lg z-30 flex flex-col gap-4">
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-2xl font-roboto font-semibold text-text-dark-gray">
+              Ajouter un article
+            </h1>
+            <p className="text-sm text-text-light-gray">
+              Sélectionnez l&apos;article, sa taille et la quantité.
+            </p>
+          </div>
           <button onClick={() => setShowAddItemModal(false)}>
-            <MdOutlineClose size={32} />
+            <MdOutlineClose size={28} />
           </button>
         </div>
-        <div className="h-6 text-center">
-          {error && (
-            <p className="text-warning-red text-xs font-roboto font-semibold">
-              {error}
-            </p>
-          )}
-        </div>
-        <div className="flex gap-2  mt-4 items-center">
-          <label
-            htmlFor="categorie"
-            className="text-text-light-gray font-roboto font-semibold"
-          >
-            Articles
-          </label>
+        {error && (
+          <div className="border border-warning-red bg-warning-red bg-opacity-10 text-warning-red text-sm rounded-md px-3 py-2">
+            {error}
+          </div>
+        )}
 
-          <DropDown
-            value={item}
-            setter={setItem}
-            list={itemsNames}
-            placeholder={"Selectionner un article"}
-          />
-        </div>
-        <div className="flex gap-2  mt-4 items-center">
-          <label
-            htmlFor="categorie"
-            className="text-text-light-gray font-roboto font-semibold"
-          >
-            Taille
-          </label>
+        <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="article"
+              className="text-text-dark-gray font-roboto font-semibold"
+            >
+              Article
+            </label>
+            <DropDown
+              value={item}
+              setter={setItem}
+              list={itemsNames}
+              placeholder={"Selectionner un article"}
+            />
+          </div>
 
-          <DropDown
-            value={size}
-            setter={setSize}
-            list={sizes}
-            placeholder={"Selectionner une taille"}
-          />
-        </div>
-        <div className="flex gap-2  mt-4 items-center">
-          <label
-            htmlFor="categorie"
-            className="text-text-light-gray font-roboto font-semibold"
-          >
-            Quantite
-          </label>
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="size"
+              className="text-text-dark-gray font-roboto font-semibold"
+            >
+              Taille
+            </label>
 
-          <input
-            type="number"
-            className="w-1/2 border border-black rounded-md p-1"
-            value={quantity}
-            onChange={(e) => setQuantity(e.target.value)}
-          />
+            <DropDown
+              value={size}
+              setter={setSize}
+              list={sizes}
+              placeholder={"Selectionner une taille"}
+            />
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="quantity"
+              className="text-text-dark-gray font-roboto font-semibold"
+            >
+              Quantité
+            </label>
+
+            <input
+              type="number"
+              min={1}
+              className="w-full border border-gray-300 rounded-md p-2 focus:outline-none focus:border-pr"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+              placeholder="Ex: 1"
+            />
+          </div>
         </div>
-        <div className="w-full flex justify-center">
+
+        <div className="w-full flex justify-end">
           <button
-            className="bg-pr w-2/3  rounded-md p-2 mt-8 font-roboto font-semibold "
+            className="bg-pr text-white rounded-md px-6 py-2.5 mt-2 font-roboto font-semibold shadow-sm hover:brightness-95"
             onClick={addItem}
           >
             Ajouter

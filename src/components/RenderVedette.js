@@ -12,48 +12,56 @@ const RenderVedette = ({
 
   handleTri,
   triMode,
+  isLast = false,
 }) => {
-  const backgroundColor = useMemo(
-    () => (index % 2 ? "bg-transparent" : "bg-[rgba(247,166,0,0.3)]"),
-    [index]
-  );
-
   const menuItemName = useMemo(() => vedette.menuItem.name, [vedette]);
+  const gridTemplate = triMode
+    ? "grid-cols-[120px,1.6fr,0.6fr,0.6fr]"
+    : "grid-cols-[120px,1.6fr,0.6fr]";
 
   return useMemo(
     () => (
       <div
-        className={`w-full flex flex-row gap-12 items-center justify-between py-2.5 px-2.5 ${backgroundColor}`}
+        className={`grid ${gridTemplate} items-center px-4 py-3 gap-3 text-sm`}
       >
-        <div className="w-[120px] h-[100px] relative">
+        <div className="h-20 w-24 relative overflow-hidden rounded-md border border-gray-100">
           <Image
             src={vedette.menuItem.image}
             alt={vedette.menuItem.name}
-            layout="fill"
-            objectFit="cover"
+            fill
+            className="object-cover"
           />
         </div>
 
-        <span className="font-lato-regular text-lg w-1/4">{menuItemName}</span>
+        <span className="font-semibold text-text-dark-gray truncate">
+          {menuItemName}
+        </span>
 
-        <button
-          className="flex justify-center items-center"
-          onClick={() => handleShowDeleteWarning(vedette._id)}
-        >
-          <FaTrash color="#F31A1A" size={24} />
-        </button>
+        <div className="flex items-center justify-end">
+          <button
+            className="p-2 rounded-md bg-warning-red/10 text-warning-red hover:bg-warning-red/20 transition"
+            onClick={() => handleShowDeleteWarning(vedette._id)}
+            aria-label="Supprimer la vedette"
+          >
+            <FaTrash size={16} />
+          </button>
+        </div>
 
         {triMode && (
-          <div className="flex flex-col justify-between h-[100px]">
+          <div className="flex items-center justify-end gap-2">
             <button
-              className="flex justify-center items-center p-1"
+              className="p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
               onClick={() => handleTri(index, index - 1)}
+              disabled={index === 0}
+              aria-label="Monter"
             >
               <FaCircleChevronUp />
             </button>
             <button
-              className="flex justify-center items-center p-1"
+              className="p-1.5 rounded-md bg-gray-100 hover:bg-gray-200 disabled:opacity-50"
               onClick={() => handleTri(index, index + 1)}
+              disabled={isLast}
+              aria-label="Descendre"
             >
               <FaCircleChevronDown />
             </button>
@@ -61,7 +69,7 @@ const RenderVedette = ({
         )}
       </div>
     ),
-    [index, triMode]
+    [index, triMode, gridTemplate, menuItemName, vedette, handleShowDeleteWarning, handleTri, isLast]
   );
 };
 

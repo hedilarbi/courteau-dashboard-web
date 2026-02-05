@@ -6,9 +6,9 @@ import { FaFileInvoiceDollar } from "react-icons/fa6";
 import { FaMoneyBillWave } from "react-icons/fa6";
 const StatsCard = ({ title, stat, icon }) => {
   return (
-    <div className="bg-white p-5 w-1/4 flex justify-between items-center shadow-md rounded-md">
+    <div className="bg-white px-4 py-5 flex items-center justify-between shadow-md rounded-md min-w-[150px] flex-shrink-0">
       <div className="info-container">
-        <p className={`text-text-dark-gray font-bold text-base`}>{title}</p>
+        <p className="text-text-dark-gray font-bold text-base">{title}</p>
         <p className="font-bold text-base mt-2.5">{stat}</p>
       </div>
       <div>

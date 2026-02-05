@@ -49,42 +49,45 @@ const CreateSizeModal = ({ setShowCreateSizeModal, setSizes }) => {
     <ModalWrapper zindex={10}>
       {isLoading && <SpinnerModal />}
       {showSuccessModel && <SuccessModal />}
-      <div className=" bg-white w-2/5 p-4 overflow-y-auto rounded-md flex flex-col ">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-roboto font-semibold text-text-dark-gray">
-            Ajouter une taille
-          </h1>
+      <div className="bg-white w-full max-w-md p-5 overflow-y-auto rounded-md flex flex-col shadow-lg">
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-2xl font-roboto font-semibold text-text-dark-gray">
+              Ajouter une taille
+            </h1>
+            <p className="text-sm text-text-light-gray">
+              Créez une taille pour l&apos;associer aux articles.
+            </p>
+          </div>
           <button onClick={() => setShowCreateSizeModal(false)}>
-            <MdOutlineClose size={32} />
+            <MdOutlineClose size={28} />
           </button>
         </div>
-        <div className="h-6 text-center my-4">
-          {error && (
-            <p className="text-warning-red text-sm font-roboto font-semibold">
-              {error}
-            </p>
-          )}
-        </div>
-        <div className="flex items-center ">
-          <div className="ml-4 flex flex-col justify-between flex-1">
-            <div className=" flex gap-2 items-center ">
-              <label
-                htmlFor="name"
-                className="text-text-dark-gray font-roboto font-semibold"
-              >
-                Nom
-              </label>
-              <input
-                type="text"
-                id="name"
-                className="border border-gray-300 rounded-md w-full py-1 px-2 "
-                onChange={(e) => setSize(e.target.value)}
-              />
-            </div>
+        {error && (
+          <div className="border border-warning-red bg-warning-red bg-opacity-10 text-warning-red text-sm rounded-md px-3 py-2 mt-4">
+            {error}
           </div>
+        )}
+        <div className="flex flex-col gap-2 mt-4">
+          <label
+            htmlFor="name"
+            className="text-text-dark-gray font-roboto font-semibold"
+          >
+            Nom
+          </label>
+          <input
+            type="text"
+            id="name"
+            className="border border-gray-300 rounded-md w-full py-2 px-3 focus:outline-none focus:border-pr"
+            onChange={(e) => setSize(e.target.value)}
+            placeholder="Ex: Large"
+          />
         </div>
-        <div className="w-full flex justify-end mt-14" onClick={addSize}>
-          <button className="bg-pr  rounded-md py-2 font-roboto font-semibold px-10">
+        <div className="w-full flex justify-end mt-6">
+          <button
+            className="bg-pr rounded-md py-2.5 font-roboto font-semibold px-6 text-white shadow-sm hover:brightness-95"
+            onClick={addSize}
+          >
             Ajouter
           </button>
         </div>

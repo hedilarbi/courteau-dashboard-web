@@ -195,7 +195,7 @@ const ItemsScreen = () => {
   }
 
   return (
-    <div className="bg-[#f5f5f5] h-screen overflow-y-auto relative">
+    <div className="bg-[#f5f7fb] h-screen max-h-screen overflow-hidden relative flex flex-col min-h-0">
       <ToastNotification
         type={toastData.type}
         message={toastData.message}
@@ -220,96 +220,142 @@ const ItemsScreen = () => {
         </div>
       )}
 
-      <div className="flex-1 p-5">
-        <h1 className="font-bebas-neue text-4xl">Articles</h1>
-
-        <div className="flex flex-row items-center mt-7 justify-between">
-          <div className="flex flex-row justify-between items-center w-full">
-            <div className="flex flex-row gap-3">
-              <button
-                className="bg-[#F7A600] px-5 py-2.5 rounded border border-black flex flex-row items-center"
-                onClick={() => setCreateItemModal(true)}
-              >
-                + Créer un article
-              </button>
-            </div>
-            <div className="flex flex-row gap-3">
-              <button
-                className="bg-[#F7A600] px-5 py-2.5 rounded border border-black flex flex-row items-center"
-                onClick={() => router.push("/articles/categories")}
-              >
-                <span className="font-lato-bold text-lg ml-2.5">
-                  Liste des catégories
-                </span>
-              </button>
-              <button
-                className="bg-[#F7A600] px-5 py-2.5 rounded border border-black flex flex-row items-center"
-                onClick={() => router.push("/articles/tailles")}
-              >
-                <span className="font-lato-bold text-lg ml-2.5">
-                  Liste des tailles
-                </span>
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div className="flex flex-row justify-between items-center mt-3">
-          <div>
-            {triMode ? (
-              <div className="flex flex-row items-center gap-3">
+      <div className="flex-1 p-5 overflow-y-auto min-h-0">
+        <div className="max-w-6xl mx-auto flex flex-col gap-4">
+          <div className="bg-gradient-to-r from-pr to-[#111827] text-white rounded-2xl shadow-lg p-6 flex flex-col gap-3">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div className="flex flex-col gap-1">
+                <div className="flex items-center gap-3">
+                  <h1 className="text-3xl font-semibold">Articles</h1>
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <span className="bg-white/15 border border-white/20 text-xs px-3 py-1 rounded-full">
+                      {menuItems.length} article(s)
+                    </span>
+                    <span className="bg-white/15 border border-white/20 text-xs px-3 py-1 rounded-full">
+                      {menuItemFilter}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-sm opacity-90">
+                  Créez, organisez et modifiez les articles du menu.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
                 <button
-                  className="flex flex-row items-center bg-[#F7A600] px-5 py-2.5 rounded justify-between"
-                  onClick={saveTri}
+                  className="bg-white text-[#111827] px-4 py-2 rounded-md font-roboto font-semibold shadow-sm hover:brightness-95"
+                  onClick={() => setCreateItemModal(true)}
                 >
-                  <span className="font-lato-bold text-lg">Sauvegarder</span>
+                  + Créer un article
                 </button>
                 <button
-                  className="flex flex-row items-center bg-gray-300 px-5 py-2.5 rounded justify-between"
-                  onClick={discardTri}
+                  className="bg-white/10 border border-white/30 text-white px-4 py-2 rounded-md font-roboto font-semibold hover:bg-white/15"
+                  onClick={() => router.push("/articles/categories")}
                 >
-                  <span className="font-lato-bold text-lg text-black">
-                    Annuler
-                  </span>
+                  Catégories
+                </button>
+                <button
+                  className="bg-white/10 border border-white/30 text-white px-4 py-2 rounded-md font-roboto font-semibold hover:bg-white/15"
+                  onClick={() => router.push("/articles/groupe-de-tailles")}
+                >
+                  Groupes de tailles
                 </button>
               </div>
-            ) : (
-              <button
-                className="flex flex-row items-center bg-[#F7A600] px-5 py-2.5 rounded justify-between"
-                onClick={() => setTriMode(true)}
-              >
-                Modifier l&apos;ordre
-              </button>
-            )}
+            </div>
           </div>
 
-          <MenuItemsFilter
-            categories={categories}
-            setMenuItemFilter={setMenuItemFilter}
-            menuItemFilter={menuItemFilter}
-            menuItemsList={menuItemsList}
-            setMenuItems={setMenuItems}
-          />
-        </div>
-
-        {menuItems.length > 0 ? (
-          <div className="mt-2.5" ref={listRef}>
-            {menuItems.map((item, index) => (
-              <RenderMenuItem
-                key={item._id}
-                item={item}
-                index={index}
-                handleShowDeleteWarning={handleShowDeleteWarning}
-                handleTri={handleTri}
-                triMode={triMode}
+          <div className="bg-white shadow-default rounded-lg p-4 flex flex-col gap-4">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <MenuItemsFilter
+                categories={categories}
+                setMenuItemFilter={setMenuItemFilter}
+                menuItemFilter={menuItemFilter}
+                menuItemsList={menuItemsList}
+                setMenuItems={setMenuItems}
               />
-            ))}
+            </div>
+
+            <div className="flex flex-col gap-3">
+              <div className="flex flex-wrap gap-3 items-center justify-between">
+                <div className="text-sm text-text-light-gray">
+                  {menuItems.length} article(s) affiché(s)
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {triMode ? (
+                    <>
+                      <button
+                        className="bg-pr text-white px-4 py-2 rounded-md font-roboto font-semibold shadow-sm"
+                        onClick={saveTri}
+                      >
+                        Sauvegarder l&apos;ordre
+                      </button>
+                      <button
+                        className="bg-gray-200 text-text-dark-gray px-4 py-2 rounded-md font-roboto font-semibold"
+                        onClick={discardTri}
+                      >
+                        Annuler
+                      </button>
+                    </>
+                  ) : (
+                    <button
+                      className="bg-white border border-gray-200 text-text-dark-gray px-4 py-2 rounded-md font-roboto font-semibold hover:border-pr"
+                      onClick={() => setTriMode(true)}
+                    >
+                      Modifier l&apos;ordre
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {menuItems.length > 0 ? (
+                <div
+                  className="bg-white border border-gray-100 rounded-lg overflow-hidden"
+                  ref={listRef}
+                >
+                  <div className="overflow-x-auto">
+                    <div className="min-w-[980px]">
+                      <div
+                        className={`grid ${
+                          triMode
+                            ? "grid-cols-[120px,1.4fr,1fr,1fr,0.8fr,0.6fr]"
+                            : "grid-cols-[120px,1.4fr,1fr,1fr,0.8fr]"
+                        } bg-gray-50 text-xs uppercase tracking-wide text-text-light-gray px-4 py-3`}
+                      >
+                        <span>Image</span>
+                        <span>Nom / Catégorie</span>
+                        <span>Tailles</span>
+                        <span>Prix</span>
+                        <span className="text-right">Actions</span>
+                        {triMode && <span className="text-right">Ordre</span>}
+                      </div>
+                      <div className="h-[calc(100vh-350px)] overflow-y-auto divide-y divide-gray-100">
+                        {menuItems.map((item, index) => (
+                          <RenderMenuItem
+                            key={item._id}
+                            item={item}
+                            index={index}
+                            handleShowDeleteWarning={handleShowDeleteWarning}
+                            handleTri={handleTri}
+                            triMode={triMode}
+                            isLast={index === menuItems.length - 1}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center rounded-md border border-dashed border-gray-200 bg-gray-50 py-10">
+                  <h2 className="font-roboto font-semibold text-text-dark-gray text-lg">
+                    Aucun Article
+                  </h2>
+                  <p className="text-sm text-text-light-gray mt-1">
+                    Créez un article pour commencer.
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
-        ) : (
-          <div className="flex-1 flex justify-center items-center bg-white rounded-xl mt-5">
-            <h2 className="font-lato-bold text-2xl">Aucun Article</h2>
-          </div>
-        )}
+        </div>
       </div>
     </div>
   );

@@ -3,10 +3,7 @@ import React from "react";
 
 const page = () => {
   return (
-    <div className="w-full h-full p-4  flex flex-col relative">
-      <h1 className="text-2xl font-roboto font-semibold text-text-dark-gray">
-        Notifications
-      </h1>
+    <div className="w-full h-full p-4  flex flex-col relative max-h-screen overflow-y-auto">
       <NotificationScreen />
     </div>
   );

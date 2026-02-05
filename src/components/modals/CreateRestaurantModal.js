@@ -82,82 +82,77 @@ const CreateRestaurantModal = ({
       {showFailModel && <FailModal error={error} />}
       {addingIsLoading && <SpinnerModal />}
 
-      <div className=" bg-white p-4 w-4/5  overflow-y-auto rounded-md flex flex-col h-2/3 ">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-roboto font-semibold text-text-dark-gray">
-            Ajouter un restaurant
-          </h1>
+      <div className="bg-white p-6 w-full max-w-3xl overflow-y-auto rounded-xl flex flex-col gap-4 max-h-[80vh] shadow-lg">
+        <div className="flex justify-between items-start">
+          <div>
+            <h1 className="text-2xl font-roboto font-semibold text-text-dark-gray">
+              Ajouter un restaurant
+            </h1>
+            <p className="text-sm text-text-light-gray">
+              Renseignez l’adresse, le nom et le téléphone.
+            </p>
+          </div>
           <button onClick={() => setShowCreateRestaurantModal(false)}>
-            <MdOutlineClose size={32} />
+            <MdOutlineClose size={28} />
           </button>
         </div>
-        <div className="h-6 text-center my-2">
-          {error && (
-            <p className="text-warning-red text-sm font-roboto font-semibold">
-              {error}
-            </p>
-          )}
-        </div>
-        <div className="mt-4   flex-1 ">
-          <div className="flex w-4/5  ">
-            <div className="ml-4 flex flex-col justify-between flex-1 w-full">
-              <div className="flex gap-2 items-center ">
-                <label
-                  htmlFor="description"
-                  className="text-text-dark-gray font-roboto font-semibold"
-                >
-                  Adresse
-                </label>
-                <div className="flex-1">
-                  <GooglePlacesAutocomplete
-                    apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
-                    className="border border-gray-300 rounded-md  w-full py-1 px-2 "
-                    apiOptions={{ language: "fr" }}
-                    selectProps={{
-                      address,
-                      onChange: setAddress,
-                    }}
-                  />
-                </div>
-              </div>
-              <div className=" flex gap-2 items-center w-full mt-4">
-                <label
-                  htmlFor="name"
-                  className="text-text-dark-gray font-roboto font-semibold"
-                >
-                  Nom
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  className="border border-gray-300 rounded-md flex-1 py-1 px-2 "
-                  onChange={(e) => setName(e.target.value)}
-                  value={name}
-                />
-              </div>
-              <div className="flex gap-2 items-center mt-4">
-                <label
-                  htmlFor="description"
-                  className="text-text-dark-gray font-roboto font-semibold"
-                >
-                  Numero de telephone
-                </label>
-                <input
-                  type="text"
-                  id="name"
-                  className="border border-gray-300 rounded-md flex-1 py-1 px-2 "
-                  onChange={(e) => setPhoneNumber(e.target.value)}
-                  value={phoneNumber}
-                />
-              </div>
+        {error && (
+          <div className="border border-warning-red bg-warning-red bg-opacity-10 text-warning-red text-sm rounded-md px-3 py-2">
+            {error}
+          </div>
+        )}
+        <div className="space-y-4 flex-1">
+          <div className="flex flex-col gap-1">
+            <label className="text-sm text-text-light-gray">Adresse</label>
+            <div className="flex-1 border border-gray-300 rounded-md px-1 py-1">
+              <GooglePlacesAutocomplete
+                apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}
+                apiOptions={{ language: "fr" }}
+                selectProps={{
+                  value: address,
+                  onChange: setAddress,
+                  placeholder: "Rechercher une adresse",
+                  styles: {
+                    control: (base) => ({
+                      ...base,
+                      border: "none",
+                      boxShadow: "none",
+                    }),
+                  },
+                }}
+              />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div className="flex flex-col gap-1">
+              <label className="text-sm text-text-light-gray">Nom</label>
+              <input
+                type="text"
+                className="border border-gray-300 rounded-md flex-1 py-2 px-3 focus:outline-none focus:border-pr"
+                onChange={(e) => setName(e.target.value)}
+                value={name}
+                placeholder="Nom du restaurant"
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-sm text-text-light-gray">
+                Numéro de téléphone
+              </label>
+              <input
+                type="text"
+                className="border border-gray-300 rounded-md flex-1 py-2 px-3 focus:outline-none focus:border-pr"
+                onChange={(e) => setPhoneNumber(e.target.value)}
+                value={phoneNumber}
+                placeholder="Ex: 06..."
+              />
             </div>
           </div>
         </div>
-        <div
-          className="w-full flex justify-end mt-8    "
-          onClick={createRestaurant}
-        >
-          <button className="bg-pr  rounded-md py-2 font-roboto font-semibold px-10">
+        <div className="w-full flex justify-end">
+          <button
+            className="bg-pr rounded-md py-2.5 font-roboto font-semibold px-8 text-white shadow-sm hover:brightness-95"
+            onClick={createRestaurant}
+          >
             Ajouter
           </button>
         </div>

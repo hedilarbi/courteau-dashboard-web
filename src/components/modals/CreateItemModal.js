@@ -5,11 +5,9 @@ import { MdAddAPhoto, MdOutlineClose } from "react-icons/md";
 import DropDown from "../DropDown";
 import Spinner from "../spinner/Spinner";
 import { getCategories } from "@/services/MenuItemServices";
-import { getToppings } from "@/services/ToppingsServices";
-import { getSizes } from "@/services/SizesServices";
+import { getSizesGroups } from "@/services/sizesGroupeServices";
+import { getToppingGroups } from "@/services/ToppingGroupsServices";
 
-import AddPriceModal from "./AddPriceModal";
-import AddToppingModal from "./AddToppingModal";
 import SuccessModal from "./SuccessModal";
 import FailModal from "./FailModal";
 import SpinnerModal from "./SpinnerModal";
@@ -22,15 +20,14 @@ const CreateItemModal = ({ setShowCreateItemModal, setMenuItems }) => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState(null);
-  const [customizations, setCustomizations] = useState([]);
-  const [sizes, setSizes] = useState([]);
-  const [toppings, setToppings] = useState([]);
+  const [toppingGroups, setToppingGroups] = useState([]);
+  const [selectedToppingGroup, setSelectedToppingGroup] = useState(null);
+  const [sizeGroups, setSizeGroups] = useState([]);
+  const [selectedSizeGroup, setSelectedSizeGroup] = useState(null);
   const [prices, setPrices] = useState([]);
   const [isLoading, setIsloading] = useState(true);
   const [categoriesNames, setCategoriesNames] = useState([]);
   const [error, setError] = useState(null);
-  const [showAddPriceModel, setShowAddPriceModel] = useState(false);
-  const [showAddToppingModel, setShowAddToppingModel] = useState(false);
   const [addingIsLoading, setAddingIsLoading] = useState(false);
   const [showSuccessModel, setShowSuccessModel] = useState(false);
   const [showFailModel, setShowFailModel] = useState(false);
@@ -38,8 +35,12 @@ const CreateItemModal = ({ setShowCreateItemModal, setMenuItems }) => {
 
   const fetchData = async () => {
     try {
-      const [categoriesResponse, toppingResponse, sizeResponse] =
-        await Promise.all([getCategories(), getToppings(), getSizes()]);
+      const [categoriesResponse, toppingGroupsResponse, sizeGroupsResponse] =
+        await Promise.all([
+          getCategories(),
+          getToppingGroups(),
+          getSizesGroups(),
+        ]);
 
       if (categoriesResponse?.status) {
         const list = [];
@@ -51,23 +52,32 @@ const CreateItemModal = ({ setShowCreateItemModal, setMenuItems }) => {
         console.error("Categories data not found:", categoriesResponse.message);
       }
 
-      if (sizeResponse?.status) {
-        setSizes(
-          sizeResponse?.data.map((size) => ({
-            label: size.name,
-            value: size.name,
-          }))
+      if (toppingGroupsResponse?.status) {
+        const list =
+          toppingGroupsResponse?.data?.map((group) => ({
+            value: group._id,
+            label: group.name,
+          })) || [];
+        setToppingGroups(list);
+      } else {
+        console.error(
+          "Topping groups data not found:",
+          toppingGroupsResponse?.message
         );
       }
-
-      if (toppingResponse?.status) {
-        const list = [];
-        toppingResponse?.data.map((item) =>
-          list.push({ value: item._id, label: item.name })
-        );
-        setToppings(list);
+      if (sizeGroupsResponse?.status) {
+        const options =
+          sizeGroupsResponse.data?.map((group) => ({
+            value: group._id,
+            label: group.name,
+            sizes: group.sizes || [],
+          })) || [];
+        setSizeGroups(options);
       } else {
-        console.error("topping data not found:", toppingResponse.message);
+        console.error(
+          "Size groups data not found:",
+          sizeGroupsResponse?.message
+        );
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -93,47 +103,59 @@ const CreateItemModal = ({ setShowCreateItemModal, setMenuItems }) => {
     reader.readAsDataURL(file);
   };
 
-  const deletePrice = (index) => {
-    const newPrices = prices.filter((price, i) => i !== index);
-    setPrices(newPrices);
-  };
-
-  const deleteCustomization = (index) => {
-    const newCustomizations = customizations.filter((custo, i) => i !== index);
-    setCustomizations(newCustomizations);
+  const handleSelectToppingGroup = (group) => {
+    setError(null);
+    setSelectedToppingGroup(group);
   };
 
   const createItem = async () => {
+    setError(null);
     if (!image) {
       setError("Image de l'article manquante");
-      setShowFailModel(true);
+
       return;
     }
 
     if (name.length < 1) {
       setError("Nom de l'article manquant");
-      setShowFailModel(true);
+
+      return;
+    }
+    if (!selectedSizeGroup) {
+      setError("Selectionner un groupe de tailles");
+
       return;
     }
     if (prices.length < 1) {
       setError("Ajouter au moin un prix ");
-      setShowFailModel(true);
+
+      return;
+    }
+    if (prices.some((p) => p.price === "" || Number(p.price) <= 0)) {
+      setError("Ajouter un prix valide pour chaque taille");
+
       return;
     }
     if (description.length < 1) {
       setError("Description de l'article manquante");
-      setShowFailModel(true);
+
       return;
     }
     if (!category) {
       setError("Selectionner une categorie");
-      setShowFailModel(true);
+
+      return;
+    }
+    if (!selectedToppingGroup) {
+      setError("Selectionner un groupe de personnalisation");
+
       return;
     }
 
-    const customization = customizations.map((item) => {
-      return item.value;
-    });
+    const formattedPrices = prices.map((price) => ({
+      size: price.size,
+      price: Number(price.price),
+    }));
 
     const formData = new FormData();
 
@@ -141,8 +163,8 @@ const CreateItemModal = ({ setShowCreateItemModal, setMenuItems }) => {
     formData.append("name", name);
     formData.append("description", description);
     formData.append("category", category.value);
-    formData.append("customization", JSON.stringify(customization));
-    formData.append("prices", JSON.stringify(prices));
+    formData.append("customizationGroup", selectedToppingGroup.value);
+    formData.append("prices", JSON.stringify(formattedPrices));
 
     setAddingIsLoading(true);
     try {
@@ -155,7 +177,7 @@ const CreateItemModal = ({ setShowCreateItemModal, setMenuItems }) => {
         throw new Error("HTTP error " + response.status);
       }
       const data = await response.json();
-      console.log(data);
+
       setMenuItems((prev) => [data, ...prev]);
 
       setShowSuccessModel(true);
@@ -165,6 +187,23 @@ const CreateItemModal = ({ setShowCreateItemModal, setMenuItems }) => {
     } finally {
       setAddingIsLoading(false);
     }
+  };
+
+  const handleSelectSizeGroup = (group) => {
+    setError(null);
+    setSelectedSizeGroup(group);
+    const mappedPrices = (group?.sizes || []).map((size) => {
+      const existing = prices.find((p) => p.size === size.name);
+      return { size: size.name, price: existing?.price || "" };
+    });
+    setPrices(mappedPrices);
+  };
+
+  const handlePriceChange = (index, value) => {
+    setError(null);
+    setPrices((prev) =>
+      prev.map((price, i) => (i === index ? { ...price, price: value } : price))
+    );
   };
   useEffect(() => {
     if (showSuccessModel) {
@@ -185,181 +224,186 @@ const CreateItemModal = ({ setShowCreateItemModal, setMenuItems }) => {
       return () => clearTimeout(timer);
     }
   }, [showFailModel]);
+
   return (
     <ModalWrapper zindex={10}>
-      {showAddPriceModel && (
-        <AddPriceModal
-          sizes={sizes}
-          setPrices={setPrices}
-          prices={prices}
-          setShowAddPriceModel={setShowAddPriceModel}
-        />
-      )}
       {showSuccessModel && <SuccessModal />}
       {showFailModel && <FailModal error={error} />}
       {addingIsLoading && <SpinnerModal />}
 
-      {showAddToppingModel && (
-        <AddToppingModal
-          toppings={toppings}
-          setCustomizations={setCustomizations}
-          customizations={customizations}
-          setShowAddToppingModel={setShowAddToppingModel}
-        />
-      )}
       {isLoading ? (
-        <div className="w-2/3 bg-white p-4 h-4/5 overflow-y-auto rounded-md flex items-center justify-center">
+        <div className="w-[90vw] bg-white p-6 max-h-[85vh] overflow-y-auto rounded-lg flex items-center justify-center shadow-lg">
           <Spinner />
         </div>
       ) : (
-        <div className="w-2/3 bg-white p-4 h-4/5 overflow-y-auto rounded-md flex flex-col ">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-roboto font-semibold text-text-dark-gray">
-              Ajouter un article
-            </h1>
+        <div className="w-[90vw]  bg-white p-6 max-h-[95vh]  rounded-lg flex flex-col shadow-lg gap-4">
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-2xl font-roboto font-semibold text-text-dark-gray">
+                Ajouter un article
+              </h1>
+              <p className="text-sm text-text-light-gray">
+                Ajoutez l&apos;image, les infos, puis associez prix et un groupe
+                de personnalisation.
+              </p>
+            </div>
             <button onClick={() => setShowCreateItemModal(false)}>
-              <MdOutlineClose size={32} />
+              <MdOutlineClose size={28} />
             </button>
           </div>
-          <div className="h-6 text-center my-4">
-            {error && (
-              <p className="text-warning-red text-sm font-roboto font-semibold">
-                {error}
-              </p>
-            )}
-          </div>
-          <div className="mt-4   flex-1 ">
-            <div className="flex w-4/5  ">
-              <div onClick={handleImageClick}>
-                <input
-                  type="file"
-                  onChange={handleImageChange}
-                  accept="image/*"
-                  className="hidden"
-                  ref={inputImageRef}
-                />
-                {imagePreview ? (
-                  <Image
-                    src={imagePreview}
-                    alt="preview"
-                    width={200}
-                    height={200}
-                    className="w-40 h-40 object-cover rounded-md"
+
+          {error && (
+            <div className="border border-warning-red bg-warning-red bg-opacity-10 text-warning-red text-sm rounded-md px-3 py-2">
+              {error}
+            </div>
+          )}
+
+          <div className="flex flex-col lg:flex-row gap-6 flex-1 min-h-0 h-[calc(95vh-200px)] overflow-y-auto ">
+            <div className="lg:w-1/2 flex flex-col gap-4 pr-1 min-h-0">
+              <div className="flex flex-col gap-2">
+                <label
+                  htmlFor="image"
+                  className="text-text-dark-gray font-roboto font-semibold"
+                >
+                  Image
+                </label>
+                <div
+                  className="flex items-center gap-3 border border-dashed border-gray-300 rounded-md p-3 hover:border-pr cursor-pointer"
+                  onClick={handleImageClick}
+                >
+                  <input
+                    type="file"
+                    onChange={handleImageChange}
+                    accept="image/*"
+                    className="hidden"
+                    ref={inputImageRef}
                   />
-                ) : (
-                  <div className="w-40 h-40 bg-gray-200 rounded-md flex justify-center items-center">
-                    <MdAddAPhoto size={44} />
+                  {imagePreview ? (
+                    <Image
+                      src={imagePreview}
+                      alt="preview"
+                      width={120}
+                      height={120}
+                      className="object-cover w-32 h-32 rounded-md"
+                    />
+                  ) : (
+                    <div className="w-32 h-32 bg-gray-100 rounded-md flex justify-center items-center">
+                      <MdAddAPhoto size={28} className="text-text-light-gray" />
+                    </div>
+                  )}
+                  <div className="flex-1">
+                    <p className="text-sm text-text-dark-gray font-roboto font-semibold">
+                      Cliquez pour importer
+                    </p>
+                    <p className="text-xs text-text-light-gray">JPG ou PNG</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label
+                  htmlFor="name"
+                  className="text-text-dark-gray font-roboto font-semibold"
+                >
+                  Nom
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  className="border border-gray-300 rounded-md w-full py-2 px-3 focus:outline-none focus:border-pr"
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Ex: Pizza Margherita"
+                />
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <label
+                  htmlFor="description"
+                  className="text-text-dark-gray font-roboto font-semibold"
+                >
+                  Description
+                </label>
+                <textarea
+                  id="description"
+                  className="border border-gray-300 rounded-md w-full py-2 px-3 focus:outline-none focus:border-pr"
+                  rows={3}
+                  onChange={(e) => setDescription(e.target.value)}
+                  placeholder="Décrivez brièvement l'article."
+                />
+              </div>
+            </div>
+
+            <div className="lg:w-1/2 flex flex-col gap-4 pl-0 lg:pl-1 min-h-0 z-10">
+              <div className="flex flex-col gap-2">
+                <label
+                  htmlFor="categorie"
+                  className="text-text-dark-gray font-roboto font-semibold"
+                >
+                  Catégorie
+                </label>
+
+                <DropDown
+                  value={category}
+                  setter={setCategory}
+                  list={categoriesNames}
+                  placeholder={"Selectionner une categorie"}
+                />
+              </div>
+              <div className="flex flex-col gap-2">
+                <h2 className="text-lg font-roboto font-semibold text-text-dark-gray">
+                  Prix
+                </h2>
+                <DropDown
+                  value={selectedSizeGroup}
+                  setter={handleSelectSizeGroup}
+                  list={sizeGroups}
+                  placeholder={"Selectionner un groupe de tailles"}
+                />
+                {selectedSizeGroup && (
+                  <div className="mt-2 flex flex-col gap-2 bg-gray-50 border border-gray-200 rounded-md p-3">
+                    {prices.map((price, index) => (
+                      <div
+                        key={`${selectedSizeGroup.value}-${price.size}`}
+                        className="flex items-center gap-3"
+                      >
+                        <span className="min-w-[120px] text-sm font-roboto font-semibold text-text-dark-gray">
+                          {price.size}
+                        </span>
+                        <input
+                          type="number"
+                          min={0}
+                          value={price.price}
+                          onChange={(e) =>
+                            handlePriceChange(index, e.target.value)
+                          }
+                          placeholder="Prix"
+                          className="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-pr"
+                        />
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
 
-              <div className="ml-4 flex flex-col justify-between flex-1">
-                <div className=" flex gap-2 items-center ">
-                  <label
-                    htmlFor="name"
-                    className="text-text-dark-gray font-roboto font-semibold"
-                  >
-                    Nom
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    className="border border-gray-300 rounded-md w-full py-1 px-2 "
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </div>
-                <div className="flex gap-2 ">
-                  <label
-                    htmlFor="description"
-                    className="text-text-dark-gray font-roboto font-semibold"
-                  >
-                    Description
-                  </label>
-                  <textarea
-                    id="description"
-                    className="w border border-gray-300 rounded-md w-full py-1 px-2"
-                    onChange={(e) => setDescription(e.target.value)}
-                  />
-                </div>
-                <div className="flex gap-2 items-center">
-                  <label
-                    htmlFor="categorie"
-                    className="text-text-dark-gray font-roboto font-semibold"
-                  >
-                    Categorie
-                  </label>
-
-                  <DropDown
-                    value={category}
-                    setter={setCategory}
-                    list={categoriesNames}
-                    placeholder={"Selectionner une categorie"}
-                  />
-                </div>
-              </div>
-            </div>
-            <div className="mt-4">
-              <h2 className="text-xl font-roboto font-semibold text-text-dark-gray">
-                Prix
-              </h2>
-              <div className="flex gap-2 mt-4 flex-wrap">
-                {prices.map((price, index) => (
-                  <div
-                    key={index}
-                    className="border border-pr rounded-md py-1 px-2 flex items-center gap-2 font-roboto"
-                  >
-                    <p className="font-bold">{price.size} :</p>
-                    <p>{parseFloat(price.price).toFixed(2)} $</p>
-                    <button
-                      className="text-warning-red"
-                      onClick={() => deletePrice(index)}
-                    >
-                      <MdOutlineClose size={24} />
-                    </button>
-                  </div>
-                ))}
-                <button
-                  className="bg-pr rounded-md font-roboto py-1 px-10 font-semibold"
-                  onClick={() => setShowAddPriceModel(true)}
-                >
-                  Ajouter
-                </button>
-              </div>
-            </div>
-            <div className="mt-8">
-              <h2 className="text-xl font-roboto font-semibold text-text-dark-gray">
-                Personnalisations
-              </h2>
-              <div className="flex gap-2 mt-4 flex-wrap">
-                {customizations.map((custo, index) => (
-                  <div
-                    key={index}
-                    className="border border-pr rounded-md py-1 px-2 flex items-center gap-2 font-roboto"
-                  >
-                    <p className="font-bold">{custo.label} </p>
-
-                    <button
-                      className="text-warning-red"
-                      onClick={() => deleteCustomization(index)}
-                    >
-                      <MdOutlineClose size={24} />
-                    </button>
-                  </div>
-                ))}
-                <button
-                  className="bg-pr rounded-md font-roboto py-1 px-10 font-semibold"
-                  onClick={() => setShowAddToppingModel(true)}
-                >
-                  Ajouter
-                </button>
+              <div className="flex flex-col gap-2">
+                <h2 className="text-lg font-roboto font-semibold text-text-dark-gray">
+                  Personnalisations
+                </h2>
+                <DropDown
+                  value={selectedToppingGroup}
+                  setter={handleSelectToppingGroup}
+                  list={toppingGroups}
+                  placeholder={"Selectionner un groupe de personnalisation"}
+                />
               </div>
             </div>
           </div>
-          <div
-            className="w-full flex justify-end mt-8    "
-            onClick={createItem}
-          >
-            <button className="bg-pr  rounded-md py-2 font-roboto font-semibold px-10">
+
+          <div className="w-full flex justify-end pt-3 border-t border-gray-100">
+            <button
+              className="bg-pr rounded-md py-2.5 font-roboto font-semibold px-8 text-white shadow-sm hover:brightness-95"
+              onClick={createItem}
+            >
               Ajouter
             </button>
           </div>

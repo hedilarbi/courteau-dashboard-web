@@ -74,68 +74,89 @@ const CreateCategoryModal = ({ setShowCreateCategoryModal, setCategories }) => {
     <ModalWrapper zindex={10}>
       {isLoading && <SpinnerModal />}
       {showSuccessModel && <SuccessModal />}
-      <div className=" bg-white p-4 overflow-y-auto rounded-md flex flex-col w-2/5 ">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-roboto font-semibold text-text-dark-gray">
-            Ajouter une categorie
-          </h1>
+      <div className="bg-white p-5 overflow-y-auto rounded-md flex flex-col w-full max-w-xl shadow-lg">
+        <div className="flex justify-between items-start gap-3">
+          <div>
+            <h1 className="text-2xl font-roboto font-semibold text-text-dark-gray">
+              Ajouter une catégorie
+            </h1>
+            <p className="text-sm text-text-light-gray">
+              Ajoutez une image et un nom pour créer une nouvelle catégorie.
+            </p>
+          </div>
           <button onClick={() => setShowCreateCategoryModal(false)}>
-            <MdOutlineClose size={32} />
+            <MdOutlineClose size={28} />
           </button>
         </div>
-        <div className="h-6 text-center my-4">
-          {error && (
-            <p className="text-warning-red text-sm font-roboto font-semibold">
-              {error}
-            </p>
-          )}
-        </div>
-        <div className="flex items-center ">
-          <div onClick={handleImageClick}>
-            <input
-              type="file"
-              onChange={handleImageChange}
-              accept="image/*"
-              className="hidden"
-              ref={inputImageRef}
-            />
-            {imageReader ? (
-              <Image
-                src={imageReader}
-                alt="preview"
-                width={200}
-                height={200}
-                className="w-24 h-24 object-cover rounded-md"
-              />
-            ) : (
-              <div className="w-24 h-24 bg-gray-200 rounded-md flex justify-center items-center">
-                <MdAddAPhoto size={32} />
-              </div>
-            )}
-          </div>
 
-          <div className="ml-4 flex flex-col justify-between flex-1">
-            <div className=" flex gap-2 items-center ">
-              <label
-                htmlFor="name"
-                className="text-text-dark-gray font-roboto font-semibold"
-              >
-                Nom
-              </label>
+        {error && (
+          <div className="border border-warning-red bg-warning-red bg-opacity-10 text-warning-red text-sm rounded-md px-3 py-2 mt-4">
+            {error}
+          </div>
+        )}
+
+        <div className="flex flex-col gap-4 mt-4">
+          <div>
+            <p className="text-text-dark-gray font-roboto font-semibold mb-2">
+              Image
+            </p>
+            <div
+              onClick={handleImageClick}
+              className="border border-dashed border-gray-300 rounded-md p-4 flex items-center gap-3 cursor-pointer hover:border-pr"
+            >
               <input
-                type="text"
-                id="name"
-                className="border border-gray-300 rounded-md w-full py-1 px-2 "
-                onChange={(e) => setName(e.target.value)}
+                type="file"
+                onChange={handleImageChange}
+                accept="image/*"
+                className="hidden"
+                ref={inputImageRef}
               />
+              {imageReader ? (
+                <Image
+                  src={imageReader}
+                  alt="preview"
+                  width={120}
+                  height={120}
+                  className="w-24 h-24 object-cover rounded-md"
+                />
+              ) : (
+                <div className="w-24 h-24 bg-gray-100 rounded-md flex justify-center items-center">
+                  <MdAddAPhoto size={28} className="text-text-light-gray" />
+                </div>
+              )}
+              <div className="flex-1">
+                <p className="text-sm text-text-dark-gray font-roboto font-semibold">
+                  Cliquez pour importer une image
+                </p>
+                <p className="text-xs text-text-light-gray">
+                  JPG ou PNG, taille recommandée 400x300px.
+                </p>
+              </div>
             </div>
           </div>
+
+          <div className="flex flex-col gap-2">
+            <label
+              htmlFor="name"
+              className="text-text-dark-gray font-roboto font-semibold"
+            >
+              Nom
+            </label>
+            <input
+              type="text"
+              id="name"
+              className="border border-gray-300 rounded-md w-full py-2 px-3 focus:outline-none focus:border-pr"
+              onChange={(e) => setName(e.target.value)}
+              placeholder="Ex: Pizzas"
+            />
+          </div>
         </div>
-        <div
-          className="w-full flex justify-end mt-8    "
-          onClick={createCategory}
-        >
-          <button className="bg-pr  rounded-md py-2 font-roboto font-semibold px-10">
+
+        <div className="w-full flex justify-end mt-6">
+          <button
+            className="bg-pr rounded-md py-2.5 font-roboto font-semibold px-6 text-white shadow-sm hover:brightness-95"
+            onClick={createCategory}
+          >
             Ajouter
           </button>
         </div>

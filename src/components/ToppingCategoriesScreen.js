@@ -92,50 +92,66 @@ const ToppingCategoriesScreen = ({ data }) => {
       {isLoading && <SpinnerModal />}
       {showSuccessModel && <SuccessModal />}
       {showFailModel && <FailModal error={error} />}
-      <div className="mt-4 flex w-full justify-between">
-        <button
-          className="flex bg-pr items-center w-1/5 justify-center gap-3 rounded-md font-roboto font-bold py-3"
-          onClick={() => setShowCreateCategoryModal(true)}
-        >
-          <FaPlus />
-          Ajouter
-        </button>
-      </div>
-      <div className="flex-1 overflow-y-auto bg-white shadow-default mt-6">
-        {categories.length > 0 ? (
-          <ul>
-            {categories.map((category, index) => (
-              <li
-                key={category._id}
-                className={
-                  index % 2 === 0
-                    ? "bg-pr bg-opacity-70 flex items-center gap-10 px-5 py-4"
-                    : "bg-white flex items-center gap-10 px-5 py-4"
-                }
-              >
-                <p className="text-text-dark-gray font-roboto font-normal w-1/3 truncate flex-1">
-                  {category.name}
-                </p>
-
-                <button
-                  className="text-warning-red"
-                  onClick={() => {
-                    setSelectedCategory(category._id);
-                    setShowDeleteWarningModal(true);
-                  }}
-                >
-                  <FaTrash size={26} />
-                </button>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <div className="flex-col flex justify-center items-center w-full h-full ">
-            <h1 className="text-xl font-roboto font-semibold text-text-dark-gray ">
-              Aucune Categorie
-            </h1>
+      <div className="mt-4 flex flex-col gap-4 w-full">
+        <div className="bg-white rounded-xl shadow-default p-4 flex flex-col sm:flex-row sm:items-center sm:justify-between  gap-3">
+          <div>
+            <p className="text-lg font-semibold text-text-dark-gray">
+              Catégories de personnalisations
+            </p>
+            <p className="text-sm text-text-light-gray">
+              Structurez vos options par famille.
+            </p>
           </div>
-        )}
+          <div className="flex flex-wrap gap-2 ">
+            <button
+              className="flex bg-pr items-center justify-center gap-2 rounded-md font-roboto font-semibold py-2 px-4 text-white shadow-sm hover:brightness-95 transition"
+              onClick={() => setShowCreateCategoryModal(true)}
+            >
+              <FaPlus />
+              Ajouter
+            </button>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-default border border-gray-100 overflow-hidden">
+          <div className="overflow-x-auto">
+            <div className="min-w-[520px]">
+              <div className="grid grid-cols-[2fr,0.6fr] bg-gray-50 text-xs uppercase tracking-wide text-text-light-gray px-4 py-3">
+                <span>Nom</span>
+                <span className="text-right">Actions</span>
+              </div>
+              {categories.length > 0 ? (
+                <div className="max-h-[65vh] overflow-y-auto divide-y divide-gray-100">
+                  {categories.map((category) => (
+                    <div
+                      key={category._id}
+                      className="grid grid-cols-[2fr,0.6fr] items-center px-4 py-3 text-sm"
+                    >
+                      <p className="text-text-dark-gray font-semibold truncate">
+                        {category.name}
+                      </p>
+                      <div className="flex justify-end">
+                        <button
+                          className="text-warning-red hover:text-red-700"
+                          onClick={() => {
+                            setSelectedCategory(category._id);
+                            setShowDeleteWarningModal(true);
+                          }}
+                        >
+                          <FaTrash size={20} />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="py-10 text-center text-text-light-gray text-sm">
+                  Aucune catégorie enregistrée.
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </>
   );

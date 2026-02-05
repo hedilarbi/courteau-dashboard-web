@@ -175,7 +175,7 @@ const OrdersScreen = () => {
   }
 
   return (
-    <div className="bg-[#f5f5f5] h-screen overflow-y-auto ">
+    <div className="bg-[#f5f7fb] min-h-screen max-h-screen overflow-y-auto font-roboto">
       <ToastNotification
         type={toastData.type}
         message={toastData.message}
@@ -189,210 +189,223 @@ const OrdersScreen = () => {
         />
       )}
 
-      <div className="flex-1 p-5">
-        <div className="flex flex-row justify-between items-center">
-          <h1 className="font-bebas-neue text-4xl">Commandes</h1>
-
-          <div className="flex flex-row items-center mt-3">
-            <div className="bg-white flex flex-row w-[300px] items-center pb-1 pt-1 pl-1 border border-gray-300 rounded">
-              <FaMagnifyingGlass />
-              <input
-                className="font-lato-regular text-lg ml-1 flex-1 outline-none"
-                placeholder="Chercher par code"
-                onChange={(e) => setSearch(e.target.value)}
-                value={search}
-              />
-            </div>
-            <button
-              className="ml-3 bg-[#F7A600] px-3 py-2 rounded text-black"
-              onClick={fetchData}
-            >
-              Rechercher
-            </button>
-          </div>
-        </div>
-
-        <button
-          className="flex flex-row bg-[#F7A600] px-3 py-2 rounded justify-between items-center w-[140px] mt-3.5"
-          onClick={() => setShowFilters((prev) => !prev)}
-        >
-          <span className="font-lato-bold text-lg">Filtres</span>
-          {showFilters ? <FaChevronUp /> : <FaChevronDown />}
-        </button>
-
-        <div
-          className={`mt-5 flex flex-row items-center gap-10 ${
-            showFilters ? "flex" : "hidden"
-          }`}
-        >
-          <button
-            className={`px-5 py-2.5 rounded border ${
-              filter === "" ? "bg-[#F7A600]" : "bg-white"
-            }`}
-            onClick={() => setFilter("")}
-          >
-            <span className="font-lato-bold text-lg">Tout</span>
-          </button>
-          <button
-            className={`px-5 py-2.5 rounded border ${
-              filter === OrderStatus.READY ? "bg-[#F7A600]" : "bg-white"
-            }`}
-            onClick={() => setFilter(OrderStatus.READY)}
-          >
-            <span className="font-lato-bold text-lg">{OrderStatus.READY}</span>
-          </button>
-          <button
-            className={`px-5 py-2.5 rounded border ${
-              filter === OrderStatus.ON_GOING ? "bg-[#F7A600]" : "bg-white"
-            }`}
-            onClick={() => setFilter(OrderStatus.ON_GOING)}
-          >
-            <span className="font-lato-bold text-lg">
-              {OrderStatus.ON_GOING}
-            </span>
-          </button>
-          <button
-            className={`px-5 py-2.5 rounded border ${
-              filter === OrderStatus.IN_DELIVERY ? "bg-[#F7A600]" : "bg-white"
-            }`}
-            onClick={() => setFilter(OrderStatus.IN_DELIVERY)}
-          >
-            <span className="font-lato-bold text-lg">
-              {OrderStatus.IN_DELIVERY}
-            </span>
-          </button>
-          <button
-            className={`px-5 py-2.5 rounded border ${
-              filter === OrderStatus.DONE ? "bg-[#F7A600]" : "bg-white"
-            }`}
-            onClick={() => setFilter(OrderStatus.DONE)}
-          >
-            <span className="font-lato-bold text-lg">{OrderStatus.DONE}</span>
-          </button>
-        </div>
-
-        <div className={`mt-5 ${showFilters ? "block" : "hidden"}`}>
-          <select
-            className="h-10 w-[350px] border-2 border-[#F7A600] px-1.5 py-1 bg-[#F7A600] text-lg font-lato-regular"
-            value={selectedRestaurant.value}
-            onChange={(e) => {
-              const selected = restaurantList.find(
-                (r) => r.value === e.target.value
-              );
-              setSelectedRestaurant(
-                selected || { label: "Tous les restaurants", value: "" }
-              );
-            }}
-          >
-            {restaurantList.map((restaurant) => (
-              <option key={restaurant.value} value={restaurant.value}>
-                {restaurant.label}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="flex-1">
-          {orders.length > 0 ? (
-            <div className="w-full mt-4 border border-black overflow-y-auto h-[calc(100vh-250px)] ">
-              {orders.map((order, index) => (
-                <div
-                  key={order._id}
-                  className={`flex flex-row gap-12 items-center justify-between py-3 px-2.5 ${
-                    index % 2 ? "bg-transparent" : "bg-[rgba(247,166,0,0.3)]"
-                  }`}
-                >
-                  <span
-                    className={`font-lato-regular text-lg w-[10%] ${setOrderStatusColor(
-                      order.status
-                    )}`}
-                  >
-                    {order.status}
+      <div className="max-w-6xl mx-auto px-5 py-6 flex flex-col gap-4">
+        <div className="bg-gradient-to-r from-pr to-[#111827] text-white rounded-2xl shadow-lg p-6 flex flex-col gap-3">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="text-3xl font-semibold">Commandes</h1>
+                <div className="flex flex-wrap gap-2">
+                  <span className="bg-white/15 border border-white/20 text-sm px-3 py-1 rounded-full">
+                    {orders.length} commande(s)
                   </span>
-                  <span className="font-lato-regular text-lg w-[15%]">
-                    {order.code}
-                  </span>
-                  <span className="font-lato-regular text-lg w-[10%]">
-                    {order.type === "delivery" ? "Livraison" : "Emporter"}
-                  </span>
-                  <span className="font-lato-regular text-lg w-[10%]">
-                    {order.total_price.toFixed(2)} $
-                  </span>
-                  <span className="font-lato-regular text-lg flex-1">
-                    {dateToDDMMYYYYHHMM(order.createdAt)}
-                  </span>
-                  <button
-                    className="flex justify-center items-center"
-                    onClick={() => router.push(`/commandes/${order._id}`)}
-                  >
-                    <HiMiniPencil color="#2AB2DB" size={24} />
-                  </button>
-                  <button
-                    className="flex justify-center items-center"
-                    onClick={() => handleShowDeleteWarning(order._id)}
-                  >
-                    <FaTrash color="#F31A1A" size={24} />
-                  </button>
+                  {selectedRestaurant.label && (
+                    <span className="bg-white/15 border border-white/20 text-sm px-3 py-1 rounded-full">
+                      {selectedRestaurant.label}
+                    </span>
+                  )}
                 </div>
-              ))}
+              </div>
+              <p className="text-sm opacity-90 mt-1">
+                Filtrez, recherchez et gérez vos commandes en cours.
+              </p>
             </div>
-          ) : (
-            <div className="bg-white flex-1 mt-5 rounded-xl flex justify-center items-center h-[calc(100vh-250px)]">
-              <h2 className="font-lato-bold text-2xl">Aucune Commande</h2>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <div className="bg-white/15 border border-white/25 rounded-md px-3 py-2 flex items-center gap-2 backdrop-blur">
+                <FaMagnifyingGlass size={16} />
+                <input
+                  className="bg-transparent placeholder-white/70 text-sm focus:outline-none w-48"
+                  placeholder="Chercher par code"
+                  onChange={(e) => setSearch(e.target.value)}
+                  value={search}
+                />
+              </div>
+              <button
+                className="bg-white text-[#111827] font-semibold rounded-md px-4 py-2 shadow-sm hover:brightness-95 transition"
+                onClick={fetchData}
+              >
+                Rechercher
+              </button>
             </div>
-          )}
-        </div>
-
-        <div className="flex flex-row justify-center">
-          <span className="font-lato-regular text-lg">
-            {"Page " + page + (pages > 0 ? "/" + pages : "")}
-          </span>
-        </div>
-
-        <div className="mt-4 flex items-center justify-between">
-          <div>
-            <button
-              onClick={() => setPage((prev) => prev - 1)}
-              className={`px-3 py-2 rounded ${
-                page <= 1 ? "bg-gray-500" : "bg-[#F7A600]"
-              }`}
-              disabled={page <= 1}
-            >
-              <span className="text-white">Précédent</span>
-            </button>
           </div>
+        </div>
+
+        <div className="mt-2 flex flex-col sm:flex-row items-center justify-between gap-3 text-sm">
+          <button
+            onClick={() => setPage((prev) => prev - 1)}
+            className={`px-4 py-2 rounded-md font-semibold ${
+              page <= 1
+                ? "bg-gray-200 text-text-light-gray cursor-not-allowed"
+                : "bg-pr text-white hover:brightness-95"
+            }`}
+            disabled={page <= 1}
+          >
+            Précédent
+          </button>
 
           {pages > 0 && (
-            <div className="flex flex-row items-center">
+            <div className="flex items-center gap-2">
               <input
-                className="font-lato-regular text-lg w-24 border border-gray-300 rounded px-1.5 py-1"
-                placeholder="Page"
+                className="font-lato-regular text-sm w-24 border border-gray-300 rounded px-2 py-2 focus:outline-none focus:border-pr"
+                placeholder="Aller à"
                 onChange={(e) => setNavigaTo(e.target.value)}
                 value={navigaTo}
                 type="number"
+                min={1}
               />
               <button
-                className="ml-3 bg-[#F7A600] px-3 py-2 rounded text-black"
+                className="bg-white border border-gray-300 text-text-dark-gray px-3 py-2 rounded-md hover:border-pr"
                 onClick={() => {
                   setPage(parseInt(navigaTo));
                   setNavigaTo("");
                 }}
               >
-                Rechercher
+                Aller
               </button>
+              <span className="font-lato-regular text-lg text-text-dark-gray">
+                {"Page " + page + (pages > 0 ? "/" + pages : "")}
+              </span>
             </div>
           )}
 
-          <div>
+          <button
+            onClick={() => setPage((prev) => prev + 1)}
+            className={`px-4 py-2 rounded-md font-semibold ${
+              page >= pages
+                ? "bg-gray-200 text-text-light-gray cursor-not-allowed"
+                : "bg-pr text-white hover:brightness-95"
+            }`}
+            disabled={page >= pages}
+          >
+            Suivant
+          </button>
+        </div>
+        <div className="bg-white rounded-xl shadow-default p-5 flex flex-col gap-4">
+          <div className="flex flex-col gap-3">
             <button
-              onClick={() => setPage((prev) => prev + 1)}
-              className={`px-3 py-2 rounded ${
-                page >= pages ? "bg-gray-500" : "bg-[#F7A600]"
-              }`}
-              disabled={page >= pages}
+              className="inline-flex items-center gap-2 text-sm font-semibold text-pr"
+              onClick={() => setShowFilters((prev) => !prev)}
             >
-              <span className="text-white">Suivant</span>
+              <span>Filtres</span>
+              {showFilters ? <FaChevronUp /> : <FaChevronDown />}
             </button>
+
+            {showFilters && (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="flex flex-wrap gap-2">
+                  {[
+                    { label: "Tout", value: "" },
+                    { label: OrderStatus.READY, value: OrderStatus.READY },
+                    {
+                      label: OrderStatus.ON_GOING,
+                      value: OrderStatus.ON_GOING,
+                    },
+                    {
+                      label: OrderStatus.IN_DELIVERY,
+                      value: OrderStatus.IN_DELIVERY,
+                    },
+                    { label: OrderStatus.DONE, value: OrderStatus.DONE },
+                  ].map((opt) => (
+                    <button
+                      key={opt.value || "all"}
+                      className={`px-3 py-1.5 rounded-full text-sm border ${
+                        filter === opt.value
+                          ? "bg-pr text-white border-pr"
+                          : "bg-white text-text-dark-gray border-gray-200"
+                      }`}
+                      onClick={() => setFilter(opt.value)}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div>
+                  <label className="block text-xs text-text-light-gray mb-1">
+                    Restaurant
+                  </label>
+                  <select
+                    className="h-10 w-full md:w-80 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-pr bg-white"
+                    value={selectedRestaurant.value}
+                    onChange={(e) => {
+                      const selected = restaurantList.find(
+                        (r) => r.value === e.target.value
+                      );
+                      setSelectedRestaurant(
+                        selected || { label: "Tous les restaurants", value: "" }
+                      );
+                    }}
+                  >
+                    {restaurantList.map((restaurant) => (
+                      <option key={restaurant.value} value={restaurant.value}>
+                        {restaurant.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="border border-gray-100 rounded-lg overflow-hidden shadow-sm">
+            <div className="grid grid-cols-12 bg-gray-50 text-xs font-semibold uppercase tracking-wide text-text-light-gray px-4 py-3">
+              <span className="col-span-2">Statut</span>
+              <span className="col-span-2">Code</span>
+              <span className="col-span-2">Type</span>
+              <span className="col-span-2 ">Total</span>
+              <span className="col-span-3">Créée le</span>
+              <span className="col-span-1 text-right">Actions</span>
+            </div>
+            {orders.length > 0 ? (
+              <div className="divide-y divide-gray-100 h-[calc(100vh-340px)] overflow-y-auto">
+                {orders.map((order) => (
+                  <div
+                    key={order._id}
+                    className="grid grid-cols-12 items-center px-4 py-3 hover:bg-gray-50 transition"
+                  >
+                    <span
+                      className={`col-span-2 text-sm font-semibold ${setOrderStatusColor(
+                        order.status
+                      )}`}
+                    >
+                      {order.status}
+                    </span>
+                    <span className="col-span-2 text-sm font-medium text-text-dark-gray">
+                      {order.code}
+                    </span>
+                    <span className="col-span-2 text-sm text-text-dark-gray">
+                      {order.type === "delivery" ? "Livraison" : "Emporter"}
+                    </span>
+                    <span className="col-span-2 text-sm  font-semibold text-text-dark-gray ">
+                      {order.total_price.toFixed(2)} $
+                    </span>
+                    <span className="col-span-3 text-sm text-text-light-gray">
+                      {dateToDDMMYYYYHHMM(order.createdAt)}
+                    </span>
+                    <div className="col-span-1 flex justify-end gap-2">
+                      <button
+                        className="p-2 rounded-md bg-pr/10 text-pr hover:bg-pr/20 transition"
+                        onClick={() => router.push(`/commandes/${order._id}`)}
+                        aria-label="Voir la commande"
+                      >
+                        <HiMiniPencil size={18} />
+                      </button>
+                      <button
+                        className="p-2 rounded-md bg-warning-red/10 text-warning-red hover:bg-warning-red/20 transition"
+                        onClick={() => handleShowDeleteWarning(order._id)}
+                        aria-label="Supprimer la commande"
+                      >
+                        <FaTrash size={16} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="py-10 text-center text-text-light-gray text-sm">
+                Aucune commande trouvée.
+              </div>
+            )}
           </div>
         </div>
       </div>

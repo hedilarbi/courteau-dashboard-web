@@ -159,138 +159,165 @@ const CreateOfferModal = ({ setShowCreateOfferModal, setOffers }) => {
       {addingIsLoading && <SpinnerModal />}
 
       {isLoading ? (
-        <div className="w-2/3 bg-white p-4 h-4/5 overflow-y-auto rounded-md flex items-center justify-center">
+        <div className="w-[90vw] max-w-3xl bg-white p-6 max-h-[90vh] overflow-y-auto rounded-2xl flex items-center justify-center shadow-lg">
           <Spinner />
         </div>
       ) : (
-        <div className="w-2/3 bg-white p-4 h-4/5 overflow-y-auto rounded-md flex flex-col ">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-roboto font-semibold text-text-dark-gray">
-              Ajouter une offre
-            </h1>
-            <button onClick={() => setShowCreateOfferModal(false)}>
-              <MdOutlineClose size={32} />
+        <div className="w-[90vw] max-w-3xl bg-white p-6 max-h-[90vh] overflow-y-auto rounded-2xl flex flex-col gap-4 shadow-lg">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-text-light-gray">
+                Offres
+              </p>
+              <h1 className="text-2xl font-roboto font-semibold text-text-dark-gray">
+                Ajouter une offre
+              </h1>
+              <p className="text-sm text-text-light-gray">
+                Téléchargez une image, renseignez les infos et sélectionnez les
+                articles inclus.
+              </p>
+            </div>
+            <button
+              className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition"
+              onClick={() => setShowCreateOfferModal(false)}
+            >
+              <MdOutlineClose size={20} />
             </button>
           </div>
-          <div className="h-6 text-center my-4">
-            {error && (
-              <p className="text-warning-red text-sm font-roboto font-semibold">
-                {error}
-              </p>
-            )}
-          </div>
-          <div className="mt-4   flex-1 ">
-            <div className="flex w-4/5  ">
-              <div onClick={handleImageClick}>
-                <input
-                  type="file"
-                  onChange={handleImageChange}
-                  accept="image/*"
-                  className="hidden"
-                  ref={inputImageRef}
-                />
+
+          {error && (
+            <div className="border border-warning-red bg-warning-red bg-opacity-10 text-warning-red text-sm rounded-md px-3 py-2">
+              {error}
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-[160px,1fr] gap-4">
+            <div
+              onClick={handleImageClick}
+              className="relative group cursor-pointer"
+            >
+              <input
+                type="file"
+                onChange={handleImageChange}
+                accept="image/*"
+                className="hidden"
+                ref={inputImageRef}
+              />
+              <div className="h-40 w-full md:w-40 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50 flex items-center justify-center overflow-hidden">
                 {imagePreview ? (
                   <Image
                     src={imagePreview}
                     alt="preview"
-                    width={200}
-                    height={200}
-                    className="w-40 h-40 object-cover rounded-md"
+                    width={160}
+                    height={160}
+                    className="h-full w-full object-cover"
                   />
                 ) : (
-                  <div className="w-40 h-40 bg-gray-200 rounded-md flex justify-center items-center">
-                    <MdAddAPhoto size={44} />
+                  <div className="flex flex-col items-center text-text-light-gray gap-2">
+                    <MdAddAPhoto size={28} />
+                    <p className="text-xs text-center px-2">
+                      Cliquez pour ajouter une image
+                    </p>
                   </div>
                 )}
               </div>
-
-              <div className="ml-4 flex flex-col justify-between flex-1">
-                <div className=" flex gap-2 items-center ">
-                  <label
-                    htmlFor="name"
-                    className="text-text-dark-gray font-roboto font-semibold"
-                  >
-                    Nom
-                  </label>
-                  <input
-                    type="text"
-                    id="name"
-                    className="border border-gray-300 rounded-md w-full py-1 px-2 "
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </div>
-                <div className="flex gap-2 items-center">
-                  <label
-                    htmlFor="description"
-                    className="text-text-dark-gray font-roboto font-semibold"
-                  >
-                    prix
-                  </label>
-                  <input
-                    type="number"
-                    id="name"
-                    className="border border-gray-300 rounded-md w-full py-1 px-2 "
-                    onChange={(e) => setPrice(e.target.value)}
-                    value={price}
-                  />
-                </div>
-                <div className="flex gap-2 items-center">
-                  <label
-                    htmlFor="categorie"
-                    className="text-text-dark-gray font-roboto font-semibold"
-                  >
-                    date d&apos;expiration
-                  </label>
-
-                  <DatePicker
-                    selected={expireDate}
-                    onChange={(date) => setExpireDate(date)}
-                    className="border-2 border-pr rounded-md w-full py-1 px-2  "
-                  />
-                </div>
-              </div>
             </div>
-            <div className="mt-4">
-              <h2 className="text-xl font-roboto font-semibold text-text-dark-gray">
-                Articles
-              </h2>
-              <div className="flex gap-2 mt-4 flex-wrap">
-                {items.map((item, index) => (
-                  <div
-                    key={index}
-                    className="border border-pr rounded-md py-1 px-2 flex items-center gap-2 font-roboto"
-                  >
-                    <p className="font-bold">
-                      {item.item.label}
-                      <span className="font-medium text-text-light-gray mx-2">
-                        ({item.size})
-                      </span>
-                      x
-                    </p>
-                    <p> {item.quantity}</p>
-                    <button
-                      className="text-warning-red"
-                      onClick={() => deleteItem(index)}
-                    >
-                      <MdOutlineClose size={24} />
-                    </button>
-                  </div>
-                ))}
-                <button
-                  className="bg-pr rounded-md font-roboto py-1 px-10 font-semibold"
-                  onClick={() => setShowAddItemModal(true)}
+
+            <div className="grid grid-cols-1 gap-3">
+              <div className="flex flex-col gap-1">
+                <label
+                  htmlFor="name"
+                  className="text-sm font-semibold text-text-dark-gray"
                 >
-                  Ajouter
-                </button>
+                  Nom
+                </label>
+                <input
+                  type="text"
+                  id="name"
+                  className="border border-gray-300 rounded-md w-full py-2 px-3 text-sm focus:outline-none focus:border-pr"
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Ex: Menu Duo"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label
+                  htmlFor="price"
+                  className="text-sm font-semibold text-text-dark-gray"
+                >
+                  Prix
+                </label>
+                <input
+                  type="number"
+                  id="price"
+                  className="border border-gray-300 rounded-md w-full py-2 px-3 text-sm focus:outline-none focus:border-pr"
+                  onChange={(e) => setPrice(e.target.value)}
+                  value={price}
+                  min={0}
+                />
+              </div>
+
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-semibold text-text-dark-gray">
+                  Date d&apos;expiration
+                </label>
+                <DatePicker
+                  selected={expireDate}
+                  onChange={(date) => setExpireDate(date)}
+                  className="border border-gray-300 rounded-md w-full py-2 px-3 text-sm focus:outline-none focus:border-pr"
+                />
               </div>
             </div>
           </div>
-          <div
-            className="w-full flex justify-end mt-8    "
-            onClick={createItem}
-          >
-            <button className="bg-pr  rounded-md py-2 font-roboto font-semibold px-10">
-              Ajouter
+
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-roboto font-semibold text-text-dark-gray">
+                Articles
+              </h2>
+              <button
+                className="inline-flex items-center justify-center bg-pr text-white rounded-md px-4 py-2 text-sm font-semibold shadow-sm hover:brightness-95 transition"
+                onClick={() => setShowAddItemModal(true)}
+              >
+                Ajouter
+              </button>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {items.length ? (
+                items.map((item, index) => (
+                  <div
+                    key={index}
+                    className="bg-gray-50 border border-gray-200 rounded-full px-3 py-1.5 flex items-center gap-2 text-sm"
+                  >
+                    <span className="font-semibold text-text-dark-gray">
+                      {item.item.label}
+                    </span>
+                    <span className="text-text-light-gray">({item.size})</span>
+                    <span className="font-semibold text-text-dark-gray">
+                      x{item.quantity}
+                    </span>
+                    <button
+                      className="text-warning-red hover:text-red-700"
+                      onClick={() => deleteItem(index)}
+                    >
+                      <MdOutlineClose size={16} />
+                    </button>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-text-light-gray">
+                  Ajoutez un ou plusieurs articles à l&apos;offre.
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="w-full flex justify-end pt-2">
+            <button
+              className="bg-pr text-white rounded-md py-2.5 px-8 font-roboto font-semibold shadow-sm hover:brightness-95 transition"
+              onClick={createItem}
+            >
+              Créer l&apos;offre
             </button>
           </div>
         </div>

@@ -4,7 +4,7 @@ import { Roles } from "../constants";
 
 const StatsContainer = ({ usersCount, role }) => {
   return (
-    <div className="flex gap-5 mt-5">
+    <div className="flex gap-5 mt-5 flex-wrap">
       {role === Roles.ADMIN && (
         <StatsCard title="Utilisateur" stat={usersCount} icon="user-group" />
       )}

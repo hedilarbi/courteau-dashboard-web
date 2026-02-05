@@ -10,6 +10,7 @@ import { IoSettings, IoHome, IoTicketSharp } from "react-icons/io5";
 import { HiBuildingStorefront } from "react-icons/hi2";
 import { AiFillNotification } from "react-icons/ai";
 import { FaStar } from "react-icons/fa6";
+import { GiArchiveResearch } from "react-icons/gi";
 
 const NavItemsList = () => {
   const NAV_ITEMS_LIST = [
@@ -90,6 +91,12 @@ const NavItemsList = () => {
       title: "Paramètres",
       path: `/parametres`,
       icon: <IoSettings size={24} />,
+    },
+    {
+      id: 12,
+      title: "Audites",
+      path: `/audites`,
+      icon: <GiArchiveResearch size={24} />,
     },
   ];
   return NAV_ITEMS_LIST;

@@ -44,10 +44,7 @@ const Page = () => {
     fetchData();
   }, [refresh]);
   return (
-    <div className="w-full h-full p-4  flex flex-col relative">
-      <h1 className="text-2xl font-roboto font-semibold text-text-dark-gray">
-        Personnalisations
-      </h1>
+    <div className="w-full h-full p-4  flex flex-col relative max-h-screen overflow-y-auto">
       {isLoading ? (
         <div className="flex-1 flex justify-center items-center">
           <Spinner />

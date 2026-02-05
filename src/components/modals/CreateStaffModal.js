@@ -141,104 +141,88 @@ const CreateStaffModal = ({ setShowCreateStaffModal, setStaffs }) => {
       {addingIsLoading && <SpinnerModal />}
 
       {isLoading ? (
-        <div className="w-2/3 bg-white p-4 h-3/5 overflow-y-auto rounded-md flex items-center justify-center">
+        <div className="w-full max-w-3xl bg-white p-6 h-[70vh] overflow-y-auto rounded-xl flex items-center justify-center shadow-lg">
           <Spinner />
         </div>
       ) : (
-        <div className="w-2/3 bg-white p-4  overflow-y-auto rounded-md flex flex-col ">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-roboto font-semibold text-text-dark-gray">
-              Ajouter un employee
-            </h1>
+        <div className="w-full max-w-3xl bg-white p-6 overflow-y-auto rounded-xl flex flex-col shadow-lg gap-4 max-h-[80vh]">
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-2xl font-roboto font-semibold text-text-dark-gray">
+                Ajouter un employé
+              </h1>
+              <p className="text-sm text-text-light-gray">
+                Renseignez les informations et attribuez un restaurant.
+              </p>
+            </div>
             <button onClick={() => setShowCreateStaffModal(false)}>
-              <MdOutlineClose size={32} />
+              <MdOutlineClose size={28} />
             </button>
           </div>
-          <div className="h-6 text-center my-2">
-            {error && (
-              <p className="text-warning-red text-sm font-roboto font-semibold">
-                {error}
-              </p>
-            )}
-          </div>
-          <div className="mt-4 flex-1 w-full ">
-            <div className="flex  w-full  ">
-              <div onClick={handleImageClick}>
-                <input
-                  type="file"
-                  onChange={handleImageChange}
-                  accept="image/*"
-                  className="hidden"
-                  ref={inputImageRef}
-                />
+          {error && (
+            <div className="border border-warning-red bg-warning-red bg-opacity-10 text-warning-red text-sm rounded-md px-3 py-2">
+              {error}
+            </div>
+          )}
+          <div className="flex flex-col lg:flex-row gap-4">
+            <div className="lg:w-1/3">
+              <input
+                type="file"
+                onChange={handleImageChange}
+                accept="image/*"
+                className="hidden"
+                ref={inputImageRef}
+              />
+              <div
+                className="relative h-40 w-full rounded-md border border-gray-200 overflow-hidden flex items-center justify-center cursor-pointer bg-gray-50"
+                onClick={handleImageClick}
+              >
                 {imagePreview ? (
                   <Image
                     src={imagePreview}
                     alt="preview"
-                    width={200}
-                    height={200}
-                    className="w-40 h-40 object-cover rounded-md"
+                    fill
+                    className="object-cover"
                   />
                 ) : (
-                  <div className="w-40 h-40 bg-gray-200 rounded-md flex justify-center items-center">
-                    <MdAddAPhoto size={44} />
+                  <div className="flex flex-col items-center text-text-light-gray">
+                    <MdAddAPhoto size={32} />
+                    <span className="text-xs mt-2">Importer une image</span>
                   </div>
                 )}
               </div>
-
-              <div className="ml-4 flex flex-col justify-between flex-1  w-full">
-                <div className=" flex gap-2 items-center ">
-                  <label
-                    htmlFor="name"
-                    className="text-text-dark-gray font-roboto font-semibold"
-                  >
-                    Nom
-                  </label>
-                  <input
-                    type="text"
-                    className="border border-gray-300 rounded-md flex-1 py-1 px-2 "
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </div>
-                <div className="flex gap-2 items-center">
-                  <label
-                    htmlFor="username"
-                    className="text-text-dark-gray font-roboto font-semibold"
-                  >
-                    Nom d&apos;utilisateur
-                  </label>
-
-                  <input
-                    type="text"
-                    className="border border-gray-300 rounded-md py-1 flex-1 px-2 "
-                    onChange={(e) => setUsername(e.target.value)}
-                    value={username}
-                  />
-                </div>
-                <div className="flex gap-2 items-center">
-                  <label
-                    htmlFor="description"
-                    className="text-text-dark-gray font-roboto font-semibold"
-                  >
-                    Mot de passe
-                  </label>
-                  <input
-                    type="password"
-                    className="border border-gray-300 rounded-md flex-1 py-1 px-2 "
-                    onChange={(e) => setPassword(e.target.value)}
-                    value={password}
-                  />
-                </div>
-              </div>
             </div>
-            <div className="mt-12 flex justify-between items-center">
-              <div className="flex w-2/5 items-center gap-4">
-                <label
-                  htmlFor="role"
-                  className="text-text-dark-gray font-roboto font-semibold"
-                >
-                  Restaurant
+            <div className="flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1">
+                <label className="text-sm text-text-light-gray">Nom</label>
+                <input
+                  type="text"
+                  className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-pr"
+                  onChange={(e) => setName(e.target.value)}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm text-text-light-gray">
+                  Nom d&apos;utilisateur
                 </label>
+                <input
+                  type="text"
+                  className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-pr"
+                  onChange={(e) => setUsername(e.target.value)}
+                  value={username}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm text-text-light-gray">Mot de passe</label>
+                <input
+                  type="password"
+                  className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-pr"
+                  onChange={(e) => setPassword(e.target.value)}
+                  value={password}
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm text-text-light-gray">Restaurant</label>
                 <DropDown
                   value={restaurant}
                   setter={setRestaurant}
@@ -246,13 +230,8 @@ const CreateStaffModal = ({ setShowCreateStaffModal, setStaffs }) => {
                   placeholder={"Selectionner un restaurant"}
                 />
               </div>
-              <div className="flex w-2/5 items-center gap-4">
-                <label
-                  htmlFor="role"
-                  className="text-text-dark-gray font-roboto font-semibold"
-                >
-                  Role
-                </label>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm text-text-light-gray">Rôle</label>
                 <DropDown
                   value={role}
                   setter={setRole}
@@ -262,11 +241,11 @@ const CreateStaffModal = ({ setShowCreateStaffModal, setStaffs }) => {
               </div>
             </div>
           </div>
-          <div
-            className="w-full flex justify-end mt-8    "
-            onClick={createStaff}
-          >
-            <button className="bg-pr  rounded-md py-2 font-roboto font-semibold px-10">
+          <div className="w-full flex justify-end">
+            <button
+              className="bg-pr rounded-md py-2.5 font-roboto font-semibold px-8 text-white shadow-sm hover:brightness-95"
+              onClick={createStaff}
+            >
               Ajouter
             </button>
           </div>

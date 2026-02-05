@@ -13,26 +13,26 @@ const DeleteWarningModal = ({ message, setShowDeleteWarningModal, action }) => {
     : "Confirmer";
   return (
     <ModalWrapper zindex={10}>
-      <div className="bg-white w-2/5 rounded-md flex flex-col items-center p-6">
-        <div className="bg-light-warning-red flex justify-center items-center text-warning-red rounded-full p-3">
+      <div className="bg-white w-full max-w-lg rounded-lg flex flex-col items-center p-6 shadow-lg">
+        <div className="bg-light-warning-red flex justify-center items-center text-warning-red rounded-full p-3 shadow-inner">
           <RiErrorWarningFill size={48} />
         </div>
 
         <h1 className="text-2xl font-roboto font-semibold text-text-dark-gray mt-4">
           Attention !
         </h1>
-        <p className="text-lg font-roboto font-medium text-text-light-gray mt-4 text-center">
+        <p className="text-base font-roboto font-medium text-text-light-gray mt-3 text-center px-2">
           {message}
         </p>
-        <div className="w-full flex justify-between items-center mt-8">
+        <div className="w-full flex flex-col sm:flex-row justify-end gap-3 mt-8">
           <button
-            className="bg-gray-400 text-white rounded-md py-2 px-6 font-roboto font-semibold"
+            className="bg-gray-200 text-text-dark-gray rounded-md py-2.5 px-6 font-roboto font-semibold hover:bg-gray-300"
             onClick={() => setShowDeleteWarningModal(false)}
           >
             Annuler
           </button>
           <button
-            className="text-white bg-warning-red rounded-md py-2 px-6 font-roboto font-semibold"
+            className="text-white bg-warning-red rounded-md py-2.5 px-6 font-roboto font-semibold shadow-sm hover:brightness-95"
             onClick={action}
           >
             {actionButtonText}
