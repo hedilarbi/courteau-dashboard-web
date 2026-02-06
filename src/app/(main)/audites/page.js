@@ -22,9 +22,12 @@ const AuditsPage = () => {
     message: "",
   });
   const [search, setSearch] = useState("");
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
-  const fetchAudits = async () => {
-    setIsLoading(true);
+  const fetchAudits = async ({ silent = false } = {}) => {
+    if (!silent) {
+      setIsLoading(true);
+    }
     setError(null);
     try {
       const token = await getToken();
@@ -45,6 +48,7 @@ const AuditsPage = () => {
         throw new Error("Impossible de récupérer les audits");
       }
       const data = await res.json();
+      console.log("Audits fetched:", data.audits[3]);
 
       setAudits(data.audits || []);
       setPages(data.pages || 1);
@@ -52,7 +56,10 @@ const AuditsPage = () => {
       setError(err.message);
       setToastData({ show: true, type: "error", message: err.message });
     } finally {
-      setIsLoading(false);
+      if (!silent) {
+        setIsLoading(false);
+      }
+      setIsRefreshing(false);
       setTimeout(() => setToastData((p) => ({ ...p, show: false })), 3000);
     }
   };
@@ -61,6 +68,11 @@ const AuditsPage = () => {
     fetchAudits();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page]);
+
+  const handleRefresh = () => {
+    setIsRefreshing(true);
+    fetchAudits({ silent: true });
+  };
 
   const filteredAudits = useMemo(() => {
     const query = search.toLowerCase();
@@ -130,6 +142,15 @@ const AuditsPage = () => {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
+              <button
+                className={`rounded-md px-4 py-2 text-sm font-semibold transition bg-white/15 border border-white/25 text-white hover:bg-white/20 ${
+                  isRefreshing ? "opacity-70 cursor-not-allowed" : ""
+                }`}
+                onClick={handleRefresh}
+                disabled={isRefreshing}
+              >
+                {isRefreshing ? "Rafraîchissement..." : "Rafraîchir"}
+              </button>
             </div>
           </div>
           <div className="flex flex-wrap gap-2 text-xs">
@@ -142,7 +163,7 @@ const AuditsPage = () => {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-default border border-gray-100 overflow-hidden h-[calc(100vh-250px)]">
+        <div className="bg-white rounded-xl shadow-default border border-gray-100 overflow-hidden">
           <div className="overflow-x-auto">
             <div className="min-w-[1000px]">
               <div className="grid grid-cols-[0.9fr,2fr,1.2fr,0.9fr] bg-gray-50 text-xs uppercase tracking-wide text-text-light-gray px-4 py-3">
@@ -153,7 +174,7 @@ const AuditsPage = () => {
                 <span className="text-right">Date</span>
               </div>
               {filteredAudits.length > 0 ? (
-                <div className="max-h-[60vh] overflow-y-auto divide-y divide-gray-100">
+                <div className="h-[calc(100vh-320px)] overflow-y-auto divide-y divide-gray-100">
                   {filteredAudits.map((audit) => {
                     const user =
                       audit.userId?.name ||

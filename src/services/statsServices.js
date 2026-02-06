@@ -3,7 +3,7 @@ import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-const getInitialStats = async (date, from, to) => {
+const getInitialStats = async (date, from, to, restaurantId) => {
   const token = await getToken();
   axios.defaults.headers.common["Authorization"] = `Bearer ${token.value}`;
   try {
@@ -12,6 +12,7 @@ const getInitialStats = async (date, from, to) => {
         date,
         from,
         to,
+        restaurantId,
       },
     });
 
@@ -37,7 +38,7 @@ const getInitialStats = async (date, from, to) => {
 const getRestaurantStats = async (id) => {
   try {
     let getInitialStatsResponse = await axios.get(
-      `${API_URL}/stats/initial/${id}`
+      `${API_URL}/stats/initial/${id}`,
     );
 
     if (getInitialStatsResponse?.status === 200) {

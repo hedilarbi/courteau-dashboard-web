@@ -117,15 +117,14 @@ const Page = () => {
     setIsDataFetching(true);
     try {
       let response;
-      if (restaurantId) {
-        response = await getRestaurantStats(restaurantId);
-      } else {
-        response = await getInitialStats(
-          targetDate || null,
-          rangeFrom,
-          rangeTo
-        );
-      }
+
+      response = await getInitialStats(
+        targetDate || null,
+        rangeFrom,
+        rangeTo,
+        restaurantId || "",
+      );
+
       if (response.status) {
         setUsersCount(response.data.usersCount);
         setRestaurantsStats(response.data.restaurantStats || []);
@@ -173,17 +172,17 @@ const Page = () => {
     () =>
       restaurantsStats.reduce(
         (acc, cur) => Math.max(acc, Number(cur.revenue || 0)),
-        0
+        0,
       ),
-    [restaurantsStats]
+    [restaurantsStats],
   );
   const maxOrders = useMemo(
     () =>
       restaurantsStats.reduce(
         (acc, cur) => Math.max(acc, Number(cur.ordersCount || 0)),
-        0
+        0,
       ),
-    [restaurantsStats]
+    [restaurantsStats],
   );
   const formatCurrency = (value) =>
     new Intl.NumberFormat("fr-FR", {
