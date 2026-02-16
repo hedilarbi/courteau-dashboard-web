@@ -339,7 +339,7 @@ const Page = () => {
 
       <div className="max-w-6xl mx-auto px-5 py-6 flex flex-col gap-4">
         <div className="bg-gradient-to-r from-pr to-[#111827] text-white rounded-2xl shadow-lg p-6">
-          <h1 className="text-3xl font-semibold">Réglages de l'accueil</h1>
+          <h1 className="text-3xl font-semibold">Réglages de l&apos;accueil</h1>
           <p className="text-sm opacity-90 mt-1">
             Gérez le contenu principal affiché sur la page d&apos;accueil.
           </p>
