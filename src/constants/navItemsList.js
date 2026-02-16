@@ -6,7 +6,12 @@ import { GiNotebook } from "react-icons/gi";
 import { MdRestaurantMenu } from "react-icons/md";
 import { BiSolidOffer } from "react-icons/bi";
 import { IoMdTrophy } from "react-icons/io";
-import { IoSettings, IoHome, IoTicketSharp } from "react-icons/io5";
+import {
+  IoSettings,
+  IoHome,
+  IoTicketSharp,
+  IoHomeOutline,
+} from "react-icons/io5";
 import { HiBuildingStorefront } from "react-icons/hi2";
 import { AiFillNotification } from "react-icons/ai";
 import { FaStar } from "react-icons/fa6";
@@ -67,6 +72,12 @@ const NavItemsList = () => {
       title: "Codes Promotions",
       path: `/codes-promotions`,
       icon: <IoTicketSharp size={24} />,
+    },
+    {
+      id: 16,
+      title: "Réglages de l'accueil",
+      path: `/home-settings`,
+      icon: <IoHomeOutline size={24} />,
     },
     {
       id: 11,

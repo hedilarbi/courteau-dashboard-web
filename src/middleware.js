@@ -29,6 +29,7 @@ export const config = {
     "/parametres/:path*",
     "/offres/:path*",
     "/notifications/:path*",
+    "/home-settings/:path*",
     "/",
   ],
 };

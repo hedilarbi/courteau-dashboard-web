@@ -5,6 +5,12 @@ import { createPortal } from "react-dom";
 import { FaChevronDown, FaChevronUp } from "react-icons/fa6";
 import DropdownListElement from "./DropDownListElement";
 
+const VIEWPORT_PADDING = 8;
+const MENU_GAP = 4;
+const SEARCH_SECTION_HEIGHT = 56;
+const MIN_LIST_HEIGHT = 96;
+const DEFAULT_LIST_MAX_HEIGHT = 160;
+
 const DropDown = ({ value, setter, list, placeholder }) => {
   const [isDropDownOpen, setIsDropDownOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -26,10 +32,39 @@ const DropDown = ({ value, setter, list, placeholder }) => {
   const updateMenuPosition = useCallback(() => {
     if (!containerRef.current || typeof window === "undefined") return;
     const rect = containerRef.current.getBoundingClientRect();
+    const availableBelow = window.innerHeight - rect.bottom - VIEWPORT_PADDING;
+    const availableAbove = rect.top - VIEWPORT_PADDING;
+
+    const shouldOpenUp =
+      availableBelow < SEARCH_SECTION_HEIGHT + MIN_LIST_HEIGHT &&
+      availableAbove > availableBelow;
+
+    const availableSpace = shouldOpenUp ? availableAbove : availableBelow;
+    const listMaxHeight = Math.max(
+      MIN_LIST_HEIGHT,
+      Math.min(DEFAULT_LIST_MAX_HEIGHT, availableSpace - SEARCH_SECTION_HEIGHT),
+    );
+    const menuHeight = SEARCH_SECTION_HEIGHT + listMaxHeight;
+
+    const unclampedTop = shouldOpenUp
+      ? rect.top - menuHeight - MENU_GAP
+      : rect.bottom + MENU_GAP;
+
+    const top = Math.max(
+      VIEWPORT_PADDING,
+      Math.min(unclampedTop, window.innerHeight - menuHeight - VIEWPORT_PADDING),
+    );
+
+    const left = Math.max(
+      VIEWPORT_PADDING,
+      Math.min(rect.left, window.innerWidth - rect.width - VIEWPORT_PADDING),
+    );
+
     setMenuPosition({
       width: rect.width,
-      left: rect.left + window.scrollX,
-      top: rect.bottom + window.scrollY + 4,
+      left,
+      top,
+      listMaxHeight,
     });
   }, []);
 
@@ -88,7 +123,10 @@ const DropDown = ({ value, setter, list, placeholder }) => {
                 autoFocus
               />
             </div>
-            <div className="max-h-40 overflow-y-auto">
+            <div
+              className="overflow-y-auto"
+              style={{ maxHeight: menuPosition.listMaxHeight }}
+            >
               <ul>
                 {filteredList.length > 0 ? (
                   filteredList.map((item, index) => (
