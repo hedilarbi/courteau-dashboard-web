@@ -96,7 +96,7 @@ const Page = () => {
     setting,
     nextMenuItemOptions = menuItemOptions,
     nextOfferOptions = offerOptions,
-    nextPromoCodeOptions = promoCodeOptions
+    nextPromoCodeOptions = promoCodeOptions,
   ) => {
     setTitle(setting?.title || "");
     setSubTitle(setting?.subTitle || "");
@@ -105,18 +105,22 @@ const Page = () => {
       buildSelectedOption(
         setting?.menuItemId,
         nextMenuItemOptions,
-        EMPTY_MENU_ITEM_OPTION
-      )
+        EMPTY_MENU_ITEM_OPTION,
+      ),
     );
     setOffer(
-      buildSelectedOption(setting?.offerId, nextOfferOptions, EMPTY_OFFER_OPTION)
+      buildSelectedOption(
+        setting?.offerId,
+        nextOfferOptions,
+        EMPTY_OFFER_OPTION,
+      ),
     );
     setPromoCode(
       buildSelectedOption(
         setting?.codePromoId,
         nextPromoCodeOptions,
-        EMPTY_PROMO_CODE_OPTION
-      )
+        EMPTY_PROMO_CODE_OPTION,
+      ),
     );
     setImage(null);
     setImagePreview(setting?.image || null);
@@ -126,13 +130,17 @@ const Page = () => {
     setIsLoading(true);
     setError("");
     try {
-      const [homeSettingResponse, itemsResponse, offersResponse, promoResponse] =
-        await Promise.all([
-          getHomeSettings(),
-          getItemsNames(),
-          getOffers(),
-          getPromoCodes(),
-        ]);
+      const [
+        homeSettingResponse,
+        itemsResponse,
+        offersResponse,
+        promoResponse,
+      ] = await Promise.all([
+        getHomeSettings(),
+        getItemsNames(),
+        getOffers(),
+        getPromoCodes(),
+      ]);
 
       if (!homeSettingResponse.status) {
         throw new Error(homeSettingResponse.message);
@@ -185,7 +193,7 @@ const Page = () => {
           homeSettingResponse.data,
           nextMenuItemOptions,
           nextOfferOptions,
-          nextPromoCodeOptions
+          nextPromoCodeOptions,
         );
       } else {
         setHomeSetting(null);
@@ -271,7 +279,7 @@ const Page = () => {
       showToast(
         "error",
         response.message ||
-          "Une erreur s'est produite lors de la mise à jour de la configuration."
+          "Une erreur s'est produite lors de la mise à jour de la configuration.",
       );
     }
     setIsSaving(false);
@@ -331,7 +339,7 @@ const Page = () => {
 
       <div className="max-w-6xl mx-auto px-5 py-6 flex flex-col gap-4">
         <div className="bg-gradient-to-r from-pr to-[#111827] text-white rounded-2xl shadow-lg p-6">
-          <h1 className="text-3xl font-semibold">Home Settings</h1>
+          <h1 className="text-3xl font-semibold">Réglages de l'accueil</h1>
           <p className="text-sm opacity-90 mt-1">
             Gérez le contenu principal affiché sur la page d&apos;accueil.
           </p>
@@ -340,7 +348,7 @@ const Page = () => {
         {!homeSetting ? (
           <div className="bg-white rounded-xl border border-gray-100 shadow-default p-8 text-center">
             <p className="text-text-light-gray">
-              Aucune configuration Home Settings n&apos;est encore définie.
+              Aucune configuration n&apos;est encore définie.
             </p>
             <button
               className="mt-4 bg-pr text-white px-5 py-2 rounded-md font-semibold hover:brightness-95 transition"
@@ -417,7 +425,9 @@ const Page = () => {
                       <input
                         type="text"
                         value={codePromoTitle}
-                        onChange={(event) => setCodePromoTitle(event.target.value)}
+                        onChange={(event) =>
+                          setCodePromoTitle(event.target.value)
+                        }
                         className="mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-pr"
                       />
                     </div>
