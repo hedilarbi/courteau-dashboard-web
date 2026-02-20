@@ -118,7 +118,7 @@ const UpdateOfferModal = ({ setShowUpdateOfferModal, setOffers, offer }) => {
     formData.append("customizations", JSON.stringify([]));
     formData.append("name", name);
     formData.append("price", price);
-    formData.append("expireAt", expireDate.toLocaleDateString());
+    formData.append("expireAt", expireDate.toISOString());
     if (image) {
       formData.append("file", image);
       formData.append("fileToDelete", offer.image);
