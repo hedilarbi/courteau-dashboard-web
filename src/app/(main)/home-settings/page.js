@@ -48,6 +48,7 @@ const buildSelectedOption = (value, options, emptyOption) => {
 
 const Page = () => {
   const inputImageRef = useRef(null);
+  const localImagePreviewUrlRef = useRef(null);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -92,6 +93,13 @@ const Page = () => {
     }, 3000);
   };
 
+  const clearLocalImagePreviewUrl = () => {
+    if (localImagePreviewUrlRef.current) {
+      URL.revokeObjectURL(localImagePreviewUrlRef.current);
+      localImagePreviewUrlRef.current = null;
+    }
+  };
+
   const syncFormWithHomeSetting = (
     setting,
     nextMenuItemOptions = menuItemOptions,
@@ -123,6 +131,7 @@ const Page = () => {
       ),
     );
     setImage(null);
+    clearLocalImagePreviewUrl();
     setImagePreview(setting?.image || null);
   };
 
@@ -204,6 +213,7 @@ const Page = () => {
         setOffer(EMPTY_OFFER_OPTION);
         setPromoCode(EMPTY_PROMO_CODE_OPTION);
         setImage(null);
+        clearLocalImagePreviewUrl();
         setImagePreview(null);
       }
     } catch (err) {
@@ -214,7 +224,10 @@ const Page = () => {
   };
 
   const handleImageClick = () => {
-    inputImageRef.current?.click();
+    if (inputImageRef.current) {
+      inputImageRef.current.value = "";
+      inputImageRef.current.click();
+    }
   };
 
   const handleImageChange = (event) => {
@@ -224,11 +237,10 @@ const Page = () => {
     }
 
     setImage(file);
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      setImagePreview(reader.result);
-    };
-    reader.readAsDataURL(file);
+    clearLocalImagePreviewUrl();
+    const previewUrl = URL.createObjectURL(file);
+    localImagePreviewUrlRef.current = previewUrl;
+    setImagePreview(previewUrl);
   };
 
   const handleMenuItemChange = (nextMenuItem) => {
@@ -261,28 +273,38 @@ const Page = () => {
     }
 
     setIsSaving(true);
-    const response = await updateHomeSetting(homeSetting._id, {
-      title: title.trim(),
-      subTitle: subTitle.trim(),
-      codePromoTitle: codePromoTitle.trim(),
-      file: image,
-      menuItemId: menuItem?.value || null,
-      offerId: offer?.value || null,
-      codePromoId: promoCode?.value || null,
-    });
+    try {
+      const response = await updateHomeSetting(homeSetting._id, {
+        title: title.trim(),
+        subTitle: subTitle.trim(),
+        codePromoTitle: codePromoTitle.trim(),
+        file: image,
+        fileToDelete: image ? homeSetting?.image || null : undefined,
+        menuItemId: menuItem?.value || null,
+        offerId: offer?.value || null,
+        codePromoId: promoCode?.value || null,
+      });
 
-    if (response.status) {
-      setHomeSetting(response.data);
-      syncFormWithHomeSetting(response.data);
-      showToast("success", "Configuration d'accueil mise à jour.");
-    } else {
+      if (response.status) {
+        setHomeSetting(response.data);
+        syncFormWithHomeSetting(response.data);
+        showToast("success", "Configuration d'accueil mise à jour.");
+      } else {
+        showToast(
+          "error",
+          response.message ||
+            "Une erreur s'est produite lors de la mise à jour de la configuration.",
+        );
+      }
+    } catch (err) {
       showToast(
         "error",
-        response.message ||
+        err.message ||
           "Une erreur s'est produite lors de la mise à jour de la configuration.",
       );
+    } finally {
+      setIsSaving(false);
     }
-    setIsSaving(false);
   };
 
   const handleCreated = (createdHomeSetting) => {
@@ -294,6 +316,15 @@ const Page = () => {
   useEffect(() => {
     fetchData();
   }, [refresh]);
+
+  useEffect(() => {
+    return () => {
+      if (localImagePreviewUrlRef.current) {
+        URL.revokeObjectURL(localImagePreviewUrlRef.current);
+        localImagePreviewUrlRef.current = null;
+      }
+    };
+  }, []);
 
   if (isLoading) {
     return (

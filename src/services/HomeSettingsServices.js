@@ -93,7 +93,16 @@ const createHomeSetting = async ({
 
 const updateHomeSetting = async (
   id,
-  { title, subTitle, codePromoTitle, file, menuItemId, offerId, codePromoId }
+  {
+    title,
+    subTitle,
+    codePromoTitle,
+    file,
+    fileToDelete,
+    menuItemId,
+    offerId,
+    codePromoId,
+  }
 ) => {
   try {
     const formData = new FormData();
@@ -103,6 +112,7 @@ const updateHomeSetting = async (
 
     if (file) {
       formData.append("file", file);
+      appendField(formData, "fileToDelete", fileToDelete);
     }
 
     appendField(formData, "menuItemId", menuItemId);
