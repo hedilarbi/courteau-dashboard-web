@@ -10,10 +10,18 @@ const MenuItemCustomizations = ({
   setNewCustomizations,
   toppings,
   toppingGroups = [],
-  selectedToppingGroup,
+  selectedToppingGroups = [],
+  toppingGroupToAdd,
   onSelectGroup,
+  onRemoveGroup,
 }) => {
   const [showAddToppingModel, setShowAddToppingModel] = useState(false);
+  const hasSelectedGroup = selectedToppingGroups.length > 0;
+  const customizationGroups = Array.isArray(customizationGroup)
+    ? customizationGroup
+    : customizationGroup
+      ? [customizationGroup]
+      : [];
 
   const deleteTopping = (index) => {
     const newList = [...newCustomizations];
@@ -34,14 +42,37 @@ const MenuItemCustomizations = ({
         <div className="space-y-4">
           <div className="flex flex-col gap-2">
             <DropDown
-              value={selectedToppingGroup}
+              value={toppingGroupToAdd}
               setter={onSelectGroup}
-              list={toppingGroups}
+              list={toppingGroups.filter(
+                (group) =>
+                  !selectedToppingGroups.some(
+                    (selectedGroup) => selectedGroup.value === group.value
+                  )
+              )}
               placeholder={"Selectionner un groupe de personnalisation"}
             />
+            {selectedToppingGroups.length > 0 && (
+              <div className="flex flex-wrap gap-3">
+                {selectedToppingGroups.map((group) => (
+                  <div
+                    key={group.value}
+                    className="flex items-center gap-2 bg-gray-50 border border-gray-200 text-text-dark-gray rounded-full px-3 py-1.5 shadow-sm"
+                  >
+                    <p className="font-semibold text-sm">{group.label}</p>
+                    <button
+                      className="text-warning-red hover:text-red-700"
+                      onClick={() => onRemoveGroup?.(group.value)}
+                    >
+                      <MdOutlineClose size={18} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          {!selectedToppingGroup ? (
+          {!hasSelectedGroup ? (
             <>
               {newCustomizations.length ? (
                 <div className="flex flex-wrap gap-3">
@@ -76,17 +107,17 @@ const MenuItemCustomizations = ({
                 Ajouter une personnalisation
               </button>
             </>
-          ) : (
-            <p className="text-sm text-text-light-gray"></p>
-          )}
+          ) : null}
         </div>
       ) : (
         <div className="space-y-3">
-          {customizationGroup && (
+          {customizationGroups.length > 0 && (
             <div className="flex items-center text-text-dark-gray bg-gray-50 border border-gray-200 rounded-md px-3 py-2 shadow-sm">
               <p className="font-semibold text-sm">
-                Groupe de personnalisation :{" "}
-                <span className="font-bold">{customizationGroup.name}</span>
+                Groupes de personnalisation :{" "}
+                <span className="font-bold">
+                  {customizationGroups.map((group) => group.name).join(", ")}
+                </span>
               </p>
             </div>
           )}

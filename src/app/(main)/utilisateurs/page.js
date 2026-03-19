@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 
 import { FaMagnifyingGlass } from "react-icons/fa6";
 import { FaTrash } from "react-icons/fa";
-import { HiMiniPencil } from "react-icons/hi2";
 import { ImBlocked } from "react-icons/im";
 import {
   banUser,
@@ -310,7 +309,7 @@ const UsersScreen = () => {
                           onClick={() => handleShowUserModel(user._id)}
                           aria-label="Voir l'utilisateur"
                         >
-                          <HiMiniPencil size={18} />
+                          <FaMagnifyingGlass size={16} />
                         </button>
                         <button
                           className="p-2 rounded-md bg-warning-red/10 text-warning-red hover:bg-warning-red/20 transition"

@@ -21,7 +21,8 @@ const CreateItemModal = ({ setShowCreateItemModal, setMenuItems }) => {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState(null);
   const [toppingGroups, setToppingGroups] = useState([]);
-  const [selectedToppingGroup, setSelectedToppingGroup] = useState(null);
+  const [selectedToppingGroups, setSelectedToppingGroups] = useState([]);
+  const [toppingGroupToAdd, setToppingGroupToAdd] = useState(null);
   const [sizeGroups, setSizeGroups] = useState([]);
   const [selectedSizeGroup, setSelectedSizeGroup] = useState(null);
   const [prices, setPrices] = useState([]);
@@ -104,8 +105,21 @@ const CreateItemModal = ({ setShowCreateItemModal, setMenuItems }) => {
   };
 
   const handleSelectToppingGroup = (group) => {
+    if (!group) return;
     setError(null);
-    setSelectedToppingGroup(group);
+    setToppingGroupToAdd(null);
+    setSelectedToppingGroups((prev) => {
+      if (prev.some((existingGroup) => existingGroup.value === group.value)) {
+        return prev;
+      }
+      return [...prev, group];
+    });
+  };
+
+  const removeSelectedToppingGroup = (groupValue) => {
+    setSelectedToppingGroups((prev) =>
+      prev.filter((group) => group.value !== groupValue)
+    );
   };
 
   const createItem = async () => {
@@ -136,18 +150,8 @@ const CreateItemModal = ({ setShowCreateItemModal, setMenuItems }) => {
 
       return;
     }
-    if (description.length < 1) {
-      setError("Description de l'article manquante");
-
-      return;
-    }
     if (!category) {
       setError("Selectionner une categorie");
-
-      return;
-    }
-    if (!selectedToppingGroup) {
-      setError("Selectionner un groupe de personnalisation");
 
       return;
     }
@@ -163,7 +167,10 @@ const CreateItemModal = ({ setShowCreateItemModal, setMenuItems }) => {
     formData.append("name", name);
     formData.append("description", description);
     formData.append("category", category.value);
-    formData.append("customizationGroup", selectedToppingGroup.value);
+    formData.append(
+      "customizationGroup",
+      JSON.stringify(selectedToppingGroups.map((group) => group.value))
+    );
     formData.append("prices", JSON.stringify(formattedPrices));
 
     setAddingIsLoading(true);
@@ -390,11 +397,35 @@ const CreateItemModal = ({ setShowCreateItemModal, setMenuItems }) => {
                   Personnalisations
                 </h2>
                 <DropDown
-                  value={selectedToppingGroup}
+                  value={toppingGroupToAdd}
                   setter={handleSelectToppingGroup}
-                  list={toppingGroups}
+                  list={toppingGroups.filter(
+                    (group) =>
+                      !selectedToppingGroups.some(
+                        (selectedGroup) => selectedGroup.value === group.value
+                      )
+                  )}
                   placeholder={"Selectionner un groupe de personnalisation"}
                 />
+                {selectedToppingGroups.length > 0 && (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {selectedToppingGroups.map((group) => (
+                      <div
+                        key={group.value}
+                        className="inline-flex items-center gap-2 rounded-full border border-gray-200 bg-gray-50 px-3 py-1 text-sm text-text-dark-gray"
+                      >
+                        <span className="font-medium">{group.label}</span>
+                        <button
+                          type="button"
+                          className="text-warning-red"
+                          onClick={() => removeSelectedToppingGroup(group.value)}
+                        >
+                          <MdOutlineClose size={16} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

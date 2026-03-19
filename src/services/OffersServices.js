@@ -145,4 +145,39 @@ const updateOffer = async (
   }
 };
 
-export { getOffers, createOffer, getOffer, deleteOfferService, updateOffer };
+const offersTri = async (list) => {
+  try {
+    const response = await axios.put(`${API_URL}/offers/tri`, { list });
+
+    if (response?.status === 200) {
+      return {
+        status: true,
+        message: response?.data?.message || "Ordre des offres mis à jour.",
+        data: response?.data || null,
+      };
+    }
+
+    return {
+      status: false,
+      message: "Erreur lors de la mise à jour de l'ordre des offres.",
+    };
+  } catch (error) {
+    return {
+      status: false,
+      message:
+        error?.response?.data?.message ||
+        error?.response?.data?.error ||
+        error?.message ||
+        "Erreur lors de la mise à jour de l'ordre des offres.",
+    };
+  }
+};
+
+export {
+  getOffers,
+  createOffer,
+  getOffer,
+  deleteOfferService,
+  updateOffer,
+  offersTri,
+};

@@ -29,11 +29,11 @@ const MenuItemsDetails = ({ item }) => {
   const [newPrices, setNewPrices] = useState([]);
   const [newCustomizations, setNewCustomizations] = useState([]);
   const [toppingGroups, setToppingGroups] = useState([]);
-  const [selectedToppingGroup, setSelectedToppingGroup] = useState(null);
+  const [selectedToppingGroups, setSelectedToppingGroups] = useState([]);
+  const [toppingGroupToAdd, setToppingGroupToAdd] = useState(null);
   const [categoriesNames, setCategoriesNames] = useState([]);
   const [sizes, setSizes] = useState([]);
   const [toppings, setToppings] = useState([]);
-  const [toppingGroupsOptions, setToppingGroupsOptions] = useState([]);
 
   const fetchData = async () => {
     try {
@@ -85,10 +85,6 @@ const MenuItemsDetails = ({ item }) => {
             label: group.name,
           })) || [];
         setToppingGroups(list);
-        setToppingGroupsOptions([
-          { value: "__none__", label: "Aucun groupe de personnalisation" },
-          ...list,
-        ]);
       } else {
         setError(toppingGroupsResponse?.message);
       }
@@ -113,14 +109,18 @@ const MenuItemsDetails = ({ item }) => {
         list.push({ value: item._id, label: item.name })
       );
       setNewCustomizations(list);
-      if (data?.customization_group?._id) {
-        setSelectedToppingGroup({
-          value: data.customization_group._id,
-          label: data.customization_group.name,
-        });
-      } else {
-        setSelectedToppingGroup(null);
-      }
+      const groups = Array.isArray(data?.customization_group)
+        ? data.customization_group
+        : data?.customization_group
+          ? [data.customization_group]
+          : [];
+      setSelectedToppingGroups(
+        groups.map((group) => ({
+          value: group._id,
+          label: group.name,
+        }))
+      );
+      setToppingGroupToAdd(null);
     });
   };
 
@@ -145,7 +145,7 @@ const MenuItemsDetails = ({ item }) => {
       setShowFailModel(true);
       return;
     }
-    const customization = selectedToppingGroup
+    const customization = selectedToppingGroups.length
       ? []
       : newCustomizations.map((item) => ({
           _id: item.value,
@@ -162,7 +162,10 @@ const MenuItemsDetails = ({ item }) => {
     formData.append("category", newCategory.value);
     formData.append("prices", JSON.stringify(formattedPrices));
     formData.append("customization", JSON.stringify(customization));
-    formData.append("customizationGroup", selectedToppingGroup?.value || "");
+    formData.append(
+      "customizationGroup",
+      JSON.stringify(selectedToppingGroups.map((group) => group.value))
+    );
     if (newImage) {
       formData.append("file", newImage);
       formData.append("fileToDelete", data.image);
@@ -217,14 +220,27 @@ const MenuItemsDetails = ({ item }) => {
   const customizationCount = Array.isArray(data?.customization)
     ? data.customization.length
     : 0;
-  const customizationGroupName = data?.customization_group?.name;
+  const customizationGroupNames = Array.isArray(data?.customization_group)
+    ? data.customization_group.map((group) => group?.name).filter(Boolean)
+    : data?.customization_group?.name
+      ? [data.customization_group.name]
+      : [];
 
   const handleSelectToppingGroup = (group) => {
-    if (!group || group.value === "__none__") {
-      setSelectedToppingGroup(null);
-      return;
-    }
-    setSelectedToppingGroup(group);
+    if (!group) return;
+    setToppingGroupToAdd(null);
+    setSelectedToppingGroups((prev) => {
+      if (prev.some((existingGroup) => existingGroup.value === group.value)) {
+        return prev;
+      }
+      return [...prev, group];
+    });
+  };
+
+  const removeSelectedToppingGroup = (groupValue) => {
+    setSelectedToppingGroups((prev) =>
+      prev.filter((group) => group.value !== groupValue)
+    );
   };
 
   return (
@@ -274,9 +290,9 @@ const MenuItemsDetails = ({ item }) => {
                 <span className="bg-white/15 border border-white/20 text-sm px-3 py-1 rounded-full">
                   {priceCount} prix
                 </span>
-                {customizationGroupName && (
+                {customizationGroupNames.length > 0 && (
                   <span className="bg-white/15 border border-white/20 text-sm px-3 py-1 rounded-full">
-                    Groupe: {customizationGroupName}
+                    Groupes: {customizationGroupNames.join(", ")}
                   </span>
                 )}
                 {customizationCount > 0 && (
@@ -329,9 +345,11 @@ const MenuItemsDetails = ({ item }) => {
               newCustomizations={newCustomizations}
               setNewCustomizations={setNewCustomizations}
               toppings={toppings}
-              toppingGroups={toppingGroupsOptions}
-              selectedToppingGroup={selectedToppingGroup}
+              toppingGroups={toppingGroups}
+              selectedToppingGroups={selectedToppingGroups}
+              toppingGroupToAdd={toppingGroupToAdd}
               onSelectGroup={handleSelectToppingGroup}
+              onRemoveGroup={removeSelectedToppingGroup}
             />
           </section>
 

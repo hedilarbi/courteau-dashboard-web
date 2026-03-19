@@ -2,6 +2,7 @@ import { dateToDDMMMYYYY } from "@/utils/dateFormatters";
 import React from "react";
 
 const UserGeneralInfo = ({ data }) => {
+  const ordersCount = Array.isArray(data?.orders) ? data.orders.length : 0;
   return (
     <div className="bg-white shadow-default rounded-xl mt-4 font-roboto p-5 border border-gray-100">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -44,7 +45,7 @@ const UserGeneralInfo = ({ data }) => {
             </div>
             <div className="flex items-center justify-between">
               <span className="text-text-light-gray">Nombre de commandes</span>
-              <span className="font-semibold">{data.orders.length}</span>
+              <span className="font-semibold">{ordersCount}</span>
             </div>
           </div>
         </div>

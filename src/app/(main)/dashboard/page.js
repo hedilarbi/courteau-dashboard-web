@@ -1,103 +1,374 @@
 "use client";
 
 import React, { useEffect, useMemo, useState } from "react";
-import { getInitialStats, getRestaurantStats } from "@/services/statsServices";
+import { getDashboardAnalytics } from "@/services/statsServices";
 import { getRestaurantList } from "@/services/OrdersServices";
 import { useSelector } from "react-redux";
 import { selectStaffData } from "@/redux/slices/StaffSlice";
 import Spinner from "@/components/spinner/Spinner";
 import StaffCard from "@/components/StaffCard";
-import StatsContainer from "@/components/StatsContainer";
-import StatsCard from "@/components/StatsCard";
 import ToastNotification from "@/components/ToastNotification";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  Line,
+  LineChart,
+  Pie,
+  PieChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
-const RestaurantBarChart = ({
-  title,
-  data,
-  dataKey,
-  maxValue,
-  gradient,
-  valueFormatter,
-}) => {
-  if (!data || data.length === 0) {
+const PIE_COLORS = ["#F7A600", "#0F172A", "#16A34A", "#0284C7"];
+const GRAPH_OPTIONS = [
+  { value: "revenue_over_time", label: "Total revenu" },
+  { value: "orders_over_time", label: "Nombre de commandes par jour" },
+  { value: "orders_by_hour", label: "Commandes par heure" },
+  { value: "orders_by_weekday", label: "Commandes par jour (semaine)" },
+  { value: "orders_by_platform", label: "Type de plateforme" },
+  { value: "promo_usage", label: "Utilise promo ou non" },
+  { value: "delivery_vs_pickup", label: "Livraison vs ramassage" },
+  { value: "top_products", label: "Produits preferes" },
+];
+
+const formatMoney = (value) =>
+  `${new Intl.NumberFormat("fr-CA", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(Number(value || 0))} $`;
+
+const toInputDate = (date) => {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+    const now = new Date();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${now.getFullYear()}-${month}-${day}`;
+  }
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${date.getFullYear()}-${month}-${day}`;
+};
+
+const toInputMonth = (date) => {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) {
+    const now = new Date();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    return `${now.getFullYear()}-${month}`;
+  }
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  return `${date.getFullYear()}-${month}`;
+};
+
+const toMonthStartDate = (monthValue) => {
+  const [yearRaw, monthRaw] = String(monthValue || "").split("-");
+  const year = Number(yearRaw);
+  const month = Number(monthRaw);
+  if (
+    !Number.isFinite(year) ||
+    !Number.isFinite(month) ||
+    month < 1 ||
+    month > 12
+  ) {
+    return "";
+  }
+  return `${year}-${String(month).padStart(2, "0")}-01`;
+};
+
+const toMonthEndDate = (monthValue) => {
+  const [yearRaw, monthRaw] = String(monthValue || "").split("-");
+  const year = Number(yearRaw);
+  const month = Number(monthRaw);
+  if (
+    !Number.isFinite(year) ||
+    !Number.isFinite(month) ||
+    month < 1 ||
+    month > 12
+  ) {
+    return "";
+  }
+  const lastDay = new Date(year, month, 0).getDate();
+  return `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+};
+
+const normalizeDateRange = (fromValue, toValue) => {
+  const fallback = toInputDate(new Date());
+  const rawFrom = String(fromValue || "").trim();
+  const rawTo = String(toValue || "").trim();
+
+  const safeFrom = rawFrom || rawTo || fallback;
+  const safeTo = rawTo || rawFrom || fallback;
+  if (new Date(safeFrom).getTime() <= new Date(safeTo).getTime()) {
+    return { from: safeFrom, to: safeTo };
+  }
+  return { from: safeTo, to: safeFrom };
+};
+
+const AnalyticsChart = ({ selectedGraph, charts }) => {
+  const revenueByDay = charts?.revenueByDay || [];
+  const revenueByRestaurant = charts?.revenueByRestaurant || [];
+  const ordersByHour = charts?.ordersByHour || [];
+  const ordersByWeekday = charts?.ordersByWeekday || [];
+  const ordersByPlatform = (charts?.ordersByPlatform || []).filter(
+    (item) => item.value > 0,
+  );
+  const promoUsage = (charts?.promoUsage || []).filter(
+    (item) => item.value > 0,
+  );
+  const deliveryVsPickup = (charts?.deliveryVsPickup || []).filter(
+    (item) => item.value > 0,
+  );
+  const topProducts = charts?.topProducts || [];
+
+  const renderNoData = () => (
+    <div className="h-[420px] flex items-center justify-center text-sm text-text-light-gray">
+      Aucune donnee pour ce filtre.
+    </div>
+  );
+  const revenueLineDot = revenueByDay.length <= 1 ? { r: 5 } : false;
+
+  if (selectedGraph === "revenue_over_time") {
+    if (revenueByDay.length === 0) return renderNoData();
     return (
-      <div className="bg-white rounded-xl shadow-default border border-gray-100 p-4">
-        <div className="flex items-center justify-between mb-2">
-          <p className="text-sm font-semibold text-text-dark-gray">{title}</p>
-          <span className="text-[11px] text-text-light-gray">
-            par restaurant
-          </span>
-        </div>
-        <div className="text-xs text-text-light-gray text-center py-10">
-          Aucune donnée.
-        </div>
+      <div className="h-[420px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={revenueByDay}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="day" tick={{ fontSize: 11 }} />
+            <YAxis tickFormatter={(value) => `${value}$`} />
+            <Tooltip formatter={(value) => formatMoney(value)} />
+            <Line
+              type="monotone"
+              dataKey="revenue"
+              stroke="#F7A600"
+              strokeWidth={3}
+              dot={revenueLineDot}
+            />
+          </LineChart>
+        </ResponsiveContainer>
       </div>
     );
   }
 
-  return (
-    <div className="bg-white rounded-xl shadow-default border border-gray-100 p-4">
-      <div className="flex items-center justify-between mb-2">
-        <p className="text-sm font-semibold text-text-dark-gray">{title}</p>
-        <span className="text-[11px] text-text-light-gray">par restaurant</span>
+  if (selectedGraph === "orders_over_time") {
+    if (revenueByDay.length === 0) return renderNoData();
+    return (
+      <div className="h-[420px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={revenueByDay}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="day" tick={{ fontSize: 11 }} />
+            <YAxis allowDecimals={false} />
+            <Tooltip />
+            <Line
+              type="monotone"
+              dataKey="orders"
+              name="Commandes"
+              stroke="#0F172A"
+              strokeWidth={3}
+              dot={revenueLineDot}
+            />
+          </LineChart>
+        </ResponsiveContainer>
       </div>
-      <div className="flex items-end gap-4 h-56">
-        {data.map((item) => {
-          const value = Number(item[dataKey] || 0);
-          const normalizedHeight = maxValue
-            ? Math.round((value / maxValue) * 100)
-            : 0;
-          const heightPct = value > 0 ? Math.max(normalizedHeight, 6) : 0;
-          return (
-            <div
-              key={`${item.restaurantName}-${dataKey}`}
-              className="flex-1 min-w-[72px] flex flex-col items-center"
+    );
+  }
+
+  if (selectedGraph === "revenue_by_restaurant") {
+    if (revenueByRestaurant.length === 0) return renderNoData();
+    return (
+      <div className="h-[420px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={revenueByRestaurant}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="restaurantName" tick={{ fontSize: 11 }} />
+            <YAxis tickFormatter={(value) => `${value}$`} />
+            <Tooltip formatter={(value) => formatMoney(value)} />
+            <Bar dataKey="revenue" fill="#F7A600" radius={[6, 6, 0, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  }
+
+  if (selectedGraph === "orders_by_hour") {
+    if (ordersByHour.length === 0) return renderNoData();
+    return (
+      <div className="h-[420px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={ordersByHour}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+            <YAxis allowDecimals={false} />
+            <Tooltip />
+            <Bar
+              dataKey="orders"
+              name="Commandes"
+              fill="#0F172A"
+              radius={[6, 6, 0, 0]}
+            />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  }
+
+  if (selectedGraph === "orders_by_weekday") {
+    if (ordersByWeekday.length === 0) return renderNoData();
+    return (
+      <div className="h-[420px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={ordersByWeekday}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="label" tick={{ fontSize: 11 }} />
+            <YAxis allowDecimals={false} />
+            <Tooltip />
+            <Bar
+              dataKey="orders"
+              name="Commandes"
+              fill="#16A34A"
+              radius={[6, 6, 0, 0]}
+            />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  }
+
+  if (selectedGraph === "orders_by_platform") {
+    if (ordersByPlatform.length === 0) return renderNoData();
+    return (
+      <div className="h-[420px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={ordersByPlatform}
+              dataKey="value"
+              nameKey="label"
+              outerRadius={135}
+              label
             >
-              <div className="w-full bg-gray-100 h-full rounded-md flex items-end overflow-hidden">
-                <div
-                  className="w-full rounded-t-md"
-                  style={{
-                    height: `${heightPct}%`,
-                    background: gradient,
-                  }}
+              {ordersByPlatform.map((entry, index) => (
+                <Cell
+                  key={`${entry.label}-${index}`}
+                  fill={PIE_COLORS[index % PIE_COLORS.length]}
                 />
-              </div>
-              <span className="text-xs font-semibold mt-2 text-text-dark-gray">
-                {valueFormatter ? valueFormatter(value) : value}
-              </span>
-              <p className="text-[11px] text-text-light-gray text-center truncate w-full">
-                {item.restaurantName}
-              </p>
-            </div>
-          );
-        })}
+              ))}
+            </Pie>
+            <Tooltip />
+          </PieChart>
+        </ResponsiveContainer>
       </div>
-    </div>
-  );
+    );
+  }
+
+  if (selectedGraph === "promo_usage") {
+    if (promoUsage.length === 0) return renderNoData();
+    return (
+      <div className="h-[420px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={promoUsage}
+              dataKey="value"
+              nameKey="label"
+              outerRadius={135}
+              label
+            >
+              {promoUsage.map((entry, index) => (
+                <Cell
+                  key={`${entry.label}-${index}`}
+                  fill={PIE_COLORS[index % PIE_COLORS.length]}
+                />
+              ))}
+            </Pie>
+            <Tooltip />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  }
+
+  if (selectedGraph === "delivery_vs_pickup") {
+    if (deliveryVsPickup.length === 0) return renderNoData();
+    return (
+      <div className="h-[420px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={deliveryVsPickup}
+              dataKey="value"
+              nameKey="label"
+              outerRadius={135}
+              label
+            >
+              {deliveryVsPickup.map((entry, index) => (
+                <Cell
+                  key={`${entry.label}-${index}`}
+                  fill={PIE_COLORS[index % PIE_COLORS.length]}
+                />
+              ))}
+            </Pie>
+            <Tooltip />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  }
+
+  if (selectedGraph === "top_products") {
+    if (topProducts.length === 0) return renderNoData();
+    return (
+      <div className="h-[420px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={topProducts} layout="vertical">
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis type="number" allowDecimals={false} />
+            <YAxis
+              dataKey="name"
+              type="category"
+              width={210}
+              tick={{ fontSize: 12 }}
+            />
+            <Tooltip />
+            <Bar dataKey="count" fill="#F7A600" radius={[0, 6, 6, 0]} />
+          </BarChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  }
+
+  return renderNoData();
 };
 
 const Page = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isDataFetching, setIsDataFetching] = useState(false);
   const [error, setError] = useState(null);
-  const { restaurant, role, name } = useSelector(selectStaffData);
-  const [restaurantsStats, setRestaurantsStats] = useState([]);
-  const [usersCount, setUsersCount] = useState(null);
-  const [selectedRestaurant, setSelectedRestaurant] = useState("");
+  const [analyticsData, setAnalyticsData] = useState(null);
   const [restaurantList, setRestaurantList] = useState([]);
-  const [dateFilterType, setDateFilterType] = useState("date");
-  const [date, setDate] = useState(new Date());
-  const [from, setFrom] = useState(new Date());
-  const [to, setTo] = useState(new Date());
+  const [selectedRestaurant, setSelectedRestaurant] = useState("");
+  const [dateMode, setDateMode] = useState("day");
+  const [fromDate, setFromDate] = useState(toInputDate(new Date()));
+  const [toDate, setToDate] = useState(toInputDate(new Date()));
+  const [fromMonth, setFromMonth] = useState(toInputMonth(new Date()));
+  const [toMonth, setToMonth] = useState(toInputMonth(new Date()));
+  const [selectedGraph, setSelectedGraph] = useState("revenue_over_time");
+  const [selectedOrderType, setSelectedOrderType] = useState("all");
   const [toastData, setToastData] = useState({
     show: false,
     type: "",
     message: "",
   });
 
+  const { restaurant, role, name } = useSelector(selectStaffData);
+
   const showToast = (type, message) => {
     setToastData({ show: true, type, message });
-    setTimeout(() => setToastData((prev) => ({ ...prev, show: false })), 2500);
+    setTimeout(() => setToastData((prev) => ({ ...prev, show: false })), 2800);
   };
 
   const fetchRestaurants = async () => {
@@ -105,90 +376,82 @@ const Page = () => {
     try {
       const res = await getRestaurantList();
       if (res.status) {
-        setRestaurantList([{ label: "Tous", value: "" }, ...res.data]);
+        const normalizedRestaurants = (res.data || []).filter((restaurantItem) =>
+          Boolean(restaurantItem?.value || restaurantItem?._id),
+        );
+        setRestaurantList(normalizedRestaurants);
       }
     } catch (err) {
-      // ignore for now
+      // no-op
     }
   };
 
-  const loadStats = async (opts = {}) => {
-    const { targetDate, rangeFrom, rangeTo, restaurantId } = opts;
+  const loadAnalytics = async (overrides = {}) => {
     setIsDataFetching(true);
-    try {
-      let response;
+    const restaurantId =
+      overrides.restaurantId !== undefined
+        ? overrides.restaurantId
+        : role === "admin"
+          ? selectedRestaurant
+          : restaurant;
 
-      response = await getInitialStats(
-        targetDate || null,
-        rangeFrom,
-        rangeTo,
-        restaurantId || "",
-      );
+    const nextDateMode = overrides.dateMode || dateMode;
+    const nextFromDate = overrides.fromDate ?? fromDate;
+    const nextToDate = overrides.toDate ?? toDate;
+    const nextFromMonth = overrides.fromMonth ?? fromMonth;
+    const nextToMonth = overrides.toMonth ?? toMonth;
+    const nextOrderType = overrides.orderType ?? selectedOrderType;
 
-      if (response.status) {
-        setUsersCount(response.data.usersCount);
-        setRestaurantsStats(response.data.restaurantStats || []);
-        setError(null);
-      } else {
-        setError(response.message);
-        showToast("error", response.message);
-      }
-    } catch (err) {
-      setError(err.message);
-      showToast("error", err.message);
-    } finally {
-      setIsLoading(false);
+    const rawFrom =
+      nextDateMode === "month" ? toMonthStartDate(nextFromMonth) : nextFromDate;
+    const rawTo =
+      nextDateMode === "month" ? toMonthEndDate(nextToMonth) : nextToDate;
+    const { from, to } = normalizeDateRange(rawFrom, rawTo);
+
+    const params = {
+      preset: "custom",
+      from,
+      to,
+      restaurantId: restaurantId || "",
+      orderType: nextOrderType,
+    };
+
+    const response = await getDashboardAnalytics(params);
+    if (!response.status) {
+      setError(response.message);
+      showToast("error", response.message || "Erreur de chargement.");
       setIsDataFetching(false);
+      setIsLoading(false);
+      return;
     }
+
+    setAnalyticsData(response.data || null);
+    setError(null);
+    setIsDataFetching(false);
+    setIsLoading(false);
   };
 
   useEffect(() => {
     fetchRestaurants();
-    loadStats({
-      targetDate: date,
+    loadAnalytics({
       restaurantId: role === "admin" ? "" : restaurant,
+      dateMode: "day",
+      fromDate: toInputDate(new Date()),
+      toDate: toInputDate(new Date()),
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleApply = () => {
-    if (dateFilterType === "date") {
-      loadStats({
-        targetDate: date,
-        restaurantId:
-          selectedRestaurant || (role !== "admin" ? restaurant : ""),
-      });
-    } else {
-      loadStats({
-        rangeFrom: from,
-        rangeTo: to,
-        restaurantId:
-          selectedRestaurant || (role !== "admin" ? restaurant : ""),
-      });
-    }
-  };
+  const summary = analyticsData?.summary || {};
+  const usersCount = analyticsData?.usersCount || 0;
+  const charts = analyticsData?.charts || {};
 
-  const maxRevenue = useMemo(
+  const selectedGraphLabel = useMemo(
     () =>
-      restaurantsStats.reduce(
-        (acc, cur) => Math.max(acc, Number(cur.revenue || 0)),
-        0,
-      ),
-    [restaurantsStats],
+      GRAPH_OPTIONS.find((option) => option.value === selectedGraph)?.label ||
+      "Graphique",
+    [selectedGraph],
   );
-  const maxOrders = useMemo(
-    () =>
-      restaurantsStats.reduce(
-        (acc, cur) => Math.max(acc, Number(cur.ordersCount || 0)),
-        0,
-      ),
-    [restaurantsStats],
-  );
-  const formatCurrency = (value) =>
-    new Intl.NumberFormat("fr-FR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(value);
 
   if (isLoading) {
     return (
@@ -199,13 +462,14 @@ const Page = () => {
   }
 
   return (
-    <div className="p-6 flex-1 bg-[#f5f7fb] min-h-screen">
+    <div className="p-6 flex-1 bg-[#f5f7fb] h-screen  overflow-y-auto">
       <ToastNotification
         type={toastData.type}
         message={toastData.message}
         show={toastData.show}
       />
-      <div className="flex-1 overflow-y-auto pb-5 max-h-[calc(100vh-48px)]">
+
+      <div className="max-w-[1600px] mx-auto">
         <div className="w-full flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <p className="text-xs uppercase tracking-[0.2em] text-text-light-gray">
@@ -218,106 +482,168 @@ const Page = () => {
           <StaffCard name={name} />
         </div>
 
-        <div className="mt-4">
-          <StatsContainer usersCount={usersCount} role={role} />
-        </div>
+        {error && (
+          <div className="mt-4 bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        )}
 
         <div className="bg-white shadow-default rounded-xl mt-4 p-4 flex flex-col gap-3 border border-gray-100">
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-end gap-3">
             {role === "admin" && (
+              <div className="min-w-[240px]">
+                <label className="text-xs text-text-light-gray">
+                  Restaurant
+                </label>
+                <select
+                  className="block mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-pr"
+                  value={selectedRestaurant}
+                  onChange={(e) => setSelectedRestaurant(e.target.value)}
+                >
+                  <option value="">Tous les restaurants</option>
+                  {restaurantList.map((r) => (
+                    <option key={r.value || r._id} value={r.value || r._id}>
+                      {r.label || r.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className="min-w-[280px]">
+              <label className="text-xs text-text-light-gray">
+                Type de graphe
+              </label>
               <select
-                className="border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-pr"
-                value={selectedRestaurant}
-                onChange={(e) => setSelectedRestaurant(e.target.value)}
+                className="block mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-pr"
+                value={selectedGraph}
+                onChange={(e) => setSelectedGraph(e.target.value)}
               >
-                <option value="">Tous les restaurants</option>
-                {restaurantList.map((r) => (
-                  <option key={r.value || r._id} value={r.value || r._id}>
-                    {r.label || r.name}
+                {GRAPH_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
                   </option>
                 ))}
               </select>
-            )}
-            <div className="flex items-center gap-2">
-              <button
-                className={`px-3 py-2 rounded-md text-sm font-semibold border ${
-                  dateFilterType === "date"
-                    ? "bg-pr text-white border-pr"
-                    : "bg-white text-text-dark-gray border-gray-200"
-                }`}
-                onClick={() => setDateFilterType("date")}
-              >
-                Date
-              </button>
-              <button
-                className={`px-3 py-2 rounded-md text-sm font-semibold border ${
-                  dateFilterType === "interval"
-                    ? "bg-pr text-white border-pr"
-                    : "bg-white text-text-dark-gray border-gray-200"
-                }`}
-                onClick={() => setDateFilterType("interval")}
-              >
-                Intervalle
-              </button>
             </div>
-            <div className="flex flex-wrap items-center gap-2 text-sm">
-              {dateFilterType === "date" ? (
-                <input
-                  type="date"
-                  value={date.toISOString().split("T")[0]}
-                  onChange={(e) => setDate(new Date(e.target.value))}
-                  className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-pr"
-                />
-              ) : (
-                <>
-                  <input
-                    type="date"
-                    value={from.toISOString().split("T")[0]}
-                    onChange={(e) => setFrom(new Date(e.target.value))}
-                    className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-pr"
-                  />
-                  <input
-                    type="date"
-                    value={to.toISOString().split("T")[0]}
-                    onChange={(e) => setTo(new Date(e.target.value))}
-                    className="border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:border-pr"
-                  />
-                </>
-              )}
-              <button
-                className="bg-pr text-white px-4 py-2 rounded-md font-semibold shadow-sm hover:brightness-95"
-                onClick={handleApply}
+
+            <div className="min-w-[220px]">
+              <label className="text-xs text-text-light-gray">
+                Type de commande
+              </label>
+              <select
+                className="block mt-1 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-pr"
+                value={selectedOrderType}
+                onChange={(e) => {
+                  const nextOrderType = e.target.value;
+                  setSelectedOrderType(nextOrderType);
+                  loadAnalytics({ orderType: nextOrderType });
+                }}
               >
-                Appliquer
-              </button>
+                <option value="all">Toutes les commandes</option>
+                <option value="delivery">Livraison</option>
+                <option value="pickup">Ramassage</option>
+              </select>
             </div>
+          </div>
+
+          <div className="flex flex-wrap items-end gap-3">
+            <div className="min-w-[170px]">
+              <label className="text-xs text-text-light-gray">Mode date</label>
+              <select
+                className="block mt-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-pr"
+                value={dateMode}
+                onChange={(e) => setDateMode(e.target.value)}
+              >
+                <option value="day">Jour</option>
+                <option value="month">Mois</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="text-xs text-text-light-gray">De</label>
+              <input
+                type={dateMode === "month" ? "month" : "date"}
+                value={dateMode === "month" ? fromMonth : fromDate}
+                onChange={(e) =>
+                  dateMode === "month"
+                    ? setFromMonth(e.target.value)
+                    : setFromDate(e.target.value)
+                }
+                className="block mt-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-pr"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs text-text-light-gray">A</label>
+              <input
+                type={dateMode === "month" ? "month" : "date"}
+                value={dateMode === "month" ? toMonth : toDate}
+                onChange={(e) =>
+                  dateMode === "month"
+                    ? setToMonth(e.target.value)
+                    : setToDate(e.target.value)
+                }
+                className="block mt-1 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-pr"
+              />
+            </div>
+
+            <button
+              className="bg-pr text-white px-4 py-2 rounded-md font-semibold shadow-sm hover:brightness-95"
+              onClick={() => loadAnalytics()}
+            >
+              Appliquer
+            </button>
           </div>
         </div>
 
-        {/* {restaurantsStats.length > 0 && (
-          <div className="mt-6 grid gap-4 lg:grid-cols-2">
-            <RestaurantBarChart
-              title="Revenus par restaurant"
-              data={restaurantsStats}
-              dataKey="revenue"
-              maxValue={maxRevenue}
-              gradient="linear-gradient(135deg, #f59e0b, #0f172a)"
-              valueFormatter={(val) => `${formatCurrency(val)} $`}
-            />
-            <RestaurantBarChart
-              title="Commandes par restaurant"
-              data={restaurantsStats}
-              dataKey="ordersCount"
-              maxValue={maxOrders}
-              gradient="linear-gradient(135deg, #34d399, #0ea5e9)"
-            />
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3 mt-4">
+          <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-default">
+            <p className="text-xs uppercase tracking-wide text-text-light-gray">
+              Total revenu
+            </p>
+            <p className="text-xl font-semibold text-text-dark-gray mt-1">
+              {formatMoney(summary.totalRevenue)}
+            </p>
           </div>
-        )} */}
+          <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-default">
+            <p className="text-xs uppercase tracking-wide text-text-light-gray">
+              Total vente
+            </p>
+            <p className="text-xl font-semibold text-text-dark-gray mt-1">
+              {formatMoney(summary.totalNetSales)}
+            </p>
+          </div>
+          <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-default">
+            <p className="text-xs uppercase tracking-wide text-text-light-gray">
+              Total frais de livraison
+            </p>
+            <p className="text-xl font-semibold text-text-dark-gray mt-1">
+              {formatMoney(summary.totalDeliveryFee)}
+            </p>
+          </div>
+          <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-default">
+            <p className="text-xs uppercase tracking-wide text-text-light-gray">
+              Nombre de commandes
+            </p>
+            <p className="text-xl font-semibold text-text-dark-gray mt-1">
+              {summary.totalOrders || 0}
+            </p>
+          </div>
+          <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-default">
+            <p className="text-xs uppercase tracking-wide text-text-light-gray">
+              Utilisateurs
+            </p>
+            <p className="text-xl font-semibold text-text-dark-gray mt-1">
+              {usersCount}
+            </p>
+          </div>
+        </div>
 
-        <div className="mt-6 bg-white rounded-xl shadow-default border border-gray-100 p-5">
+        <div className="mt-4 bg-white rounded-xl shadow-default border border-gray-100 p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-semibold text-text-dark-gray">
-              Performance par restaurant
+              {selectedGraphLabel}
             </h2>
             {isDataFetching && (
               <span className="text-xs text-text-light-gray">
@@ -326,79 +652,11 @@ const Page = () => {
             )}
           </div>
           {isDataFetching ? (
-            <div className="flex justify-center py-6">
+            <div className="h-[420px] flex items-center justify-center">
               <Spinner />
             </div>
-          ) : restaurantsStats.length > 0 ? (
-            <div className="space-y-4">
-              {restaurantsStats.map((r) => {
-                const revenuePct = maxRevenue
-                  ? Math.round((Number(r.revenue || 0) / maxRevenue) * 100)
-                  : 0;
-                const ordersPct = maxOrders
-                  ? Math.round((Number(r.ordersCount || 0) / maxOrders) * 100)
-                  : 0;
-                return (
-                  <div
-                    key={r.restaurantName}
-                    className="border border-gray-100 rounded-lg p-4 shadow-sm"
-                  >
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <p className="text-sm text-text-light-gray">
-                          Restaurant
-                        </p>
-                        <p className="text-lg font-semibold text-text-dark-gray">
-                          {r.restaurantName}
-                        </p>
-                      </div>
-                      <div className="flex gap-3 flex-wrap justify-end">
-                        <StatsCard
-                          title="Commandes"
-                          stat={r.ordersCount}
-                          icon="file-invoice-dollar"
-                        />
-                        <StatsCard
-                          title="Revenus"
-                          stat={`${r.revenue} $`}
-                          icon="money-bill-wave"
-                        />
-                      </div>
-                    </div>
-                    <div className="mt-4 space-y-2">
-                      <div>
-                        <div className="flex justify-between text-xs text-text-light-gray">
-                          <span>Revenus</span>
-                          <span>{r.revenue} $</span>
-                        </div>
-                        <div className="w-full h-2 rounded-full bg-gray-100 overflow-hidden">
-                          <div
-                            className="h-full bg-gradient-to-r from-pr to-[#0f172a]"
-                            style={{ width: `${revenuePct}%` }}
-                          />
-                        </div>
-                      </div>
-                      <div>
-                        <div className="flex justify-between text-xs text-text-light-gray">
-                          <span>Commandes</span>
-                          <span>{r.ordersCount}</span>
-                        </div>
-                        <div className="w-full h-2 rounded-full bg-gray-100 overflow-hidden">
-                          <div
-                            className="h-full bg-gradient-to-r from-green-400 to-emerald-700"
-                            style={{ width: `${ordersPct}%` }}
-                          />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
           ) : (
-            <div className="text-sm text-text-light-gray text-center py-6">
-              Aucune donnée pour cette période.
-            </div>
+            <AnalyticsChart selectedGraph={selectedGraph} charts={charts} />
           )}
         </div>
       </div>

@@ -1,6 +1,18 @@
+import { getToken } from "@/actions";
 import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+const applyAuthHeader = async () => {
+  const token = await getToken();
+  const tokenValue = token?.value;
+  if (tokenValue) {
+    axios.defaults.headers.common["Authorization"] = `Bearer ${tokenValue}`;
+  } else {
+    delete axios.defaults.headers.common["Authorization"];
+  }
+};
+
 const getRestaurants = async () => {
   try {
     let getRestaurantsResponse = await axios.get(`${API_URL}/restaurants/`);
@@ -309,6 +321,7 @@ const updateRestaurantToppingAvailability = async (id, toppingId) => {
 };
 const getRestaurantsSettings = async () => {
   try {
+    await applyAuthHeader();
     let getRestaurantsResponse = await axios.get(
       `${API_URL}/restaurants/settings`
     );
@@ -328,13 +341,14 @@ const getRestaurantsSettings = async () => {
   } catch (error) {
     return {
       status: false,
-      message: error.message,
+      message: error?.response?.data?.message || error.message,
     };
   }
 };
 
 const updateSettings = async (id, settings) => {
   try {
+    await applyAuthHeader();
     let response = await axios.put(
       `${API_URL}/restaurants/update/settings/${id}`,
       {
@@ -358,7 +372,7 @@ const updateSettings = async (id, settings) => {
     console.log(error);
     return {
       status: false,
-      message: error.message,
+      message: error?.response?.data?.message || error.message,
     };
   }
 };

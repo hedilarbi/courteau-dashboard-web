@@ -1,24 +1,30 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
-import { FaChevronUp, FaChevronDown, FaTrash } from "react-icons/fa";
+import { FaChevronDown, FaChevronUp, FaTrash } from "react-icons/fa";
 
 import { OrderStatus } from "../../../constants";
 import { FaMagnifyingGlass } from "react-icons/fa6";
 import DeleteWarningModal from "@/components/modals/DeleteWarningModal";
 import ToastNotification from "@/components/ToastNotification";
-import { useRouter } from "next/navigation";
-import {
-  deleteOrder,
-  getOrderFiltred,
-  getRestaurantList,
-} from "@/services/OrdersServices";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { deleteOrder, getOrderFiltred } from "@/services/OrdersServices";
 import { dateToDDMMYYYYHHMM } from "@/utils/dateFormatters";
 import { HiMiniPencil } from "react-icons/hi2";
 import Spinner from "@/components/spinner/Spinner";
 
+const parsePositiveInt = (value, fallback = 1) => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 1) {
+    return fallback;
+  }
+  return Math.floor(parsed);
+};
+
 const OrdersScreen = () => {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [toastData, setToastData] = useState({
     show: false,
     type: "",
@@ -43,24 +49,28 @@ const OrdersScreen = () => {
   };
 
   const [isLoading, setIsLoading] = useState(true);
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(() => searchParams.get("q") || "");
   const [orderId, setOrderId] = useState("");
   const [deleteWarningModelState, setDeleteWarningModelState] = useState(false);
   const [refresh, setRefresh] = useState(0);
-  const [filter, setFilter] = useState("");
+  const [filter, setFilter] = useState(() => searchParams.get("status") || "");
   const [navigaTo, setNavigaTo] = useState("");
   const [error, setError] = useState(false);
   const [orders, setOrders] = useState([]);
-  const [page, setPage] = useState(1);
+  const [page, setPage] = useState(() =>
+    parsePositiveInt(searchParams.get("page"), 1),
+  );
   const [pages, setPages] = useState(1);
-  const [restaurantList, setRestaurantList] = useState([]);
-  const [selectedRestaurant, setSelectedRestaurant] = useState({
-    label: "Tous les restaurants",
-    value: "",
-  });
-  const [showFilters, setShowFilters] = useState(false);
+  const [orderTypeFilter, setOrderTypeFilter] = useState(
+    () => searchParams.get("type") || "",
+  );
+  const [fromDate, setFromDate] = useState(() => searchParams.get("from") || "");
+  const [toDate, setToDate] = useState(() => searchParams.get("to") || "");
+  const [showFilters, setShowFilters] = useState(
+    () => searchParams.get("filters") === "1",
+  );
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
     setError(false);
     try {
@@ -71,35 +81,19 @@ const OrdersScreen = () => {
         return;
       }
 
-      const [response, response2] = await Promise.all([
-        getOrderFiltred({
-          page,
-          limit: 20,
-          status: filter,
-          search,
-          restaurant: selectedRestaurant.value,
-        }),
-        getRestaurantList(),
-      ]);
+      const response = await getOrderFiltred({
+        page,
+        limit: 20,
+        status: filter,
+        search,
+        type: orderTypeFilter,
+        from: fromDate || undefined,
+        to: toDate || undefined,
+      });
 
       if (response.status) {
         setOrders(response.data.orders);
         setPages(response.data.pages);
-      }
-      if (response2.status) {
-        let list = [
-          {
-            label: "Tous les restaurants",
-            value: "",
-          },
-        ];
-        response2.data.map((r) =>
-          list.push({
-            label: r.name,
-            value: r._id,
-          })
-        );
-        setRestaurantList(list);
       }
     } catch (e) {
       setError(true);
@@ -107,7 +101,7 @@ const OrdersScreen = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [page, pages, filter, search, orderTypeFilter, fromDate, toDate]);
 
   const handleDeleteOrder = async () => {
     try {
@@ -143,20 +137,42 @@ const OrdersScreen = () => {
 
   useEffect(() => {
     fetchData();
-  }, [refresh, page, filter, selectedRestaurant]);
+  }, [fetchData, refresh]);
+
+  useEffect(() => {
+    const params = new URLSearchParams();
+    if (search) params.set("q", search);
+    if (filter) params.set("status", filter);
+    if (orderTypeFilter) params.set("type", orderTypeFilter);
+    if (fromDate) params.set("from", fromDate);
+    if (toDate) params.set("to", toDate);
+    if (showFilters) params.set("filters", "1");
+    if (page > 1) params.set("page", String(page));
+
+    const nextQuery = params.toString();
+    const currentQuery = searchParams.toString();
+    if (nextQuery !== currentQuery) {
+      router.replace(nextQuery ? `${pathname}?${nextQuery}` : pathname, {
+        scroll: false,
+      });
+    }
+  }, [
+    router,
+    pathname,
+    searchParams,
+    search,
+    filter,
+    orderTypeFilter,
+    fromDate,
+    toDate,
+    showFilters,
+    page,
+  ]);
 
   const handleShowDeleteWarning = (id) => {
     setOrderId(id);
     setDeleteWarningModelState(true);
   };
-
-  if (isLoading) {
-    return (
-      <div className="flex-1 flex justify-center items-center h-screen">
-        <Spinner />
-      </div>
-    );
-  }
 
   if (error) {
     return (
@@ -199,11 +215,6 @@ const OrdersScreen = () => {
                   <span className="bg-white/15 border border-white/20 text-sm px-3 py-1 rounded-full">
                     {orders.length} commande(s)
                   </span>
-                  {selectedRestaurant.label && (
-                    <span className="bg-white/15 border border-white/20 text-sm px-3 py-1 rounded-full">
-                      {selectedRestaurant.label}
-                    </span>
-                  )}
                 </div>
               </div>
               <p className="text-sm opacity-90 mt-1">
@@ -215,7 +226,7 @@ const OrdersScreen = () => {
                 <FaMagnifyingGlass size={16} />
                 <input
                   className="bg-transparent placeholder-white/70 text-sm focus:outline-none w-48"
-                  placeholder="Chercher par code"
+                  placeholder="Chercher par code ou client"
                   onChange={(e) => setSearch(e.target.value)}
                   value={search}
                 />
@@ -286,12 +297,11 @@ const OrdersScreen = () => {
               className="inline-flex items-center gap-2 text-sm font-semibold text-pr"
               onClick={() => setShowFilters((prev) => !prev)}
             >
-              <span>Filtres</span>
-              {showFilters ? <FaChevronUp /> : <FaChevronDown />}
+              <span>{showFilters ? "Masquer" : "Afficher"} les filtres</span>
+              {showFilters ? <FaChevronUp size={14} /> : <FaChevronDown size={14} />}
             </button>
-
             {showFilters && (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">
                 <div className="flex flex-wrap gap-2">
                   {[
                     { label: "Tout", value: "" },
@@ -322,26 +332,45 @@ const OrdersScreen = () => {
 
                 <div>
                   <label className="block text-xs text-text-light-gray mb-1">
-                    Restaurant
+                    Type de commande
                   </label>
                   <select
-                    className="h-10 w-full md:w-80 border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-pr bg-white"
-                    value={selectedRestaurant.value}
-                    onChange={(e) => {
-                      const selected = restaurantList.find(
-                        (r) => r.value === e.target.value
-                      );
-                      setSelectedRestaurant(
-                        selected || { label: "Tous les restaurants", value: "" }
-                      );
+                    className="h-10 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-pr bg-white"
+                    value={orderTypeFilter}
+                    onChange={(e) => setOrderTypeFilter(e.target.value)}
+                  >
+                    <option value="">Tous les types</option>
+                    <option value="delivery">Livraison</option>
+                    <option value="pick up">Emporter</option>
+                  </select>
+                </div>
+                <div className="grid grid-cols-1 gap-2">
+                  <label className="block text-xs text-text-light-gray mb-1">
+                    Intervalle de dates
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="date"
+                      className="h-10 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-pr bg-white"
+                      value={fromDate}
+                      onChange={(e) => setFromDate(e.target.value)}
+                    />
+                    <input
+                      type="date"
+                      className="h-10 w-full border border-gray-300 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-pr bg-white"
+                      value={toDate}
+                      onChange={(e) => setToDate(e.target.value)}
+                    />
+                  </div>
+                  <button
+                    className="justify-self-start text-xs px-3 py-1.5 rounded-md border border-gray-300 hover:border-pr text-text-dark-gray"
+                    onClick={() => {
+                      setFromDate("");
+                      setToDate("");
                     }}
                   >
-                    {restaurantList.map((restaurant) => (
-                      <option key={restaurant.value} value={restaurant.value}>
-                        {restaurant.label}
-                      </option>
-                    ))}
-                  </select>
+                    Réinitialiser les dates
+                  </button>
                 </div>
               </div>
             )}
@@ -351,12 +380,17 @@ const OrdersScreen = () => {
             <div className="grid grid-cols-12 bg-gray-50 text-xs font-semibold uppercase tracking-wide text-text-light-gray px-4 py-3">
               <span className="col-span-2">Statut</span>
               <span className="col-span-2">Code</span>
-              <span className="col-span-2">Type</span>
-              <span className="col-span-2 ">Total</span>
-              <span className="col-span-3">Créée le</span>
+              <span className="col-span-2">Client</span>
+              <span className="col-span-1">Type</span>
+              <span className="col-span-1 ">Total</span>
+              <span className="col-span-3">Date création</span>
               <span className="col-span-1 text-right">Actions</span>
             </div>
-            {orders.length > 0 ? (
+            {isLoading ? (
+              <div className="h-[calc(100vh-340px)] min-h-[220px] flex items-center justify-center">
+                <Spinner />
+              </div>
+            ) : orders.length > 0 ? (
               <div className="divide-y divide-gray-100 h-[calc(100vh-340px)] overflow-y-auto">
                 {orders.map((order) => (
                   <div
@@ -370,13 +404,16 @@ const OrdersScreen = () => {
                     >
                       {order.status}
                     </span>
-                    <span className="col-span-2 text-sm font-medium text-text-dark-gray">
+                    <span className="col-span-2 text-sm font-semibold text-text-dark-gray truncate">
                       {order.code}
                     </span>
-                    <span className="col-span-2 text-sm text-text-dark-gray">
+                    <span className="col-span-2 text-sm text-text-light-gray truncate">
+                      {order?.user?.name || "Client inconnu"}
+                    </span>
+                    <span className="col-span-1 text-sm text-text-dark-gray">
                       {order.type === "delivery" ? "Livraison" : "Emporter"}
                     </span>
-                    <span className="col-span-2 text-sm  font-semibold text-text-dark-gray ">
+                    <span className="col-span-1 text-sm  font-semibold text-text-dark-gray ">
                       {order.total_price.toFixed(2)} $
                     </span>
                     <span className="col-span-3 text-sm text-text-light-gray">

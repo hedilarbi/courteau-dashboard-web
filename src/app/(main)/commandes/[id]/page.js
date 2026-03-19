@@ -86,6 +86,34 @@ const OrderScreen = ({ params }) => {
     );
   }
 
+  const toSafeNumber = (value, fallback = 0) => {
+    const parsed = Number(value);
+    return Number.isFinite(parsed) ? parsed : fallback;
+  };
+  const subscriptionBenefits =
+    order?.subscriptionBenefits && typeof order.subscriptionBenefits === "object"
+      ? order.subscriptionBenefits
+      : null;
+  const subscriptionUsed = Boolean(subscriptionBenefits?.isApplied);
+  const subscriptionDiscountPercent = toSafeNumber(
+    subscriptionBenefits?.discountPercent,
+    0,
+  );
+  const orderDiscountPercent = toSafeNumber(order?.discount, 0);
+  const isFirstOrderDiscountApplied = orderDiscountPercent >= 20;
+  const showSubscriptionDiscountInfo =
+    subscriptionUsed &&
+    !isFirstOrderDiscountApplied &&
+    (subscriptionDiscountPercent > 0 || orderDiscountPercent > 0);
+  const displayedSubscriptionDiscountPercent =
+    subscriptionDiscountPercent > 0
+      ? subscriptionDiscountPercent
+      : orderDiscountPercent;
+  const discountAmount = Math.max(
+    0,
+    toSafeNumber(order?.sub_total, 0) - toSafeNumber(order?.sub_total_after_discount, 0),
+  );
+
   return (
     <div className="flex-1 bg-[#f5f7fb] max-h-screen overflow-y-auto font-roboto">
       <div className="max-w-6xl mx-auto px-5 py-6 flex flex-col gap-5">
@@ -309,6 +337,26 @@ const OrderScreen = ({ params }) => {
                       order.rewards?.length}
                   </span>
                 </div>
+                {showSubscriptionDiscountInfo && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-text-light-gray">
+                      Rabais abonnement
+                    </span>
+                    <span className="font-semibold">
+                      {displayedSubscriptionDiscountPercent} %
+                    </span>
+                  </div>
+                )}
+                {isFirstOrderDiscountApplied && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-text-light-gray">
+                      Rabais première commande
+                    </span>
+                    <span className="font-semibold">
+                      {orderDiscountPercent} %
+                    </span>
+                  </div>
+                )}
               </div>
             </section>
 
@@ -325,12 +373,24 @@ const OrderScreen = ({ params }) => {
                     {order.sub_total.toFixed(2)} $
                   </span>
                 </div>
-                {order.discount > 0 && (
+                {isFirstOrderDiscountApplied && (
                   <div className="flex items-center justify-between">
-                    <span className="text-text-light-gray">Remise</span>
+                    <span className="text-text-light-gray">
+                      Rabais première commande
+                    </span>
                     <span className="font-semibold">
-                      -{order.discount}% (
-                      {order.sub_total_after_discount?.toFixed(2)} $)
+                      -{discountAmount.toFixed(2)} $ ({orderDiscountPercent}%)
+                    </span>
+                  </div>
+                )}
+                {showSubscriptionDiscountInfo && (
+                  <div className="flex items-center justify-between">
+                    <span className="text-text-light-gray">
+                      Rabais abonnement
+                    </span>
+                    <span className="font-semibold">
+                      -{discountAmount.toFixed(2)} $ (
+                      {displayedSubscriptionDiscountPercent}%)
                     </span>
                   </div>
                 )}

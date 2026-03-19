@@ -16,6 +16,7 @@ import { HiBuildingStorefront } from "react-icons/hi2";
 import { AiFillNotification } from "react-icons/ai";
 import { FaStar } from "react-icons/fa6";
 import { GiArchiveResearch } from "react-icons/gi";
+import { MdSubscriptions } from "react-icons/md";
 
 const NavItemsList = () => {
   const NAV_ITEMS_LIST = [
@@ -78,6 +79,12 @@ const NavItemsList = () => {
       title: "Réglages de l'accueil",
       path: `/home-settings`,
       icon: <IoHomeOutline size={24} />,
+    },
+    {
+      id: 17,
+      title: "Abonnement",
+      path: `/abonnement`,
+      icon: <MdSubscriptions size={24} />,
     },
     {
       id: 11,

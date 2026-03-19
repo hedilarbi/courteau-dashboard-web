@@ -5,8 +5,6 @@ import Spinner from "@/components/spinner/Spinner";
 import ToastNotification from "@/components/ToastNotification";
 import { dateToDDMMYYYYHHMM } from "@/utils/dateFormatters";
 import { getToken } from "@/actions";
-import { useSelector } from "react-redux";
-import { selectStaffToken } from "@/redux/slices/StaffSlice";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -23,6 +21,10 @@ const AuditsPage = () => {
   });
   const [search, setSearch] = useState("");
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
+  const [appliedDateFrom, setAppliedDateFrom] = useState("");
+  const [appliedDateTo, setAppliedDateTo] = useState("");
 
   const fetchAudits = async ({ silent = false } = {}) => {
     if (!silent) {
@@ -31,24 +33,32 @@ const AuditsPage = () => {
     setError(null);
     try {
       const token = await getToken();
+      if (!token?.value) {
+        throw new Error("Session expirée. Veuillez vous reconnecter.");
+      }
 
-      const res = await fetch(
-        `${API_URL}/audits?page=${page}&limit=20`,
-        {
-          method: "GET",
-          headers: {
-            Authorization: `Bearer ${token.value}`,
-          },
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: "20",
+      });
+      if (appliedDateFrom) {
+        params.set("from", appliedDateFrom);
+      }
+      if (appliedDateTo) {
+        params.set("to", appliedDateTo);
+      }
+
+      const res = await fetch(`${API_URL}/audits?${params.toString()}`, {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token.value}`,
         },
-        {
-          cache: "no-store",
-        },
-      );
+        cache: "no-store",
+      });
       if (!res.ok) {
         throw new Error("Impossible de récupérer les audits");
       }
       const data = await res.json();
-      console.log("Audits fetched:", data.audits[3]);
 
       setAudits(data.audits || []);
       setPages(data.pages || 1);
@@ -67,11 +77,35 @@ const AuditsPage = () => {
   useEffect(() => {
     fetchAudits();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page]);
+  }, [page, appliedDateFrom, appliedDateTo]);
 
   const handleRefresh = () => {
     setIsRefreshing(true);
     fetchAudits({ silent: true });
+  };
+
+  const handleApplyDateFilter = () => {
+    if (dateFrom && dateTo && new Date(dateFrom) > new Date(dateTo)) {
+      setToastData({
+        show: true,
+        type: "error",
+        message: "La date de début doit être inférieure à la date de fin.",
+      });
+      setTimeout(() => setToastData((p) => ({ ...p, show: false })), 3000);
+      return;
+    }
+
+    setPage(1);
+    setAppliedDateFrom(dateFrom);
+    setAppliedDateTo(dateTo);
+  };
+
+  const handleClearDateFilter = () => {
+    setDateFrom("");
+    setDateTo("");
+    setPage(1);
+    setAppliedDateFrom("");
+    setAppliedDateTo("");
   };
 
   const filteredAudits = useMemo(() => {
@@ -134,7 +168,7 @@ const AuditsPage = () => {
                 Historique des actions utilisateurs et système.
               </p>
             </div>
-            <div className="flex flex-col sm:flex-row gap-2">
+            <div className="flex flex-col gap-2">
               <input
                 type="search"
                 className="bg-white/15 border border-white/25 rounded-md px-3 py-2 text-sm placeholder-white/70 focus:outline-none focus:border-white w-64"
@@ -142,15 +176,47 @@ const AuditsPage = () => {
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
-              <button
-                className={`rounded-md px-4 py-2 text-sm font-semibold transition bg-white/15 border border-white/25 text-white hover:bg-white/20 ${
-                  isRefreshing ? "opacity-70 cursor-not-allowed" : ""
-                }`}
-                onClick={handleRefresh}
-                disabled={isRefreshing}
-              >
-                {isRefreshing ? "Rafraîchissement..." : "Rafraîchir"}
-              </button>
+              <div className="flex flex-wrap items-end gap-2">
+                <div>
+                  <label className="block text-[11px] opacity-80 mb-1">De</label>
+                  <input
+                    type="date"
+                    value={dateFrom}
+                    onChange={(event) => setDateFrom(event.target.value)}
+                    className="bg-white/15 border border-white/25 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-white"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[11px] opacity-80 mb-1">À</label>
+                  <input
+                    type="date"
+                    value={dateTo}
+                    onChange={(event) => setDateTo(event.target.value)}
+                    className="bg-white/15 border border-white/25 rounded-md px-3 py-2 text-sm focus:outline-none focus:border-white"
+                  />
+                </div>
+                <button
+                  className="rounded-md px-3 py-2 text-sm font-semibold transition bg-white text-[#111827] hover:brightness-95"
+                  onClick={handleApplyDateFilter}
+                >
+                  Appliquer
+                </button>
+                <button
+                  className="rounded-md px-3 py-2 text-sm font-semibold transition bg-white/15 border border-white/25 text-white hover:bg-white/20"
+                  onClick={handleClearDateFilter}
+                >
+                  Réinitialiser
+                </button>
+                <button
+                  className={`rounded-md px-4 py-2 text-sm font-semibold transition bg-white/15 border border-white/25 text-white hover:bg-white/20 ${
+                    isRefreshing ? "opacity-70 cursor-not-allowed" : ""
+                  }`}
+                  onClick={handleRefresh}
+                  disabled={isRefreshing}
+                >
+                  {isRefreshing ? "Rafraîchissement..." : "Rafraîchir"}
+                </button>
+              </div>
             </div>
           </div>
           <div className="flex flex-wrap gap-2 text-xs">
@@ -160,6 +226,11 @@ const AuditsPage = () => {
             <span className="bg-white/15 border border-white/20 rounded-full px-3 py-1">
               Page {page}/{pages || 1}
             </span>
+            {(appliedDateFrom || appliedDateTo) && (
+              <span className="bg-white/15 border border-white/20 rounded-full px-3 py-1">
+                Intervalle: {appliedDateFrom || "..."} → {appliedDateTo || "..."}
+              </span>
+            )}
           </div>
         </div>
 
@@ -190,11 +261,20 @@ const AuditsPage = () => {
                       model.toLowerCase() === "order" &&
                       typeof audit.details === "object"
                     ) {
-                      detailsDisplay =
+                      const orderUserName =
+                        audit.details?.user?.name ||
+                        audit.details?.user?.email ||
+                        audit.details?.user?.username ||
+                        "";
+                      const orderCode =
                         audit.details?.code ||
                         audit.details?.orderCode ||
                         audit.details?._id ||
                         "-";
+                      detailsDisplay =
+                        orderUserName && orderCode !== "-"
+                          ? `${orderCode} - ${orderUserName}`
+                          : orderCode;
                     } else if (
                       model.toLowerCase() === "restaurant" &&
                       typeof audit.details === "object"

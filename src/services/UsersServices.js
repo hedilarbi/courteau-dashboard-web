@@ -50,6 +50,30 @@ const getUser = async (id) => {
   }
 };
 
+const getUserStats = async (id, params = {}) => {
+  try {
+    const response = await axios.get(`${API_URL}/users/stats/${id}`, {
+      params,
+    });
+
+    if (response?.status === 200) {
+      return {
+        status: true,
+        data: response?.data || null,
+      };
+    }
+    return {
+      status: false,
+      message: "Erreur de chargement des statistiques utilisateur.",
+    };
+  } catch (error) {
+    return {
+      status: false,
+      message: error?.response?.data?.message || error.message,
+    };
+  }
+};
+
 const deleteUser = async (id) => {
   try {
     let deleteUserResponse = await axios.delete(
@@ -124,4 +148,11 @@ const banUser = async (id) => {
   }
 };
 
-export { getUsers, getUser, deleteUser, getUsersPagination, banUser };
+export {
+  getUsers,
+  getUser,
+  getUserStats,
+  deleteUser,
+  getUsersPagination,
+  banUser,
+};

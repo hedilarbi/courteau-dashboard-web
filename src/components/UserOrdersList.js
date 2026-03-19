@@ -1,7 +1,7 @@
 import { dateToDDMMYYYYHHMM } from "@/utils/dateFormatters";
 import React from "react";
 
-const UserOrdersList = ({ orders }) => {
+const UserOrdersList = ({ orders = [] }) => {
   return (
     <div className="bg-white shadow-default rounded-xl mt-4 font-roboto border border-gray-100 overflow-hidden">
       {orders.length > 0 ? (
