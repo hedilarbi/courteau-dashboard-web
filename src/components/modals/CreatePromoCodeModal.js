@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import ModalWrapper from "./ModalWrapper";
 import { MdOutlineClose } from "react-icons/md";
-import { getItemsNames } from "@/services/MenuItemServices";
+import { getCategories, getItemsNames } from "@/services/MenuItemServices";
 import Spinner from "../spinner/Spinner";
 import DropDown from "../DropDown";
 import { createPromoCode } from "@/services/PromoCodesServices";
@@ -13,7 +13,9 @@ const CreatePromoCodeModal = ({ setShowCreateModal, setRefresh }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [itemsNames, setItemsNames] = useState([]);
+  const [categoriesNames, setCategoriesNames] = useState([]);
   const [item, setItem] = useState(null);
+  const [category, setCategory] = useState(null);
   const [endDate, setEndDate] = useState("");
   const [creating, setCreating] = useState(false);
   const [usagePerUser, setUsagePerUser] = useState(1);
@@ -24,15 +26,32 @@ const CreatePromoCodeModal = ({ setShowCreateModal, setRefresh }) => {
   });
   const fetchData = async () => {
     try {
-      const response = await getItemsNames();
-      if (response?.status) {
-        let list = [];
-        response.data.map((item) => {
+      const [itemsResponse, categoriesResponse] = await Promise.all([
+        getItemsNames(),
+        getCategories(),
+      ]);
+
+      if (itemsResponse?.status) {
+        const list = [];
+        itemsResponse.data.map((item) => {
           list.push({ value: item._id, label: item.name });
         });
         setItemsNames(list);
       } else {
-        console.error("Categories data not found:", categoriesResponse.message);
+        console.error("Menu items data not found:", itemsResponse?.message);
+      }
+
+      if (categoriesResponse?.status) {
+        const list = categoriesResponse.data.map((entry) => ({
+          value: entry._id,
+          label: entry.name,
+        }));
+        setCategoriesNames([
+          { value: "", label: "Toutes les catégories" },
+          ...list,
+        ]);
+      } else {
+        console.error("Categories data not found:", categoriesResponse?.message);
       }
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -82,6 +101,10 @@ const CreatePromoCodeModal = ({ setShowCreateModal, setRefresh }) => {
         amount: type === "amount" ? value : null,
         percent: type === "percent" ? value : null,
         freeItem: type === "free_item" ? item.value : null,
+        category:
+          type === "amount" || type === "percent"
+            ? category?.value || null
+            : null,
         usagePerUser: typeOfUsage === "limited" ? usagePerUser : null,
         endDate: new Date(endDate).toISOString(),
         notifContent,
@@ -187,6 +210,19 @@ const CreatePromoCodeModal = ({ setShowCreateModal, setRefresh }) => {
                   />
                 )}
               </div>
+              {(type === "amount" || type === "percent") && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Catégorie applicable
+                  </label>
+                  <DropDown
+                    value={category}
+                    setter={setCategory}
+                    list={categoriesNames}
+                    placeholder="Toutes les catégories"
+                  />
+                </div>
+              )}
               <div className="">
                 <label
                   htmlFor="usagePerUser"

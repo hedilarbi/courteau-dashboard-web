@@ -152,10 +152,11 @@ const PromoCodes = () => {
         <div className="bg-white rounded-xl shadow-default border border-gray-100 overflow-hidden">
           {promoCodes.length > 0 ? (
             <div className="overflow-x-auto">
-              <div className="min-w-[1020px]">
-                <div className="grid grid-cols-[1fr,1fr,0.8fr,0.8fr,0.8fr,1fr,0.6fr] bg-gray-50 text-xs uppercase tracking-wide text-text-light-gray px-4 py-3">
+              <div className="min-w-[1160px]">
+                <div className="grid grid-cols-[1fr,1fr,1fr,0.8fr,0.8fr,0.8fr,1fr,0.6fr] bg-gray-50 text-xs uppercase tracking-wide text-text-light-gray px-4 py-3">
                   <span>Code</span>
                   <span>Type</span>
+                  <span>Catégorie</span>
                   <span>Valeur</span>
                   <span>Utilisation</span>
                   <span>Usage / utilisateur</span>
@@ -167,7 +168,7 @@ const PromoCodes = () => {
                   {promoCodes.map((promoCode) => (
                     <div
                       key={promoCode._id}
-                      className="grid grid-cols-[1fr,1fr,0.8fr,0.8fr,0.8fr,1fr,0.6fr] items-center px-4 py-3 text-sm hover:bg-gray-50 transition"
+                      className="grid grid-cols-[1fr,1fr,1fr,0.8fr,0.8fr,0.8fr,1fr,0.6fr] items-center px-4 py-3 text-sm hover:bg-gray-50 transition"
                     >
                       <span className="font-semibold text-text-dark-gray truncate">
                         {promoCode.code}
@@ -178,6 +179,9 @@ const PromoCodes = () => {
                           : promoCode.type === "amount"
                           ? "Montant"
                           : "Article gratuit"}
+                      </span>
+                      <span className="text-text-dark-gray">
+                        {promoCode?.category?.name || "Toutes"}
                       </span>
                       <span className="font-semibold text-pr">
                         {promoCode.type === "percent"
