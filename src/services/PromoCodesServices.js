@@ -93,7 +93,13 @@ const updatePromoCode = async (id, promoCode) => {
       };
     }
   } catch (error) {
-    return { status: false, message: error.message };
+    return {
+      status: false,
+      message:
+        error?.response?.data?.error ||
+        error?.response?.data?.message ||
+        error?.message,
+    };
   }
 };
 

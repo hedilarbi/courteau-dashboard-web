@@ -5,9 +5,28 @@ import Spinner from "@/components/spinner/Spinner";
 import ToastNotification from "@/components/ToastNotification";
 import { deletePromoCode, getPromoCodes } from "@/services/PromoCodesServices";
 import React, { useEffect, useState } from "react";
-import { FaTrash } from "react-icons/fa";
-import { HiMiniPencil } from "react-icons/hi2";
+import { FaPen, FaTrash } from "react-icons/fa";
 import { dateToDDMMYYYYHHMM } from "@/utils/dateFormatters";
+
+const getPromoExcludedCategoriesLabel = (promoCode) => {
+  const excludedCategories = Array.isArray(promoCode?.excludedCategories)
+    ? promoCode.excludedCategories
+    : [];
+
+  if (excludedCategories.length > 0) {
+    return excludedCategories
+      .map((entry) => String(entry?.name || "").trim())
+      .filter(Boolean)
+      .join(", ");
+  }
+
+  if (promoCode?.category?.name) {
+    return `Legacy: seulement ${promoCode.category.name}`;
+  }
+
+  return "Aucune";
+};
+
 const PromoCodes = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -21,6 +40,8 @@ const PromoCodes = () => {
     message: "",
   });
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [promoCodeToEdit, setPromoCodeToEdit] = useState(null);
 
   const fetchData = async () => {
     setIsLoading(true);
@@ -44,6 +65,10 @@ const PromoCodes = () => {
   const handleShowDeleteWarning = (promoCode) => {
     setPromoCode(promoCode);
     setDeleteWarningModelState(true);
+  };
+  const handleShowEditModal = (promoCode) => {
+    setPromoCodeToEdit(promoCode);
+    setShowEditModal(true);
   };
   const handleDeletePromoCode = async () => {
     try {
@@ -124,6 +149,13 @@ const PromoCodes = () => {
           setRefresh={setRefresh}
         />
       )}
+      {showEditModal && (
+        <CreatePromoCodeModal
+          setShowCreateModal={setShowEditModal}
+          setRefresh={setRefresh}
+          promoCode={promoCodeToEdit}
+        />
+      )}
       <div className="max-w-6xl mx-auto px-5 py-6 flex flex-col gap-4">
         <div className="bg-gradient-to-r from-pr to-[#111827] text-white rounded-2xl shadow-lg p-6 flex flex-col gap-3">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -153,10 +185,10 @@ const PromoCodes = () => {
           {promoCodes.length > 0 ? (
             <div className="overflow-x-auto">
               <div className="min-w-[1160px]">
-                <div className="grid grid-cols-[1fr,1fr,1fr,0.8fr,0.8fr,0.8fr,1fr,0.6fr] bg-gray-50 text-xs uppercase tracking-wide text-text-light-gray px-4 py-3">
+                <div className="grid grid-cols-[1fr,1fr,1.3fr,0.8fr,0.8fr,0.8fr,1fr,0.6fr] bg-gray-50 text-xs uppercase tracking-wide text-text-light-gray px-4 py-3">
                   <span>Code</span>
                   <span>Type</span>
-                  <span>Catégorie</span>
+                  <span>Catégories exclues</span>
                   <span>Valeur</span>
                   <span>Utilisation</span>
                   <span>Usage / utilisateur</span>
@@ -168,7 +200,7 @@ const PromoCodes = () => {
                   {promoCodes.map((promoCode) => (
                     <div
                       key={promoCode._id}
-                      className="grid grid-cols-[1fr,1fr,1fr,0.8fr,0.8fr,0.8fr,1fr,0.6fr] items-center px-4 py-3 text-sm hover:bg-gray-50 transition"
+                      className="grid grid-cols-[1fr,1fr,1.3fr,0.8fr,0.8fr,0.8fr,1fr,0.6fr] items-center px-4 py-3 text-sm hover:bg-gray-50 transition"
                     >
                       <span className="font-semibold text-text-dark-gray truncate">
                         {promoCode.code}
@@ -181,7 +213,7 @@ const PromoCodes = () => {
                           : "Article gratuit"}
                       </span>
                       <span className="text-text-dark-gray">
-                        {promoCode?.category?.name || "Toutes"}
+                        {getPromoExcludedCategoriesLabel(promoCode)}
                       </span>
                       <span className="font-semibold text-pr">
                         {promoCode.type === "percent"
@@ -202,7 +234,13 @@ const PromoCodes = () => {
                         {dateToDDMMYYYYHHMM(promoCode.endDate)}
                       </span>
 
-                      <div className="flex items-center justify-end">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          className="p-2 rounded-md bg-[#1D4ED8]/10 text-[#1D4ED8] hover:bg-[#1D4ED8]/20 transition"
+                          onClick={() => handleShowEditModal(promoCode)}
+                        >
+                          <FaPen size={15} />
+                        </button>
                         <button
                           className="p-2 rounded-md bg-warning-red/10 text-warning-red hover:bg-warning-red/20 transition"
                           onClick={() => handleShowDeleteWarning(promoCode)}

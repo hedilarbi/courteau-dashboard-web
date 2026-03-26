@@ -4,9 +4,26 @@ import { MdOutlineClose } from "react-icons/md";
 import { getCategories, getItemsNames } from "@/services/MenuItemServices";
 import Spinner from "../spinner/Spinner";
 import DropDown from "../DropDown";
-import { createPromoCode } from "@/services/PromoCodesServices";
+import {
+  createPromoCode,
+  updatePromoCode,
+} from "@/services/PromoCodesServices";
 
-const CreatePromoCodeModal = ({ setShowCreateModal, setRefresh }) => {
+const normalizeId = (value) => String(value || "").trim();
+
+const formatDateInputValue = (value) => {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toISOString().slice(0, 10);
+};
+
+const CreatePromoCodeModal = ({
+  setShowCreateModal,
+  setRefresh,
+  promoCode = null,
+}) => {
+  const isEditMode = Boolean(promoCode?._id);
   const [code, setCode] = useState("");
   const [type, setType] = useState("percent");
   const [value, setValue] = useState("");
@@ -15,7 +32,12 @@ const CreatePromoCodeModal = ({ setShowCreateModal, setRefresh }) => {
   const [itemsNames, setItemsNames] = useState([]);
   const [categoriesNames, setCategoriesNames] = useState([]);
   const [item, setItem] = useState(null);
-  const [category, setCategory] = useState(null);
+  const [selectedExcludedCategories, setSelectedExcludedCategories] = useState(
+    [],
+  );
+  const [isCategoriesDropdownOpen, setIsCategoriesDropdownOpen] =
+    useState(false);
+  const [categoriesSearch, setCategoriesSearch] = useState("");
   const [endDate, setEndDate] = useState("");
   const [creating, setCreating] = useState(false);
   const [usagePerUser, setUsagePerUser] = useState(1);
@@ -24,6 +46,29 @@ const CreatePromoCodeModal = ({ setShowCreateModal, setRefresh }) => {
     title: "",
     body: "",
   });
+
+  useEffect(() => {
+    if (!promoCode) return;
+
+    setCode(String(promoCode.code || ""));
+    setType(String(promoCode.type || "percent"));
+    setValue(
+      promoCode.type === "amount"
+        ? String(promoCode.amount ?? "")
+        : promoCode.type === "percent"
+          ? String(promoCode.percent ?? "")
+          : "",
+    );
+    setEndDate(formatDateInputValue(promoCode.endDate));
+    setUsagePerUser(promoCode.usagePerUser ?? 1);
+    setTypeOfUsage(
+      typeof promoCode.usagePerUser === "number" ? "limited" : "unlimited",
+    );
+    setNotifContent({
+      title: String(promoCode?.notifContent?.title || ""),
+      body: String(promoCode?.notifContent?.body || ""),
+    });
+  }, [promoCode]);
   const fetchData = async () => {
     try {
       const [itemsResponse, categoriesResponse] = await Promise.all([
@@ -46,10 +91,7 @@ const CreatePromoCodeModal = ({ setShowCreateModal, setRefresh }) => {
           value: entry._id,
           label: entry.name,
         }));
-        setCategoriesNames([
-          { value: "", label: "Toutes les catégories" },
-          ...list,
-        ]);
+        setCategoriesNames(list);
       } else {
         console.error("Categories data not found:", categoriesResponse?.message);
       }
@@ -60,7 +102,7 @@ const CreatePromoCodeModal = ({ setShowCreateModal, setRefresh }) => {
     }
   };
 
-  const handleCreate = async () => {
+  const handleSubmit = async () => {
     if (!code) {
       setError("Code obligatoire");
       return;
@@ -95,32 +137,40 @@ const CreatePromoCodeModal = ({ setShowCreateModal, setRefresh }) => {
 
     try {
       setCreating(true);
-      const response = await createPromoCode({
+      const payload = {
         code: code.toUpperCase(),
         type,
         amount: type === "amount" ? value : null,
         percent: type === "percent" ? value : null,
         freeItem: type === "free_item" ? item.value : null,
-        category:
+        excludedCategories:
           type === "amount" || type === "percent"
-            ? category?.value || null
-            : null,
+            ? selectedExcludedCategories.map((entry) => entry.value)
+            : [],
         usagePerUser: typeOfUsage === "limited" ? usagePerUser : null,
         endDate: new Date(endDate).toISOString(),
         notifContent,
-      });
+      };
+      const response = isEditMode
+        ? await updatePromoCode(promoCode._id, payload)
+        : await createPromoCode(payload);
 
       if (response.status) {
         setRefresh((prev) => prev + 1);
         setShowCreateModal(false);
       } else {
         setError(
-          response.message || "Erreur lors de la création du code promotionnel"
+          response.message ||
+            `Erreur lors de ${
+              isEditMode ? "la modification" : "la création"
+            } du code promotionnel`
         );
       }
     } catch (err) {
       setError(
-        "Une erreur s'est produite lors de la création du code promotionnel"
+        `Une erreur s'est produite lors de ${
+          isEditMode ? "la modification" : "la création"
+        } du code promotionnel`
       );
     } finally {
       setCreating(false);
@@ -131,12 +181,67 @@ const CreatePromoCodeModal = ({ setShowCreateModal, setRefresh }) => {
   useEffect(() => {
     fetchData();
   }, []);
+
+  useEffect(() => {
+    if (!promoCode) return;
+
+    if (promoCode.type === "free_item") {
+      const selectedItem = itemsNames.find(
+        (entry) =>
+          normalizeId(entry?.value) === normalizeId(promoCode?.freeItem?._id),
+      );
+      setItem(selectedItem || null);
+      setSelectedExcludedCategories([]);
+      return;
+    }
+
+    const excludedIds = Array.isArray(promoCode?.excludedCategories)
+      ? promoCode.excludedCategories.map((entry) => normalizeId(entry?._id))
+      : [];
+
+    setSelectedExcludedCategories(
+      categoriesNames.filter((entry) =>
+        excludedIds.includes(normalizeId(entry?.value)),
+      ),
+    );
+    setItem(null);
+  }, [promoCode, itemsNames, categoriesNames]);
+
+  const filteredCategories = categoriesNames.filter((entry) => {
+    const query = categoriesSearch.trim().toLowerCase();
+    if (!query) return true;
+    return String(entry?.label || "").toLowerCase().includes(query);
+  });
+
+  const isCategorySelected = (entry) =>
+    selectedExcludedCategories.some(
+      (category) => normalizeId(category?.value) === normalizeId(entry?.value),
+    );
+
+  const toggleExcludedCategory = (entry) => {
+    setSelectedExcludedCategories((current) => {
+      if (
+        current.some(
+          (category) => normalizeId(category?.value) === normalizeId(entry?.value),
+        )
+      ) {
+        return current.filter(
+          (category) => normalizeId(category?.value) !== normalizeId(entry?.value),
+        );
+      }
+
+      return [...current, entry];
+    });
+  };
+
   return (
     <ModalWrapper zindex={20}>
       <div className="w-full max-w-lg h-[80%]  bg-white p-6 overflow-y-auto rounded-lg shadow-lg z-30">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-2xl font-semibold text-gray-800">
-            Ajouter un code promotionnel
+            {isEditMode
+              ? "Modifier un code promotionnel"
+              : "Ajouter un code promotionnel"}
           </h1>
           <button
             onClick={() => setShowCreateModal(false)}
@@ -211,16 +316,72 @@ const CreatePromoCodeModal = ({ setShowCreateModal, setRefresh }) => {
                 )}
               </div>
               {(type === "amount" || type === "percent") && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Catégorie applicable
-                  </label>
-                  <DropDown
-                    value={category}
-                    setter={setCategory}
-                    list={categoriesNames}
-                    placeholder="Toutes les catégories"
-                  />
+                <div className="space-y-3">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Catégories exclues du rabais
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setIsCategoriesDropdownOpen((prev) => !prev)
+                      }
+                      className="w-full border border-gray-300 rounded px-3 py-2 text-left focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                      {selectedExcludedCategories.length > 0
+                        ? `${selectedExcludedCategories.length} catégorie(s) exclue(s)`
+                        : "Aucune catégorie exclue"}
+                    </button>
+                  </div>
+
+                  {isCategoriesDropdownOpen && (
+                    <div className="border border-gray-200 rounded-lg p-3 space-y-3 bg-gray-50">
+                      <input
+                        type="text"
+                        value={categoriesSearch}
+                        onChange={(e) => setCategoriesSearch(e.target.value)}
+                        placeholder="Rechercher une catégorie"
+                        className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      />
+
+                      <div className="max-h-52 overflow-y-auto space-y-2">
+                        {filteredCategories.length > 0 ? (
+                          filteredCategories.map((entry) => (
+                            <label
+                              key={entry.value}
+                              className="flex items-center gap-3 text-sm text-gray-700 cursor-pointer"
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isCategorySelected(entry)}
+                                onChange={() => toggleExcludedCategory(entry)}
+                              />
+                              <span>{entry.label}</span>
+                            </label>
+                          ))
+                        ) : (
+                          <p className="text-sm text-gray-500">
+                            Aucune catégorie trouvée.
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {selectedExcludedCategories.length > 0 && (
+                    <div className="flex flex-wrap gap-2">
+                      {selectedExcludedCategories.map((entry) => (
+                        <button
+                          key={entry.value}
+                          type="button"
+                          onClick={() => toggleExcludedCategory(entry)}
+                          className="text-xs bg-pr/20 text-black rounded-full px-3 py-1"
+                        >
+                          {entry.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
               <div className="">
@@ -316,10 +477,16 @@ const CreatePromoCodeModal = ({ setShowCreateModal, setRefresh }) => {
               <div className="flex justify-end">
                 <button
                   type="button"
-                  onClick={handleCreate}
+                  onClick={handleSubmit}
                   className="bg-pr text-black px-6 py-2 rounded  transition font-semibold"
                 >
-                  {creating ? "Création..." : "Créer le code"}
+                  {creating
+                    ? isEditMode
+                      ? "Modification..."
+                      : "Création..."
+                    : isEditMode
+                      ? "Enregistrer"
+                      : "Créer le code"}
                 </button>
               </div>
             </div>
