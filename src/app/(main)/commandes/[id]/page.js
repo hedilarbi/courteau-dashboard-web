@@ -24,7 +24,7 @@ const OrderScreen = ({ params }) => {
     tvq,
     tps,
   } = useGetOrder(id);
-
+  console.log(order);
   const setOrderStatusColor = (status) => {
     switch (status) {
       case OrderStatus.READY:
@@ -45,7 +45,7 @@ const OrderScreen = ({ params }) => {
       const data = await render(
         <Printer type="epson">
           <Text>Hello World</Text>
-        </Printer>
+        </Printer>,
       );
 
       const port = await window.navigator.serial.requestPort();
@@ -91,7 +91,8 @@ const OrderScreen = ({ params }) => {
     return Number.isFinite(parsed) ? parsed : fallback;
   };
   const subscriptionBenefits =
-    order?.subscriptionBenefits && typeof order.subscriptionBenefits === "object"
+    order?.subscriptionBenefits &&
+    typeof order.subscriptionBenefits === "object"
       ? order.subscriptionBenefits
       : null;
   const subscriptionUsed = Boolean(subscriptionBenefits?.isApplied);
@@ -111,7 +112,8 @@ const OrderScreen = ({ params }) => {
       : orderDiscountPercent;
   const discountAmount = Math.max(
     0,
-    toSafeNumber(order?.sub_total, 0) - toSafeNumber(order?.sub_total_after_discount, 0),
+    toSafeNumber(order?.sub_total, 0) -
+      toSafeNumber(order?.sub_total_after_discount, 0),
   );
 
   return (
@@ -139,7 +141,7 @@ const OrderScreen = ({ params }) => {
                       article(s)
                     </span>
                     <span className="bg-white/15 border border-white/20 rounded-full px-3 py-1">
-                      Total {parseFloat(order.total_price).toFixed(2)} $
+                      Total {toSafeNumber(order.total_price, 0).toFixed(2)} $
                     </span>
                   </div>
                 </div>
@@ -152,7 +154,7 @@ const OrderScreen = ({ params }) => {
             <div className="flex items-center gap-2">
               <span
                 className={`px-3 py-1 rounded-full text-sm font-semibold ${setOrderStatusColor(
-                  order.status
+                  order.status,
                 )} bg-white/15 border border-white/25`}
               >
                 {order.status}
@@ -211,7 +213,7 @@ const OrderScreen = ({ params }) => {
                             : "—"}
                         </span>
                         <span className="col-span-1 text-right font-semibold text-text-dark-gray">
-                          {item.price.toFixed(2)} $
+                          {toSafeNumber(item.price, 0).toFixed(2)} $
                         </span>
                       </div>
                     ))}
@@ -242,7 +244,7 @@ const OrderScreen = ({ params }) => {
                           {item.offer?.name}
                         </p>
                         <p className="text-sm font-semibold text-pr">
-                          {item.offer?.price.toFixed(2)} $
+                          {toSafeNumber(item.offer?.price ?? item.price, 0).toFixed(2)} $
                         </p>
                       </div>
                       <div className="flex flex-wrap gap-2 text-sm text-text-light-gray">
@@ -370,7 +372,7 @@ const OrderScreen = ({ params }) => {
                 <div className="flex items-center justify-between">
                   <span className="text-text-light-gray">Sous-total</span>
                   <span className="font-semibold">
-                    {order.sub_total.toFixed(2)} $
+                    {toSafeNumber(order.sub_total, 0).toFixed(2)} $
                   </span>
                 </div>
                 {isFirstOrderDiscountApplied && (
@@ -379,7 +381,7 @@ const OrderScreen = ({ params }) => {
                       Rabais première commande
                     </span>
                     <span className="font-semibold">
-                      -{discountAmount.toFixed(2)} $ ({orderDiscountPercent}%)
+                      -{toSafeNumber(discountAmount, 0).toFixed(2)} $ ({orderDiscountPercent}%)
                     </span>
                   </div>
                 )}
@@ -389,18 +391,18 @@ const OrderScreen = ({ params }) => {
                       Rabais abonnement
                     </span>
                     <span className="font-semibold">
-                      -{discountAmount.toFixed(2)} $ (
+                      -{toSafeNumber(discountAmount, 0).toFixed(2)} $ (
                       {displayedSubscriptionDiscountPercent}%)
                     </span>
                   </div>
                 )}
                 <div className="flex items-center justify-between">
                   <span className="text-text-light-gray">TVQ</span>
-                  <span className="font-semibold">{tvq.toFixed(2)} $</span>
+                  <span className="font-semibold">{toSafeNumber(tvq, 0).toFixed(2)} $</span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-text-light-gray">TPS</span>
-                  <span className="font-semibold">{tps.toFixed(2)} $</span>
+                  <span className="font-semibold">{toSafeNumber(tps, 0).toFixed(2)} $</span>
                 </div>
                 {order.type === "delivery" && (
                   <div className="flex items-center justify-between">
@@ -408,14 +410,14 @@ const OrderScreen = ({ params }) => {
                       Frais de livraison
                     </span>
                     <span className="font-semibold">
-                      {order.delivery_fee.toFixed(2)} $
+                      {toSafeNumber(order.delivery_fee, 0).toFixed(2)} $
                     </span>
                   </div>
                 )}
                 <div className="flex items-center justify-between">
                   <span className="text-text-light-gray">Pourboire</span>
                   <span className="font-semibold">
-                    {order.tip?.toFixed(2)} $
+                    {toSafeNumber(order.tip, 0).toFixed(2)} $
                   </span>
                 </div>
                 <div className="flex items-center justify-between pt-2 border-t border-gray-100">
@@ -423,7 +425,7 @@ const OrderScreen = ({ params }) => {
                     Total
                   </span>
                   <span className="text-lg font-semibold text-pr">
-                    {parseFloat(order.total_price).toFixed(2)} $
+                    {toSafeNumber(order.total_price, 0).toFixed(2)} $
                   </span>
                 </div>
               </div>
