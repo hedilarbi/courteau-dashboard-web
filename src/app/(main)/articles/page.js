@@ -1,7 +1,11 @@
 "use client";
-import { useState, useEffect, useRef } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
-import { useRouter } from "next/navigation";
+import {
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import DeleteWarningModal from "@/components/modals/DeleteWarningModal";
 import MenuItemsFilter from "@/components/MenuItemsFilter";
 import {
@@ -15,8 +19,30 @@ import ToastNotification from "@/components/ToastNotification";
 import Spinner from "@/components/spinner/Spinner";
 import CreateItemModal from "@/components/modals/CreateItemModal";
 
+const ALL_CATEGORIES_LABEL = "Toutes les catégories";
+const CATEGORY_QUERY_PARAM = "category";
+
+const sortMenuItemsByOrder = (items = []) =>
+  [...items].sort((firstItem, secondItem) => {
+    return (firstItem?.order ?? 0) - (secondItem?.order ?? 0);
+  });
+
+const filterMenuItemsByCategory = (items = [], categoryName) => {
+  if (categoryName === ALL_CATEGORIES_LABEL) {
+    return items;
+  }
+
+  return items.filter((item) => item.category?.name === categoryName);
+};
+
+const getMenuItemFilterFromSearchParams = (searchParams) => {
+  return searchParams.get(CATEGORY_QUERY_PARAM) || ALL_CATEGORIES_LABEL;
+};
+
 const ItemsScreen = () => {
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
   const [toastData, setToastData] = useState({
     show: false,
     type: "",
@@ -30,13 +56,13 @@ const ItemsScreen = () => {
   const [isTriLoading, setIsTriLoading] = useState(false);
   const [triMode, setTriMode] = useState(false);
   const [menuItem, setMenuItem] = useState("");
-  const [menuItemFilter, setMenuItemFilter] = useState("Toutes les catégories");
   const [menuItems, setMenuItems] = useState([]);
   const [menuItemsList, setMenuItemsList] = useState([]);
   const [createItemModal, setCreateItemModal] = useState(false);
 
   const [error, setError] = useState(false);
   const listRef = useRef();
+  const menuItemFilter = getMenuItemFilterFromSearchParams(searchParams);
 
   const handleTri = async (from, to) => {
     const menuItemsCopy = [...menuItems];
@@ -49,7 +75,7 @@ const ItemsScreen = () => {
   };
 
   const discardTri = () => {
-    setMenuItems(menuItemsList);
+    setMenuItems(filterMenuItemsByCategory(menuItemsList, menuItemFilter));
     setTriMode(false);
   };
 
@@ -61,7 +87,17 @@ const ItemsScreen = () => {
       });
       const response = await menuTri(list);
       if (response.status) {
-        setMenuItemsList(menuItems);
+        setMenuItemsList((currentMenuItemsList) => {
+          const updatedItemsById = new Map(
+            menuItems.map((currentItem) => [currentItem._id, currentItem])
+          );
+
+          return sortMenuItemsByOrder(
+            currentMenuItemsList.map((currentItem) => {
+              return updatedItemsById.get(currentItem._id) ?? currentItem;
+            })
+          );
+        });
         setToastData({
           show: true,
           type: "success",
@@ -92,7 +128,7 @@ const ItemsScreen = () => {
     }
   };
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async () => {
     setIsLoading(true);
 
     try {
@@ -102,15 +138,7 @@ const ItemsScreen = () => {
       ]);
 
       if (menuItemResponse?.status) {
-        setMenuItemsList(menuItemResponse?.data);
-        if (menuItemFilter === "Toutes les catégories") {
-          setMenuItems(menuItemResponse?.data);
-        } else {
-          const list = menuItemResponse.data.filter(
-            (item) => item.category.name === menuItemFilter
-          );
-          setMenuItems(list);
-        }
+        setMenuItemsList(sortMenuItemsByOrder(menuItemResponse?.data));
       } else {
         setError(true);
       }
@@ -128,16 +156,32 @@ const ItemsScreen = () => {
         3000
       );
     }
-  };
+  }, []);
 
   useEffect(() => {
     setIsLoading(true);
     fetchData();
-  }, [refresh]);
+  }, [fetchData, refresh]);
 
-  useEffect(() => {
-    fetchData();
-  }, [menuItemFilter]);
+  useLayoutEffect(() => {
+    setMenuItems(filterMenuItemsByCategory(menuItemsList, menuItemFilter));
+  }, [menuItemsList, menuItemFilter]);
+
+  const handleMenuItemFilterChange = (categoryName) => {
+    const params = new URLSearchParams(searchParams.toString());
+
+    if (categoryName === ALL_CATEGORIES_LABEL) {
+      params.delete(CATEGORY_QUERY_PARAM);
+    } else {
+      params.set(CATEGORY_QUERY_PARAM, categoryName);
+    }
+
+    const nextUrl = params.toString()
+      ? `${pathname}?${params.toString()}`
+      : pathname;
+
+    router.replace(nextUrl, { scroll: false });
+  };
 
   const handleShowDeleteWarning = (id) => {
     setMenuItem(id);
@@ -212,6 +256,7 @@ const ItemsScreen = () => {
         <CreateItemModal
           setShowCreateItemModal={setCreateItemModal}
           setMenuItems={setMenuItems}
+          setMenuItemsList={setMenuItemsList}
         />
       )}
       {isTriLoading && (
@@ -267,10 +312,8 @@ const ItemsScreen = () => {
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
               <MenuItemsFilter
                 categories={categories}
-                setMenuItemFilter={setMenuItemFilter}
                 menuItemFilter={menuItemFilter}
-                menuItemsList={menuItemsList}
-                setMenuItems={setMenuItems}
+                onMenuItemFilterChange={handleMenuItemFilterChange}
               />
             </div>
 

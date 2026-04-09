@@ -3,24 +3,10 @@ import React from "react";
 const MenuItemsFilter = ({
   categories,
   menuItemFilter,
-  setMenuItemFilter,
-  menuItemsList,
-  setMenuItems,
+  onMenuItemFilterChange,
 }) => {
   const handleMenuItemFiltering = (categoryName) => {
-    if (categoryName !== "Toutes les catégories") {
-      let list = null;
-
-      list = menuItemsList.filter(
-        (item) => item.category.name === categoryName
-      );
-
-      setMenuItems(list);
-      setMenuItemFilter(categoryName);
-    } else {
-      setMenuItems(menuItemsList);
-      setMenuItemFilter(categoryName);
-    }
+    onMenuItemFilterChange(categoryName);
   };
 
   return (

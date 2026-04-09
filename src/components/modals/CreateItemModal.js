@@ -14,7 +14,11 @@ import SpinnerModal from "./SpinnerModal";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
-const CreateItemModal = ({ setShowCreateItemModal, setMenuItems }) => {
+const CreateItemModal = ({
+  setShowCreateItemModal,
+  setMenuItems,
+  setMenuItemsList,
+}) => {
   const inputImageRef = useRef(null);
   const [image, setImage] = useState(null);
   const [name, setName] = useState("");
@@ -186,6 +190,9 @@ const CreateItemModal = ({ setShowCreateItemModal, setMenuItems }) => {
       const data = await response.json();
 
       setMenuItems((prev) => [data, ...prev]);
+      if (setMenuItemsList) {
+        setMenuItemsList((prev) => [data, ...prev]);
+      }
 
       setShowSuccessModel(true);
     } catch (err) {
