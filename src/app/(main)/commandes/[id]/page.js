@@ -115,6 +115,15 @@ const OrderScreen = ({ params }) => {
     toSafeNumber(order?.sub_total, 0) -
       toSafeNumber(order?.sub_total_after_discount, 0),
   );
+  const normalizedPaymentMethod = String(order?.payment_method || "")
+    .trim()
+    .toLowerCase();
+  const isCounterPayment = normalizedPaymentMethod === "cash_at_counter";
+  const paymentMethodLabel = isCounterPayment
+    ? "Paiement au comptoir"
+    : normalizedPaymentMethod === "subscription_free_item"
+      ? "Article gratuit"
+      : "Paiement en ligne";
 
   return (
     <div className="flex-1 bg-[#f5f7fb] max-h-screen overflow-y-auto font-roboto">
@@ -168,6 +177,16 @@ const OrderScreen = ({ params }) => {
               </button>
             </div>
           </div>
+          {isCounterPayment && (
+            <div className="rounded-xl border border-amber-300 bg-amber-100/95 px-4 py-3">
+              <p className="text-sm font-semibold text-amber-900">
+                Paiement au comptoir
+              </p>
+              <p className="text-sm text-amber-900 mt-1">
+                Cette commande sera payée sur place.
+              </p>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -244,7 +263,11 @@ const OrderScreen = ({ params }) => {
                           {item.offer?.name}
                         </p>
                         <p className="text-sm font-semibold text-pr">
-                          {toSafeNumber(item.offer?.price ?? item.price, 0).toFixed(2)} $
+                          {toSafeNumber(
+                            item.offer?.price ?? item.price,
+                            0,
+                          ).toFixed(2)}{" "}
+                          $
                         </p>
                       </div>
                       <div className="flex flex-wrap gap-2 text-sm text-text-light-gray">
@@ -370,6 +393,10 @@ const OrderScreen = ({ params }) => {
               </div>
               <div className="space-y-2 text-sm text-text-dark-gray">
                 <div className="flex items-center justify-between">
+                  <span className="text-text-light-gray">Mode de paiement</span>
+                  <span className="font-semibold">{paymentMethodLabel}</span>
+                </div>
+                <div className="flex items-center justify-between">
                   <span className="text-text-light-gray">Sous-total</span>
                   <span className="font-semibold">
                     {toSafeNumber(order.sub_total, 0).toFixed(2)} $
@@ -381,7 +408,8 @@ const OrderScreen = ({ params }) => {
                       Rabais première commande
                     </span>
                     <span className="font-semibold">
-                      -{toSafeNumber(discountAmount, 0).toFixed(2)} $ ({orderDiscountPercent}%)
+                      -{toSafeNumber(discountAmount, 0).toFixed(2)} $ (
+                      {orderDiscountPercent}%)
                     </span>
                   </div>
                 )}
@@ -398,11 +426,15 @@ const OrderScreen = ({ params }) => {
                 )}
                 <div className="flex items-center justify-between">
                   <span className="text-text-light-gray">TVQ</span>
-                  <span className="font-semibold">{toSafeNumber(tvq, 0).toFixed(2)} $</span>
+                  <span className="font-semibold">
+                    {toSafeNumber(tvq, 0).toFixed(2)} $
+                  </span>
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-text-light-gray">TPS</span>
-                  <span className="font-semibold">{toSafeNumber(tps, 0).toFixed(2)} $</span>
+                  <span className="font-semibold">
+                    {toSafeNumber(tps, 0).toFixed(2)} $
+                  </span>
                 </div>
                 {order.type === "delivery" && (
                   <div className="flex items-center justify-between">
