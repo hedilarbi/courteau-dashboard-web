@@ -262,16 +262,6 @@ const Page = () => {
       return;
     }
 
-    if (!title.trim() || !subTitle.trim()) {
-      showToast("error", "Le titre et le sous-titre sont obligatoires.");
-      return;
-    }
-
-    if (promoCode?.value && !codePromoTitle.trim()) {
-      showToast("error", "Le titre du code promo est obligatoire.");
-      return;
-    }
-
     setIsSaving(true);
     try {
       const response = await updateHomeSetting(homeSetting._id, {

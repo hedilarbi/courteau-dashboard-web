@@ -57,21 +57,6 @@ const CreateHomeSettingModal = ({
   };
 
   const handleCreate = async () => {
-    if (!title.trim() || !subTitle.trim()) {
-      setError("Le titre et le sous-titre sont obligatoires.");
-      return;
-    }
-
-    if (promoCode?.value && !codePromoTitle.trim()) {
-      setError("Le titre du code promo est obligatoire.");
-      return;
-    }
-
-    if (!image) {
-      setError("L'image est obligatoire.");
-      return;
-    }
-
     setError("");
     setIsLoading(true);
     const response = await createHomeSetting({

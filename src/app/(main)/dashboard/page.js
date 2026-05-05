@@ -32,6 +32,8 @@ const GRAPH_OPTIONS = [
   { value: "orders_by_platform", label: "Type de plateforme" },
   { value: "promo_usage", label: "Utilise promo ou non" },
   { value: "delivery_vs_pickup", label: "Livraison vs ramassage" },
+  { value: "payment_breakdown", label: "Comptoir vs En ligne" },
+  { value: "usage_referral", label: "Usage du parrainage" },
   { value: "top_products", label: "Produits preferes" },
 ];
 
@@ -119,6 +121,9 @@ const AnalyticsChart = ({ selectedGraph, charts }) => {
     (item) => item.value > 0,
   );
   const deliveryVsPickup = (charts?.deliveryVsPickup || []).filter(
+    (item) => item.value > 0,
+  );
+  const paymentBreakdown = (charts?.paymentBreakdown || []).filter(
     (item) => item.value > 0,
   );
   const topProducts = charts?.topProducts || [];
@@ -314,6 +319,55 @@ const AnalyticsChart = ({ selectedGraph, charts }) => {
             </Pie>
             <Tooltip />
           </PieChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  }
+
+  if (selectedGraph === "payment_breakdown") {
+    if (paymentBreakdown.length === 0) return renderNoData();
+    return (
+      <div className="h-[420px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <PieChart>
+            <Pie
+              data={paymentBreakdown}
+              dataKey="value"
+              nameKey="label"
+              outerRadius={135}
+              label={(entry) => `${entry.label}: ${formatMoney(entry.value)}`}
+            >
+              {paymentBreakdown.map((entry, index) => (
+                <Cell
+                  key={`${entry.label}-${index}`}
+                  fill={PIE_COLORS[index % PIE_COLORS.length]}
+                />
+              ))}
+            </Pie>
+            <Tooltip formatter={(value) => formatMoney(value)} />
+          </PieChart>
+        </ResponsiveContainer>
+      </div>
+    );
+  }
+
+  if (selectedGraph === "usage_referral") {
+    if (revenueByDay.length === 0) return renderNoData();
+    return (
+      <div className="h-[420px]">
+        <ResponsiveContainer width="100%" height="100%">
+          <BarChart data={revenueByDay}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="day" tick={{ fontSize: 11 }} />
+            <YAxis allowDecimals={false} />
+            <Tooltip />
+            <Bar
+              dataKey="referralOrders"
+              name="Commandes parrainées"
+              fill="#16A34A"
+              radius={[6, 6, 0, 0]}
+            />
+          </BarChart>
         </ResponsiveContainer>
       </div>
     );

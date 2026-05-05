@@ -47,6 +47,14 @@ const UserGeneralInfo = ({ data }) => {
               <span className="text-text-light-gray">Nombre de commandes</span>
               <span className="font-semibold">{ordersCount}</span>
             </div>
+            <div className="flex items-center justify-between border-t pt-2 mt-2">
+              <span className="text-text-light-gray">Code parrainage</span>
+              <span className="font-semibold text-pr">{data.referralCode || "-"}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-text-light-gray">Amis parrainés</span>
+              <span className="font-semibold text-green-600">{data.referralOrdersCount || 0}</span>
+            </div>
           </div>
         </div>
       </div>

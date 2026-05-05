@@ -47,9 +47,9 @@ const HomeSettingsPreview = ({
   const promoDisplay = formatPromoDisplay(promoCode);
   const promoCodeLabel = hasPromoCode ? promoCode.label : "TOP5";
   const showImage = Boolean(imagePreview);
-  const heroTitle = (title || "Poutine Sphère").toUpperCase();
-  const heroSubtitle = subTitle || "Offre du moment";
-  const promoTitle = codePromoTitle || "OFFRE DU MOMENT";
+  const heroTitle = (title || "").toUpperCase();
+  const heroSubtitle = subTitle || "";
+  const promoTitle = codePromoTitle || "";
 
   return (
     <div className="w-full flex justify-center">
@@ -89,10 +89,14 @@ const HomeSettingsPreview = ({
                   <p className="text-[13px] font-bold">
                     Ouvert jusqu&apos;à 22:00
                   </p>
-                  <h3 className="mt-1 text-[28px] leading-[31px] font-black tracking-[0.2px]">
-                    {heroTitle}
-                  </h3>
-                  <p className="mt-1 text-[16px] font-bold">{heroSubtitle}</p>
+                  {heroTitle ? (
+                    <h3 className="mt-1 text-[28px] leading-[31px] font-black tracking-[0.2px]">
+                      {heroTitle}
+                    </h3>
+                  ) : null}
+                  {heroSubtitle ? (
+                    <p className="mt-1 text-[16px] font-bold">{heroSubtitle}</p>
+                  ) : null}
                 </div>
 
                 <div className="flex justify-center">
@@ -102,40 +106,42 @@ const HomeSettingsPreview = ({
                 </div>
               </div>
 
-              <div className="mt-3 rounded-[14px] border border-white/20 bg-black/30 px-[10px] py-2.5 text-white">
-                <div className="flex items-start justify-between gap-2">
-                  <div className="min-w-0">
-                    <p className="text-[14px] leading-[17px] font-bold uppercase break-words">
-                      {promoTitle}
-                    </p>
-                    <p className="text-[12px] mt-0.5">
-                      Code:{" "}
-                      <span className="font-bold text-[#F7A600]">
-                        {promoCodeLabel}
-                      </span>
-                    </p>
+              {promoTitle ? (
+                <div className="mt-3 rounded-[14px] border border-white/20 bg-black/30 px-[10px] py-2.5 text-white">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <p className="text-[14px] leading-[17px] font-bold uppercase break-words">
+                        {promoTitle}
+                      </p>
+                      <p className="text-[12px] mt-0.5">
+                        Code:{" "}
+                        <span className="font-bold text-[#F7A600]">
+                          {promoCodeLabel}
+                        </span>
+                      </p>
+                    </div>
+                    {promoDisplay.isFreeItem ? (
+                      <div className="text-right shrink-0 max-w-[120px]">
+                        <p className="text-[13px] leading-[15px] font-black uppercase break-words">
+                          {promoDisplay.value}
+                        </p>
+                        <p className="text-[10px] font-bold mt-1">
+                          {promoDisplay.label}
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="text-right shrink-0 flex items-end gap-1">
+                        <p className="text-[32px] leading-[36px] font-black">
+                          {promoDisplay.value}
+                        </p>
+                        <p className="text-[11px] font-bold pb-0.5">
+                          {promoDisplay.label}
+                        </p>
+                      </div>
+                    )}
                   </div>
-                  {promoDisplay.isFreeItem ? (
-                    <div className="text-right shrink-0 max-w-[120px]">
-                      <p className="text-[13px] leading-[15px] font-black uppercase break-words">
-                        {promoDisplay.value}
-                      </p>
-                      <p className="text-[10px] font-bold mt-1">
-                        {promoDisplay.label}
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="text-right shrink-0 flex items-end gap-1">
-                      <p className="text-[32px] leading-[36px] font-black">
-                        {promoDisplay.value}
-                      </p>
-                      <p className="text-[11px] font-bold pb-0.5">
-                        {promoDisplay.label}
-                      </p>
-                    </div>
-                  )}
                 </div>
-              </div>
+              ) : null}
             </div>
           </div>
 
