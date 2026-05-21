@@ -106,8 +106,9 @@ const DropDown = ({ value, setter, list, placeholder }) => {
         menuPosition &&
         createPortal(
           <div
-            className="fixed bg-white border border-black rounded-md shadow-sm z-40"
+            className="fixed bg-white border border-black rounded-md shadow-sm"
             style={{
+              zIndex: 1200,
               width: menuPosition.width || containerRef.current?.offsetWidth,
               left: menuPosition.left,
               top: menuPosition.top,

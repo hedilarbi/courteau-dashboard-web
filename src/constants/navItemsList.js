@@ -15,7 +15,7 @@ import {
 import { HiBuildingStorefront } from "react-icons/hi2";
 import { AiFillNotification } from "react-icons/ai";
 import { FaStar } from "react-icons/fa6";
-import { GiArchiveResearch } from "react-icons/gi";
+import { GiArchiveResearch, GiCookingPot } from "react-icons/gi";
 import { MdSubscriptions } from "react-icons/md";
 
 const NavItemsList = () => {
@@ -43,6 +43,12 @@ const NavItemsList = () => {
       title: "Articles",
       path: `/articles`,
       icon: <MdRestaurantMenu size={24} />,
+    },
+    {
+      id: 21,
+      title: "Recettes",
+      path: `/recettes`,
+      icon: <GiCookingPot size={24} />,
     },
     {
       id: 5,

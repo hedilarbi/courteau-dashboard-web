@@ -70,14 +70,18 @@ const OrdersScreen = () => {
     () => searchParams.get("filters") === "1",
   );
 
+  // Reset page to 1 whenever search/filters change so results are always visible
+  useEffect(() => {
+    setPage(1);
+  }, [search, filter, orderTypeFilter, fromDate, toDate]);
+
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     setError(false);
+    const controller = new AbortController();
     try {
       if (page < 1) {
-        return;
-      }
-      if (pages !== 0 && page > pages) {
+        setIsLoading(false);
         return;
       }
 
@@ -96,12 +100,15 @@ const OrdersScreen = () => {
         setPages(response.data.pages);
       }
     } catch (e) {
-      setError(true);
-      console.log(e);
+      if (e?.name !== "CanceledError" && e?.code !== "ERR_CANCELED") {
+        setError(true);
+        console.log(e);
+      }
     } finally {
       setIsLoading(false);
     }
-  }, [page, pages, filter, search, orderTypeFilter, fromDate, toDate]);
+    return () => controller.abort();
+  }, [page, filter, search, orderTypeFilter, fromDate, toDate]);
 
   const handleDeleteOrder = async () => {
     try {
