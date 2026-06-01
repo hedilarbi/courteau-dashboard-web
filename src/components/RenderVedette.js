@@ -14,7 +14,8 @@ const RenderVedette = ({
   triMode,
   isLast = false,
 }) => {
-  const menuItemName = useMemo(() => vedette.menuItem.name, [vedette]);
+  const menuItem = vedette.menuItem;
+  const menuItemName = useMemo(() => menuItem?.name ?? "Article supprimé", [menuItem]);
   const gridTemplate = triMode
     ? "grid-cols-[120px,1.6fr,0.6fr,0.6fr]"
     : "grid-cols-[120px,1.6fr,0.6fr]";
@@ -24,16 +25,22 @@ const RenderVedette = ({
       <div
         className={`grid ${gridTemplate} items-center px-4 py-3 gap-3 text-sm`}
       >
-        <div className="h-20 w-24 relative overflow-hidden rounded-md border border-gray-100">
-          <Image
-            src={vedette.menuItem.image}
-            alt={vedette.menuItem.name}
-            fill
-            className="object-cover"
-          />
+        <div className="h-20 w-24 relative overflow-hidden rounded-md border border-gray-100 bg-gray-100">
+          {menuItem?.image ? (
+            <Image
+              src={menuItem.image}
+              alt={menuItemName}
+              fill
+              className="object-cover"
+            />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs text-center px-1">
+              Image indisponible
+            </div>
+          )}
         </div>
 
-        <span className="font-semibold text-text-dark-gray truncate">
+        <span className={`font-semibold truncate ${!menuItem ? "text-gray-400 italic" : "text-text-dark-gray"}`}>
           {menuItemName}
         </span>
 
@@ -69,7 +76,7 @@ const RenderVedette = ({
         )}
       </div>
     ),
-    [index, triMode, gridTemplate, menuItemName, vedette, handleShowDeleteWarning, handleTri, isLast]
+    [index, triMode, gridTemplate, menuItemName, menuItem, vedette, handleShowDeleteWarning, handleTri, isLast]
   );
 };
 
