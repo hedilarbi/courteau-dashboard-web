@@ -28,7 +28,7 @@ const ToppingCategoriesScreen = ({ data }) => {
   const deleteCategory = async () => {
     setIsLoading(true);
     try {
-      console.log("Selected Category:", selectedCategory);
+
       const response = await deleteToppingCategoryService(selectedCategory);
       if (response.status) {
         setCategories((prev) =>

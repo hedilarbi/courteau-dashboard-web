@@ -24,7 +24,7 @@ const OrderScreen = ({ params }) => {
     tvq,
     tps,
   } = useGetOrder(id);
-  console.log(order);
+
   const setOrderStatusColor = (status) => {
     switch (status) {
       case OrderStatus.READY:
@@ -92,7 +92,7 @@ const OrderScreen = ({ params }) => {
   };
   const subscriptionBenefits =
     order?.subscriptionBenefits &&
-    typeof order.subscriptionBenefits === "object"
+      typeof order.subscriptionBenefits === "object"
       ? order.subscriptionBenefits
       : null;
   const subscriptionUsed = Boolean(subscriptionBenefits?.isApplied);
@@ -113,7 +113,7 @@ const OrderScreen = ({ params }) => {
   const discountAmount = Math.max(
     0,
     toSafeNumber(order?.sub_total, 0) -
-      toSafeNumber(order?.sub_total_after_discount, 0),
+    toSafeNumber(order?.sub_total_after_discount, 0),
   );
   const normalizedPaymentMethod = String(order?.payment_method || "")
     .trim()
@@ -227,8 +227,8 @@ const OrderScreen = ({ params }) => {
                         <span className="col-span-3 text-text-light-gray">
                           {item.customizations?.length
                             ? item.customizations
-                                .map((custo) => custo.name)
-                                .join(", ")
+                              .map((custo) => custo.name)
+                              .join(", ")
                             : "—"}
                         </span>
                         <span className="col-span-1 text-right font-semibold text-text-dark-gray">
@@ -279,8 +279,8 @@ const OrderScreen = ({ params }) => {
                             {offerItem.item.name}
                             {offerItem.customizations?.length
                               ? ` (${offerItem.customizations
-                                  .map((c) => c.name)
-                                  .join(", ")})`
+                                .map((c) => c.name)
+                                .join(", ")})`
                               : ""}
                           </span>
                         ))}

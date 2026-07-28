@@ -81,6 +81,12 @@ const NavItemsList = () => {
       icon: <IoTicketSharp size={24} />,
     },
     {
+      id: 25,
+      title: "Offres Smart",
+      path: `/offres-smart`,
+      icon: <BiSolidOffer size={24} />,
+    },
+    {
       id: 16,
       title: "Réglages de l'accueil",
       path: `/home-settings`,

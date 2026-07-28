@@ -116,7 +116,7 @@ const CreateOfferModal = ({ setShowCreateOfferModal, setOffers }) => {
         throw new Error("HTTP error " + response.status);
       }
       const data = await response.json();
-      console.log(data);
+
       setOffers((prev) => [data.data, ...prev]);
       setShowSuccessModel(true);
       setAddingIsLoading(false);

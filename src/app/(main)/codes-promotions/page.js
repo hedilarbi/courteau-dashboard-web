@@ -51,7 +51,7 @@ const PromoCodes = () => {
       const response = await getPromoCodes();
       if (response.status) {
         // Handle successful data retrieval
-        console.log(response.data);
+
         setPromoCodes(response.data);
       } else {
         throw new Error(response.message || "Failed to fetch promo codes");
@@ -209,8 +209,8 @@ const PromoCodes = () => {
                         {promoCode.type === "percent"
                           ? "Pourcentage"
                           : promoCode.type === "amount"
-                          ? "Montant"
-                          : "Article gratuit"}
+                            ? "Montant"
+                            : "Article gratuit"}
                       </span>
                       <span className="text-text-dark-gray">
                         {getPromoExcludedCategoriesLabel(promoCode)}
@@ -219,8 +219,8 @@ const PromoCodes = () => {
                         {promoCode.type === "percent"
                           ? `${promoCode.percent}%`
                           : promoCode.type === "amount"
-                          ? `${promoCode.amount}$`
-                          : promoCode.freeItem.name}
+                            ? `${promoCode.amount}$`
+                            : promoCode.freeItem.name}
                       </span>
                       <span className="text-text-dark-gray">
                         {promoCode.totalUsage} fois

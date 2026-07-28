@@ -282,17 +282,18 @@ const UsersScreen = () => {
           {users?.length > 0 ? (
             <div className="overflow-x-auto">
               <div className="min-w-[920px]">
-                <div className="grid grid-cols-[1.2fr,1fr,1.6fr,0.8fr] bg-gray-50 text-xs uppercase tracking-wide text-text-light-gray px-4 py-3">
+                <div className="grid grid-cols-[1.2fr,1fr,1.6fr,0.7fr,0.8fr] bg-gray-50 text-xs uppercase tracking-wide text-text-light-gray px-4 py-3">
                   <span>Nom</span>
                   <span>Téléphone</span>
                   <span>Email</span>
+                  <span>App</span>
                   <span className="text-right">Actions</span>
                 </div>
                 <div className="h-[calc(100vh-320px)] overflow-y-auto divide-y divide-gray-100">
                   {users.map((user) => (
                     <div
                       key={user._id}
-                      className="grid grid-cols-[1.2fr,1fr,1.6fr,0.8fr] items-center px-4 py-3 text-sm hover:bg-gray-50 transition"
+                      className="grid grid-cols-[1.2fr,1fr,1.6fr,0.7fr,0.8fr] items-center px-4 py-3 text-sm hover:bg-gray-50 transition"
                     >
                       <span className="font-semibold text-text-dark-gray truncate">
                         {user.name}
@@ -302,6 +303,17 @@ const UsersScreen = () => {
                       </span>
                       <span className="text-text-light-gray truncate">
                         {user.email}
+                      </span>
+                      <span>
+                        {user.appIsInstalled === false ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-red-100 text-red-700 border border-red-200 whitespace-nowrap">
+                            ❌ Désinstallée
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-700 border border-green-200 whitespace-nowrap">
+                            ✅ Installée
+                          </span>
+                        )}
                       </span>
                       <div className="flex items-center justify-end gap-2">
                         <button

@@ -27,7 +27,7 @@ const NotificationScreen = () => {
         response.data.map((item) => {
           list.push({ value: item._id, label: item.name });
         });
-        console.log(list);
+
         setMenuItems(list);
       }
     } catch (err) {
@@ -113,8 +113,8 @@ const NotificationScreen = () => {
                 {mode === "notification"
                   ? "Push"
                   : mode === "message"
-                  ? "SMS"
-                  : "Email (à venir)"}
+                    ? "SMS"
+                    : "Email (à venir)"}
               </span>
             </div>
           </div>
@@ -126,11 +126,10 @@ const NotificationScreen = () => {
             ].map((tab) => (
               <button
                 key={tab.key}
-                className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-semibold transition border ${
-                  mode === tab.key
+                className={`flex items-center gap-2 px-3 py-2 rounded-md text-sm font-semibold transition border ${mode === tab.key
                     ? "bg-white text-[#111827] border-white"
                     : "bg-white/10 text-white border-white/25 hover:bg-white/20"
-                }`}
+                  }`}
                 onClick={() => setMode(tab.key)}
               >
                 {tab.icon}
