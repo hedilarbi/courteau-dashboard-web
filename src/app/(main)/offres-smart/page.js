@@ -169,6 +169,20 @@ const OffresSmart = () => {
     }
   }, [activeTab, refresh]);
 
+  useEffect(() => {
+    if (!showHediModal) return undefined;
+
+    const refreshHediStats = async () => {
+      const res = await getSmartOfferHediStats();
+      if (res?.status) {
+        setHediStats(res.data);
+      }
+    };
+
+    const intervalId = window.setInterval(refreshHediStats, 10000);
+    return () => window.clearInterval(intervalId);
+  }, [showHediModal]);
+
   const handleTriggerScan = async () => {
     setIsScanning(true);
     showToast("info", "Scan RFM et génération des offres en cours...");

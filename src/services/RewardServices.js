@@ -1,10 +1,19 @@
 import axios from "axios";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
-const createRewardService = async (points, item) => {
+
+// Le serveur renvoie un message explicite (taille invalide, doublon...),
+// on le remonte tel quel pour l'afficher dans les modales.
+const extractError = (error) =>
+  error?.response?.data?.error ||
+  error?.response?.data?.message ||
+  error?.message;
+
+const createRewardService = async (points, item, size) => {
   try {
     let createRewardResponse = await axios.post(`${API_URL}/rewards/create`, {
       item,
+      size,
       points,
     });
 
@@ -23,10 +32,42 @@ const createRewardService = async (points, item) => {
   } catch (error) {
     return {
       status: false,
-      message: error.message,
+      message: extractError(error),
     };
   }
 };
+
+const updateRewardService = async (id, points, item, size) => {
+  try {
+    let updateRewardResponse = await axios.put(
+      `${API_URL}/rewards/update/${id}`,
+      {
+        item,
+        size,
+        points,
+      }
+    );
+
+    if (updateRewardResponse?.status === 200) {
+      return {
+        status: true,
+        message: "users data",
+        data: updateRewardResponse?.data,
+      };
+    } else {
+      return {
+        status: false,
+        messge: "error",
+      };
+    }
+  } catch (error) {
+    return {
+      status: false,
+      message: extractError(error),
+    };
+  }
+};
+
 const getRewards = async () => {
   try {
     let getRewardsResponse = await axios.get(`${API_URL}/rewards`);
@@ -46,7 +87,7 @@ const getRewards = async () => {
   } catch (error) {
     return {
       status: false,
-      message: error.message,
+      message: extractError(error),
     };
   }
 };
@@ -72,9 +113,14 @@ const deleteRewardService = async (id) => {
   } catch (error) {
     return {
       status: false,
-      message: error.message,
+      message: extractError(error),
     };
   }
 };
 
-export { createRewardService, getRewards, deleteRewardService };
+export {
+  createRewardService,
+  updateRewardService,
+  getRewards,
+  deleteRewardService,
+};

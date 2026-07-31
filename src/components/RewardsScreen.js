@@ -1,17 +1,20 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { FaTrash, FaPlus } from "react-icons/fa";
+import { FaPen, FaTrash, FaPlus } from "react-icons/fa";
 import DeleteWarningModal from "./modals/DeleteWarningModal";
 import { deleteRewardService } from "@/services/RewardServices";
 import SpinnerModal from "./modals/SpinnerModal";
 import SuccessModal from "./modals/SuccessModal";
 import FailModal from "./modals/FailModal";
 import CreateRewardModal from "./modals/CreateRewardModal";
+import UpdateRewardModal from "./modals/UpdateRewardModal";
 const RewardsScreen = ({ data }) => {
   const [rewards, setRewards] = useState(data);
   const [showDeleteWarningModal, setShowDeleteWarningModal] = useState(false);
   const [selectedReward, setSelectedReward] = useState(null);
+  const [rewardToUpdate, setRewardToUpdate] = useState(null);
   const [showCreateRewardModal, setShowCreateRewardModal] = useState(false);
+  const [showUpdateRewardModal, setShowUpdateRewardModal] = useState(false);
   const [showSuccessModel, setShowSuccessModel] = useState(false);
   const [showFailModel, setShowFailModel] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -73,6 +76,15 @@ const RewardsScreen = ({ data }) => {
         <CreateRewardModal
           setShowCreateRewardModal={setShowCreateRewardModal}
           setRewards={setRewards}
+          rewards={rewards}
+        />
+      )}
+      {showUpdateRewardModal && rewardToUpdate && (
+        <UpdateRewardModal
+          setShowUpdateRewardModal={setShowUpdateRewardModal}
+          setRewards={setRewards}
+          rewards={rewards}
+          reward={rewardToUpdate}
         />
       )}
       <div className="flex flex-col gap-4 w-full">
@@ -102,8 +114,9 @@ const RewardsScreen = ({ data }) => {
         <div className="bg-white shadow-default rounded-xl border border-gray-100 overflow-hidden">
           <div className="overflow-x-auto">
             <div className="min-w-[640px]">
-              <div className="grid grid-cols-[1.6fr,0.8fr,0.6fr] bg-gray-50 text-xs uppercase tracking-wide text-text-light-gray px-4 py-3">
+              <div className="grid grid-cols-[1.6fr,0.8fr,0.8fr,0.6fr] bg-gray-50 text-xs uppercase tracking-wide text-text-light-gray px-4 py-3">
                 <span>Article</span>
+                <span>Taille</span>
                 <span>Points</span>
                 <span className="text-right">Actions</span>
               </div>
@@ -112,13 +125,25 @@ const RewardsScreen = ({ data }) => {
                   {rewards.map((reward) => (
                     <div
                       key={reward._id}
-                      className="grid grid-cols-[1.6fr,0.8fr,0.6fr] items-center px-4 py-3 text-sm"
+                      className="grid grid-cols-[1.6fr,0.8fr,0.8fr,0.6fr] items-center px-4 py-3 text-sm"
                     >
                       <p className="text-text-dark-gray font-semibold truncate">
                         {reward.item?.name}
                       </p>
+                      <p className="text-text-dark-gray truncate">
+                        {reward.size || "—"}
+                      </p>
                       <p className="font-semibold text-pr">{reward.points}</p>
-                      <div className="flex items-center justify-end">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          className="p-2 rounded-md bg-pr/10 text-pr hover:bg-pr/20 transition"
+                          onClick={() => {
+                            setRewardToUpdate(reward);
+                            setShowUpdateRewardModal(true);
+                          }}
+                        >
+                          <FaPen size={16} />
+                        </button>
                         <button
                           className="p-2 rounded-md bg-warning-red/10 text-warning-red hover:bg-warning-red/20 transition"
                           onClick={() => {

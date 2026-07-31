@@ -8,19 +8,30 @@ import FailModal from "./FailModal";
 import SpinnerModal from "./SpinnerModal";
 
 import DropDown from "../DropDown";
-import { createRewardService } from "@/services/RewardServices";
+import { updateRewardService } from "@/services/RewardServices";
 import { buildSizesList, isRewardTaken } from "@/utils/rewards";
 
-const CreateRewardModal = ({ setShowCreateRewardModal, setRewards, rewards }) => {
-  const [item, setItem] = useState(null);
-  const [size, setSize] = useState(null);
-  const [points, setPoints] = useState(0);
+const UpdateRewardModal = ({
+  setShowUpdateRewardModal,
+  setRewards,
+  rewards,
+  reward,
+}) => {
+  const [item, setItem] = useState(
+    reward?.item
+      ? { value: reward.item._id, label: reward.item.name }
+      : null
+  );
+  const [size, setSize] = useState(
+    reward?.size ? { value: reward.size, label: reward.size } : null
+  );
+  const [points, setPoints] = useState(reward?.points ?? 0);
 
   const [isLoading, setIsloading] = useState(true);
   const [itemsNames, setItemsNames] = useState([]);
   const [sizes, setSizes] = useState([]);
   const [error, setError] = useState(null);
-  const [addingIsLoading, setAddingIsLoading] = useState(false);
+  const [updatingIsLoading, setUpdatingIsLoading] = useState(false);
   const [showSuccessModel, setShowSuccessModel] = useState(false);
   const [showFailModel, setShowFailModel] = useState(false);
 
@@ -47,15 +58,21 @@ const CreateRewardModal = ({ setShowCreateRewardModal, setRewards, rewards }) =>
     fetchData();
   }, []);
 
-  // Les tailles dépendent de l'article : on les recharge et on réinitialise
-  // la sélection à chaque changement d'article.
+  // Les tailles dépendent de l'article. On garde la taille déjà enregistrée
+  // tant qu'elle existe toujours dans les prix de l'article sélectionné.
   useEffect(() => {
+    // Tant que les articles ne sont pas chargés, on garde la taille pré-remplie.
+    if (itemsNames.length === 0) return;
+
     const selectedItem = itemsNames.find((i) => i.value === item?.value);
-    setSizes(buildSizesList(selectedItem?.prices));
-    setSize(null);
+    const nextSizes = buildSizesList(selectedItem?.prices);
+    setSizes(nextSizes);
+    setSize((prev) =>
+      nextSizes.some((option) => option.value === prev?.value) ? prev : null
+    );
   }, [item, itemsNames]);
 
-  const createReward = async () => {
+  const updateReward = async () => {
     if (!item) {
       setError("article obligatoire");
       setShowFailModel(true);
@@ -71,35 +88,45 @@ const CreateRewardModal = ({ setShowCreateRewardModal, setRewards, rewards }) =>
       setShowFailModel(true);
       return;
     }
-    if (isRewardTaken(rewards, item.value, size.value)) {
+    if (isRewardTaken(rewards, item.value, size.value, reward._id)) {
       setError("Une récompense existe déjà pour cet article avec cette taille");
       setShowFailModel(true);
       return;
     }
     setError(null);
-    setAddingIsLoading(true);
+    setUpdatingIsLoading(true);
     try {
-      const response = await createRewardService(points, item.value, size.value);
+      const response = await updateRewardService(
+        reward._id,
+        points,
+        item.value,
+        size.value
+      );
       if (response.status) {
-        setRewards((prev) => [response.data, ...prev]);
-        setAddingIsLoading(false);
+        setRewards((prev) =>
+          prev.map((current) =>
+            current._id === reward._id ? response.data : current
+          )
+        );
+        setUpdatingIsLoading(false);
         setShowSuccessModel(true);
       } else {
-        setAddingIsLoading(false);
+        setUpdatingIsLoading(false);
         setError(response.message || "Une erreur s'est produite");
         setShowFailModel(true);
       }
     } catch (err) {
-      setAddingIsLoading(false);
+      setUpdatingIsLoading(false);
       setError("Une erreur s'est produite");
       setShowFailModel(true);
     }
   };
+
   useEffect(() => {
     if (showSuccessModel) {
       const timer = setTimeout(() => {
         setShowSuccessModel(false);
-        setShowCreateRewardModal(false);
+        setShowUpdateRewardModal(false);
       }, 1000);
 
       return () => clearTimeout(timer);
@@ -114,11 +141,12 @@ const CreateRewardModal = ({ setShowCreateRewardModal, setRewards, rewards }) =>
       return () => clearTimeout(timer);
     }
   }, [showFailModel]);
+
   return (
     <ModalWrapper zindex={10}>
       {showSuccessModel && <SuccessModal />}
       {showFailModel && <FailModal error={error} />}
-      {addingIsLoading && <SpinnerModal />}
+      {updatingIsLoading && <SpinnerModal />}
 
       {isLoading ? (
         <div className="w-2/3 bg-white p-4 1/5 overflow-y-auto rounded-md flex items-center justify-center">
@@ -128,9 +156,9 @@ const CreateRewardModal = ({ setShowCreateRewardModal, setRewards, rewards }) =>
         <div className=" bg-white p-4 w-2/5  overflow-y-auto rounded-md flex flex-col ">
           <div className="flex justify-between items-center">
             <h1 className="text-2xl font-roboto font-semibold text-text-dark-gray">
-              Creer une recompense
+              Modifier la recompense
             </h1>
-            <button onClick={() => setShowCreateRewardModal(false)}>
+            <button onClick={() => setShowUpdateRewardModal(false)}>
               <MdOutlineClose size={32} />
             </button>
           </div>
@@ -195,9 +223,9 @@ const CreateRewardModal = ({ setShowCreateRewardModal, setRewards, rewards }) =>
           <div className="w-full flex justify-end mt-8">
             <button
               className="bg-pr  rounded-md py-2 font-roboto font-semibold px-10"
-              onClick={createReward}
+              onClick={updateReward}
             >
-              Ajouter
+              Enregistrer
             </button>
           </div>
         </div>
@@ -206,4 +234,4 @@ const CreateRewardModal = ({ setShowCreateRewardModal, setRewards, rewards }) =>
   );
 };
 
-export default CreateRewardModal;
+export default UpdateRewardModal;
