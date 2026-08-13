@@ -31,6 +31,11 @@ const OffresSmart = () => {
     discountValue: 0,
     bonusThreshold: 0,
     bonusPoints: 0,
+    discountSteps: [40, 30, 20],
+    followupValidityDays: 7,
+    triggerItem: "",
+    triggerItemSize: "",
+    giftItemSize: "",
     targetCategory: "",
     targetMenuItem: "",
     freeItem: "",
@@ -69,6 +74,7 @@ const OffresSmart = () => {
   // Stats Tab State
   const [monitoringStats, setMonitoringStats] = useState(null);
   const [isStatsLoading, setIsStatsLoading] = useState(false);
+  const [statsStrategyId, setStatsStrategyId] = useState(2);
 
   // Hedi Royalties Modal State
   const [showHediModal, setShowHediModal] = useState(false);
@@ -268,6 +274,11 @@ const OffresSmart = () => {
       discountValue: rule.discountValue,
       bonusThreshold: rule.bonusThreshold || 0,
       bonusPoints: rule.bonusPoints || 0,
+      discountSteps: rule.discountSteps?.length ? rule.discountSteps : [40, 30, 20],
+      followupValidityDays: rule.followupValidityDays || 7,
+      triggerItem: rule.triggerItem?._id || rule.triggerItem || "",
+      triggerItemSize: rule.triggerItemSize || "",
+      giftItemSize: rule.giftItemSize || "",
       targetCategory: rule.targetCategory?._id || rule.targetCategory || "",
       targetMenuItem: rule.targetMenuItem?._id || rule.targetMenuItem || "",
       freeItem: rule.freeItem?._id || rule.freeItem || "",
@@ -305,6 +316,7 @@ const OffresSmart = () => {
           targetMenuItem:
             savedRule.targetMenuItem?._id || savedRule.targetMenuItem || "",
           freeItem: savedRule.freeItem?._id || savedRule.freeItem || "",
+          triggerItem: savedRule.triggerItem?._id || savedRule.triggerItem || "",
           freeItems: (savedRule.freeItems || []).map((entry) => ({
             item: entry.item?._id || entry.item,
             size: entry.size,
@@ -365,8 +377,31 @@ const OffresSmart = () => {
       discount_order: "Réduction sur commande",
       free_delivery: "Livraison gratuite",
       loyalty_points: "Points de fidélité bonus",
+      split_discount: "Rabais divisé",
+      buy_one_get_one: "1 acheté = 1 offert",
     };
     return types[type] || type;
+  };
+
+  const getRuleRewardLabel = (rule, fallback = "—") => {
+    if (!rule) return fallback;
+    const threshold = Number(rule.bonusThreshold) > 0 ? ` dès ${rule.bonusThreshold}$` : "";
+    if (rule.offerType === "loyalty_points") return `${rule.bonusPoints || 0} points${threshold}`;
+    if (rule.offerType === "free_item") {
+      const choices = (rule.freeItems || []).map((entry) => {
+        const itemId = entry.item?._id || entry.item;
+        const item = menuItems.find((candidate) => String(candidate._id) === String(itemId));
+        return `${item?.name || entry.item?.name || "Article"}${entry.size ? ` (${entry.size})` : ""}`;
+      });
+      if (choices.length > 0) return `${choices.join(" ou ")} offert${threshold}`;
+      const freeItemId = rule.freeItem?._id || rule.freeItem;
+      const freeItem = menuItems.find((candidate) => String(candidate._id) === String(freeItemId));
+      return `${freeItem?.name || rule.freeItem?.name || "Article"} offert${threshold}`;
+    }
+    if (rule.offerType === "buy_one_get_one") return "1 acheté = 1 offert";
+    if (rule.offerType === "split_discount") return `${(rule.discountSteps || []).join("% → ")}%`;
+    const suffix = ["discount_category", "discount_product", "discount_order"].includes(rule.offerType) ? "%" : "$";
+    return `${rule.discountValue || 0}${suffix}${threshold}`;
   };
 
   const getStrategyLabel = (strategyId, score) => {
@@ -564,8 +599,77 @@ const OffresSmart = () => {
                   <option value="free_item">Article / Dessert offert</option>
                   <option value="free_delivery">Livraison gratuite</option>
                   <option value="loyalty_points">Points de fidélité bonus dès un seuil</option>
+                  <option value="split_discount">Rabais divisé sur plusieurs commandes</option>
+                  <option value="buy_one_get_one">1 article acheté = 1 article offert</option>
                 </select>
               </div>
+
+              {formData.offerType === "split_discount" && (
+                <div className="grid grid-cols-2 gap-4 bg-indigo-50 p-3 rounded-lg border border-indigo-200">
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-indigo-800 mb-1">Rabais successifs (%)</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="40, 30, 20"
+                      className="w-full border border-gray-300 rounded-lg p-2.5 bg-white"
+                      value={(formData.discountSteps || []).join(", ")}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        discountSteps: e.target.value.split(",").map(v => Number(v.trim())).filter(Number.isFinite),
+                      })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-indigo-800 mb-1">Délai après la 1re commande (jours)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      required
+                      className="w-full border border-gray-300 rounded-lg p-2.5 bg-white"
+                      value={formData.followupValidityDays}
+                      onChange={(e) => setFormData({ ...formData, followupValidityDays: Number(e.target.value) })}
+                    />
+                  </div>
+                  <p className="col-span-2 text-xs text-indigo-900">
+                    La première étape doit être utilisée pendant la validité initiale. Ce délai commence ensuite à la première commande.
+                  </p>
+                </div>
+              )}
+
+              {formData.offerType === "buy_one_get_one" && (
+                <div className="grid grid-cols-2 gap-4 bg-rose-50 p-3 rounded-lg border border-rose-200">
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-rose-800 mb-1">Article à acheter</label>
+                    <select required className="w-full border border-gray-300 rounded-lg p-2.5 bg-white" value={formData.triggerItem} onChange={(e) => setFormData({ ...formData, triggerItem: e.target.value, triggerItemSize: "" })}>
+                      <option value="">Sélectionner</option>
+                      {menuItems.map(item => <option key={item._id} value={item._id}>{item.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-rose-800 mb-1">Taille achetée (optionnelle)</label>
+                    <select className="w-full border border-gray-300 rounded-lg p-2.5 bg-white" value={formData.triggerItemSize} onChange={(e) => setFormData({ ...formData, triggerItemSize: e.target.value })}>
+                      <option value="">Toutes les tailles</option>
+                      {(menuItems.find(item => item._id === formData.triggerItem)?.prices || []).map((price, index) => <option key={index} value={price.size}>{price.size}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-rose-800 mb-1">Article offert</label>
+                    <select required className="w-full border border-gray-300 rounded-lg p-2.5 bg-white" value={formData.freeItem} onChange={(e) => setFormData({ ...formData, freeItem: e.target.value, giftItemSize: "" })}>
+                      <option value="">Sélectionner</option>
+                      {menuItems.map(item => <option key={item._id} value={item._id}>{item.name}</option>)}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-rose-800 mb-1">Taille offerte (optionnelle)</label>
+                    <select className="w-full border border-gray-300 rounded-lg p-2.5 bg-white" value={formData.giftItemSize} onChange={(e) => setFormData({ ...formData, giftItemSize: e.target.value })}>
+                      <option value="">Toutes les tailles</option>
+                      {(menuItems.find(item => item._id === formData.freeItem)?.prices || []).map((price, index) => <option key={index} value={price.size}>{price.size}</option>)}
+                    </select>
+                  </div>
+                  <p className="col-span-2 text-xs text-rose-900">L&apos;article acheté reste au plein prix. Le prix de base du cadeau est offert; ses extras restent payants.</p>
+                </div>
+              )}
 
               {formData.offerType === "loyalty_points" && (
                 <div className="grid grid-cols-2 gap-4 bg-yellow-50 p-3 rounded-lg border border-yellow-200">
@@ -1083,11 +1187,7 @@ const OffresSmart = () => {
                           </td>
                           <td className="px-3 py-2.5 text-center">
                             <span className="text-gray-600 text-xs">
-                              {rule
-                                ? rule.offerType === "loyalty_points"
-                                  ? `${rule.bonusPoints || 0} points dès ${rule.bonusThreshold || 0}$`
-                                  : rule.discountValue + (rule.offerType === "discount_category" || rule.offerType === "discount_product" || rule.offerType === "discount_order" ? "%" : "$" )
-                                : strat.offerDesc}
+                              {getRuleRewardLabel(rule, strat.offerDesc)}
                             </span>
                           </td>
                           <td className="px-3 py-2.5 text-center">
@@ -1419,7 +1519,9 @@ const OffresSmart = () => {
             clickRate = 0,
             offerTypesMap = {},
             segmentsMap = {},
+            variantsByStrategy = {},
           } = monitoringStats;
+          const selectedVariants = variantsByStrategy?.[statsStrategyId] || [];
 
           return (
             <div className="flex flex-col gap-6 w-full font-roboto text-gray-700 animate-fadeIn">
@@ -1497,6 +1599,74 @@ const OffresSmart = () => {
                   <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center text-purple-600 text-xl shadow-inner">
                     <FaShoppingBag />
                   </div>
+                </div>
+              </div>
+
+              {/* Historical strategy variants comparison */}
+              <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-4">
+                  <div>
+                    <h3 className="text-base font-bold text-gray-800">Comparaison des versions d&apos;une stratégie</h3>
+                    <p className="text-xs text-gray-500 mt-1">Chaque changement de type, valeur, seuil, cible ou texte crée une variante historique distincte.</p>
+                  </div>
+                  <label className="text-xs font-bold text-gray-600">
+                    Stratégie
+                    <select
+                      className="ml-2 border border-gray-300 rounded-lg px-3 py-2 bg-white"
+                      value={statsStrategyId}
+                      onChange={(event) => setStatsStrategyId(Number(event.target.value))}
+                    >
+                      {Object.keys(variantsByStrategy).sort((a, b) => Number(a) - Number(b)).map((strategyId) => (
+                        <option key={strategyId} value={strategyId}>S{String(strategyId).padStart(2, "0")}</option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+                <div className="overflow-x-auto border border-gray-100 rounded-lg">
+                  <table className="min-w-full text-left text-xs">
+                    <thead className="bg-gray-50 text-gray-500 uppercase">
+                      <tr>
+                        <th className="px-3 py-2.5">Version / offre</th>
+                        <th className="px-3 py-2.5 text-center">Période</th>
+                        <th className="px-3 py-2.5 text-center">Générées</th>
+                        <th className="px-3 py-2.5 text-center">Activées</th>
+                        <th className="px-3 py-2.5 text-center">Clic notif.</th>
+                        <th className="px-3 py-2.5 text-center">Vues</th>
+                        <th className="px-3 py-2.5 text-center">Commandes</th>
+                        <th className="px-3 py-2.5 text-center">Conversion</th>
+                        <th className="px-3 py-2.5 text-center">Panier moy.</th>
+                        <th className="px-3 py-2.5 text-center">CA</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {selectedVariants.map((variant) => (
+                        <tr key={variant.id} className={variant.isLatest ? "bg-emerald-50/40" : "hover:bg-gray-50"}>
+                          <td className="px-3 py-3 min-w-[260px]">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-gray-800">{variant.id}</span>
+                              {variant.isLatest && <span className="rounded-full bg-emerald-100 text-emerald-700 px-2 py-0.5 text-[9px] font-bold">ACTUELLE</span>}
+                            </div>
+                            <div className="text-gray-600 mt-1">{getOfferTypeLabel(variant.offerType)} — {getRuleRewardLabel(variant)}</div>
+                            <div className="text-gray-400 truncate max-w-[360px]" title={variant.notificationTitle}>{variant.notificationTitle}</div>
+                          </td>
+                          <td className="px-3 py-3 text-center whitespace-nowrap text-gray-500">
+                            {dateToDDMMYYYYHHMM(variant.firstGeneratedAt)}<br />→ {dateToDDMMYYYYHHMM(variant.lastGeneratedAt)}
+                          </td>
+                          <td className="px-3 py-3 text-center font-semibold">{variant.generated}</td>
+                          <td className="px-3 py-3 text-center">{variant.activated} <span className="text-gray-400">({variant.activationRate}%)</span></td>
+                          <td className="px-3 py-3 text-center">{variant.notificationClicks} <span className="text-gray-400">({variant.notificationClickRate}%)</span></td>
+                          <td className="px-3 py-3 text-center">{variant.views} <span className="text-gray-400">({variant.viewRate}%)</span></td>
+                          <td className="px-3 py-3 text-center font-bold text-purple-700">{variant.conversions}</td>
+                          <td className="px-3 py-3 text-center font-bold">{variant.conversionRate}%</td>
+                          <td className="px-3 py-3 text-center">{variant.averageBasket.toFixed(2)} $</td>
+                          <td className="px-3 py-3 text-center font-semibold">{variant.revenue.toFixed(2)} $</td>
+                        </tr>
+                      ))}
+                      {selectedVariants.length === 0 && (
+                        <tr><td colSpan="10" className="py-8 text-center text-gray-400">Aucune variante disponible.</td></tr>
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </div>
 
