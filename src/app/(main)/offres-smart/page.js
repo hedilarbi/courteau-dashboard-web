@@ -1607,7 +1607,7 @@ const OffresSmart = () => {
                 <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 mb-4">
                   <div>
                     <h3 className="text-base font-bold text-gray-800">Comparaison des versions d&apos;une stratégie</h3>
-                    <p className="text-xs text-gray-500 mt-1">Chaque changement de type, valeur, seuil, cible ou texte crée une variante historique distincte.</p>
+                    <p className="text-xs text-gray-500 mt-1">Compare combien de clients ont reçu chaque offre, combien l&apos;ont utilisée et le chiffre d&apos;affaires généré.</p>
                   </div>
                   <label className="text-xs font-bold text-gray-600">
                     Stratégie
@@ -1628,14 +1628,12 @@ const OffresSmart = () => {
                       <tr>
                         <th className="px-3 py-2.5">Version / offre</th>
                         <th className="px-3 py-2.5 text-center">Période</th>
-                        <th className="px-3 py-2.5 text-center">Générées</th>
-                        <th className="px-3 py-2.5 text-center">Activées</th>
-                        <th className="px-3 py-2.5 text-center">Clic notif.</th>
-                        <th className="px-3 py-2.5 text-center">Vues</th>
-                        <th className="px-3 py-2.5 text-center">Commandes</th>
-                        <th className="px-3 py-2.5 text-center">Conversion</th>
-                        <th className="px-3 py-2.5 text-center">Panier moy.</th>
-                        <th className="px-3 py-2.5 text-center">CA</th>
+                        <th className="px-3 py-2.5 text-center">Personnes ayant reçu</th>
+                        <th className="px-3 py-2.5 text-center">Offres utilisées</th>
+                        <th className="px-3 py-2.5 text-center">Taux d&apos;utilisation</th>
+                        <th className="px-3 py-2.5 text-center">CA rapporté</th>
+                        <th className="px-3 py-2.5 text-center">Rabais accordés</th>
+                        <th className="px-3 py-2.5 text-center">Panier moyen</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-gray-100">
@@ -1652,18 +1650,19 @@ const OffresSmart = () => {
                           <td className="px-3 py-3 text-center whitespace-nowrap text-gray-500">
                             {dateToDDMMYYYYHHMM(variant.firstGeneratedAt)}<br />→ {dateToDDMMYYYYHHMM(variant.lastGeneratedAt)}
                           </td>
-                          <td className="px-3 py-3 text-center font-semibold">{variant.generated}</td>
-                          <td className="px-3 py-3 text-center">{variant.activated} <span className="text-gray-400">({variant.activationRate}%)</span></td>
-                          <td className="px-3 py-3 text-center">{variant.notificationClicks} <span className="text-gray-400">({variant.notificationClickRate}%)</span></td>
-                          <td className="px-3 py-3 text-center">{variant.views} <span className="text-gray-400">({variant.viewRate}%)</span></td>
-                          <td className="px-3 py-3 text-center font-bold text-purple-700">{variant.conversions}</td>
-                          <td className="px-3 py-3 text-center font-bold">{variant.conversionRate}%</td>
-                          <td className="px-3 py-3 text-center">{variant.averageBasket.toFixed(2)} $</td>
-                          <td className="px-3 py-3 text-center font-semibold">{variant.revenue.toFixed(2)} $</td>
+                          <td className="px-3 py-3 text-center">
+                            <span className="text-lg font-black text-blue-700">{variant.activated}</span>
+                            {variant.generated > variant.activated && <span className="block text-[10px] text-gray-400">{variant.generated} générées</span>}
+                          </td>
+                          <td className="px-3 py-3 text-center text-lg font-black text-purple-700">{variant.conversions}</td>
+                          <td className="px-3 py-3 text-center text-lg font-black">{variant.conversionRate}%</td>
+                          <td className="px-3 py-3 text-center text-lg font-black text-emerald-700">{variant.revenue.toFixed(2)} $</td>
+                          <td className="px-3 py-3 text-center font-semibold text-red-600">{(variant.totalDiscount || 0).toFixed(2)} $</td>
+                          <td className="px-3 py-3 text-center font-semibold">{variant.averageBasket.toFixed(2)} $</td>
                         </tr>
                       ))}
                       {selectedVariants.length === 0 && (
-                        <tr><td colSpan="10" className="py-8 text-center text-gray-400">Aucune variante disponible.</td></tr>
+                        <tr><td colSpan="8" className="py-8 text-center text-gray-400">Aucune variante disponible.</td></tr>
                       )}
                     </tbody>
                   </table>
