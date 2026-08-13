@@ -74,6 +74,7 @@ const OffresSmart = () => {
   // Stats Tab State
   const [monitoringStats, setMonitoringStats] = useState(null);
   const [isStatsLoading, setIsStatsLoading] = useState(false);
+  const [statsError, setStatsError] = useState("");
   const [statsStrategyId, setStatsStrategyId] = useState(2);
 
   // Hedi Royalties Modal State
@@ -166,9 +167,12 @@ const OffresSmart = () => {
     if (activeTab === "stats") {
       const fetchStatsData = async () => {
         setIsStatsLoading(true);
+        setStatsError("");
         const res = await getMonitoringStats();
         if (res?.status) {
           setMonitoringStats(res.data);
+        } else {
+          setStatsError(res?.message || "Impossible de charger les statistiques.");
         }
         setIsStatsLoading(false);
       };
@@ -1498,10 +1502,19 @@ const OffresSmart = () => {
 
         {/* Monitoring & Stats View */}
         {activeTab === "stats" && (() => {
-          if (isStatsLoading || !monitoringStats) {
+          if (isStatsLoading) {
             return (
               <div className="flex justify-center items-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
                 <Spinner />
+              </div>
+            );
+          }
+          if (!monitoringStats) {
+            return (
+              <div className="bg-red-50 border border-red-200 text-red-700 rounded-xl p-6 text-center">
+                <p className="font-bold">Impossible de charger les statistiques.</p>
+                <p className="text-xs mt-1">{statsError || "Le serveur n&apos;a retourné aucune donnée."}</p>
+                <button onClick={() => setRefresh((value) => value + 1)} className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg text-xs font-bold">Réessayer</button>
               </div>
             );
           }
