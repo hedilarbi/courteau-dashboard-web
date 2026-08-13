@@ -30,6 +30,7 @@ const OffresSmart = () => {
     offerType: "discount_category",
     discountValue: 0,
     bonusThreshold: 0,
+    bonusPoints: 0,
     targetCategory: "",
     targetMenuItem: "",
     freeItem: "",
@@ -266,6 +267,7 @@ const OffresSmart = () => {
       offerType: rule.offerType,
       discountValue: rule.discountValue,
       bonusThreshold: rule.bonusThreshold || 0,
+      bonusPoints: rule.bonusPoints || 0,
       targetCategory: rule.targetCategory?._id || rule.targetCategory || "",
       targetMenuItem: rule.targetMenuItem?._id || rule.targetMenuItem || "",
       freeItem: rule.freeItem?._id || rule.freeItem || "",
@@ -285,6 +287,29 @@ const OffresSmart = () => {
     try {
       const response = await createOrUpdateRule(formData);
       if (response.status) {
+        const savedRule = response.data;
+        setRules((currentRules) =>
+          currentRules.map((rule) =>
+            String(rule._id) === String(savedRule._id) ||
+            Number(rule.strategyId) === Number(savedRule.strategyId)
+              ? { ...rule, ...savedRule }
+              : rule,
+          ),
+        );
+        setSelectedRule(savedRule);
+        setFormData((current) => ({
+          ...current,
+          ...savedRule,
+          targetCategory:
+            savedRule.targetCategory?._id || savedRule.targetCategory || "",
+          targetMenuItem:
+            savedRule.targetMenuItem?._id || savedRule.targetMenuItem || "",
+          freeItem: savedRule.freeItem?._id || savedRule.freeItem || "",
+          freeItems: (savedRule.freeItems || []).map((entry) => ({
+            item: entry.item?._id || entry.item,
+            size: entry.size,
+          })),
+        }));
         showToast("success", "Règle configurée avec succès !");
         setShowConfigModal(false);
         setRefresh((prev) => prev + 1);
@@ -339,6 +364,7 @@ const OffresSmart = () => {
       bonus_basket: "Bonus panier",
       discount_order: "Réduction sur commande",
       free_delivery: "Livraison gratuite",
+      loyalty_points: "Points de fidélité bonus",
     };
     return types[type] || type;
   };
@@ -537,8 +563,41 @@ const OffresSmart = () => {
                   <option value="discount_product">Réduction sur article (%)</option>
                   <option value="free_item">Article / Dessert offert</option>
                   <option value="free_delivery">Livraison gratuite</option>
+                  <option value="loyalty_points">Points de fidélité bonus dès un seuil</option>
                 </select>
               </div>
+
+              {formData.offerType === "loyalty_points" && (
+                <div className="grid grid-cols-2 gap-4 bg-yellow-50 p-3 rounded-lg border border-yellow-200">
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-yellow-800 mb-1">Points bonus</label>
+                    <input
+                      type="number"
+                      min="1"
+                      step="1"
+                      required
+                      className="w-full border border-gray-300 rounded-lg p-2.5 bg-white focus:border-pr focus:ring-1 focus:ring-pr outline-none"
+                      value={formData.bonusPoints}
+                      onChange={(e) => setFormData({ ...formData, bonusPoints: Number(e.target.value) })}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-yellow-800 mb-1">Seuil minimal panier ($)</label>
+                    <input
+                      type="number"
+                      min="1"
+                      step="0.01"
+                      required
+                      className="w-full border border-gray-300 rounded-lg p-2.5 bg-white focus:border-pr focus:ring-1 focus:ring-pr outline-none"
+                      value={formData.bonusThreshold}
+                      onChange={(e) => setFormData({ ...formData, bonusThreshold: Number(e.target.value) })}
+                    />
+                  </div>
+                  <p className="col-span-2 text-xs text-yellow-900">
+                    Les points seront crédités seulement après la confirmation de la commande.
+                  </p>
+                </div>
+              )}
 
               {formData.offerType === "bonus_basket" && (
                 <div className="grid grid-cols-2 gap-4 bg-blue-50/50 p-3 rounded-lg border border-blue-100">
@@ -1023,7 +1082,13 @@ const OffresSmart = () => {
                             </div>
                           </td>
                           <td className="px-3 py-2.5 text-center">
-                            <span className="text-gray-600 text-xs">{rule ? (rule.discountValue + (rule.offerType === 'discount_category' || rule.offerType === 'discount_product' || rule.offerType === 'discount_order' ? '%' : '$')) : strat.offerDesc}</span>
+                            <span className="text-gray-600 text-xs">
+                              {rule
+                                ? rule.offerType === "loyalty_points"
+                                  ? `${rule.bonusPoints || 0} points dès ${rule.bonusThreshold || 0}$`
+                                  : rule.discountValue + (rule.offerType === "discount_category" || rule.offerType === "discount_product" || rule.offerType === "discount_order" ? "%" : "$" )
+                                : strat.offerDesc}
+                            </span>
                           </td>
                           <td className="px-3 py-2.5 text-center">
                             <span className="text-gray-600 text-xs">{rule?.validityHours || strat.validityHours} h</span>
@@ -1049,12 +1114,14 @@ const OffresSmart = () => {
                                 segment: strat.segment,
                                 cooldownDays: rule?.cooldownDays || 7,
                                 validityHours: rule?.validityHours || strat.validityHours,
-                                offerType: strat.offerType,
-                                discountValue: rule?.discountValue || 10,
-                                bonusThreshold: rule?.bonusThreshold || 0,
+                                offerType: rule?.offerType || strat.offerType,
+                                discountValue: rule?.discountValue ?? 10,
+                                bonusThreshold: rule?.bonusThreshold ?? 0,
+                                bonusPoints: rule?.bonusPoints ?? 0,
                                 targetCategory: rule?.targetCategory || "",
                                 targetMenuItem: rule?.targetMenuItem || "",
                                 freeItem: rule?.freeItem || "",
+                                freeItems: rule?.freeItems || [],
                                 notificationTitle: rule?.notificationTitle || `Une offre spéciale pour vous, {name} !`,
                                 notificationBody: rule?.notificationBody || strat.offerDesc,
                                 isActive: rule?.isActive !== undefined ? rule.isActive : false,
