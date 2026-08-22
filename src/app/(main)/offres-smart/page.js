@@ -635,8 +635,22 @@ const OffresSmart = () => {
                       onChange={(e) => setFormData({ ...formData, followupValidityDays: Number(e.target.value) })}
                     />
                   </div>
+                  <div>
+                    <label className="block text-xs font-bold uppercase text-indigo-800 mb-1">Seuil minimal panier ($ - Optionnel)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="Ex: 0"
+                      className="w-full border border-gray-300 rounded-lg p-2.5 bg-white focus:border-pr focus:ring-1 focus:ring-pr outline-none"
+                      value={formData.bonusThreshold}
+                      onChange={(e) => setFormData({ ...formData, bonusThreshold: Number(e.target.value) })}
+                    />
+                  </div>
                   <p className="col-span-2 text-xs text-indigo-900">
                     La première étape doit être utilisée pendant la validité initiale. Ce délai commence ensuite à la première commande.
+                    {Number(formData.bonusThreshold) > 0
+                      ? ` Le seuil de ${formData.bonusThreshold}$ s'applique à chacune des ${(formData.discountSteps || []).length || "n"} commandes.`
+                      : " Laissez le seuil à 0 pour n'imposer aucun montant minimum."}
                   </p>
                 </div>
               )}
@@ -671,7 +685,23 @@ const OffresSmart = () => {
                       {(menuItems.find(item => item._id === formData.freeItem)?.prices || []).map((price, index) => <option key={index} value={price.size}>{price.size}</option>)}
                     </select>
                   </div>
-                  <p className="col-span-2 text-xs text-rose-900">L&apos;article acheté reste au plein prix. Le prix de base du cadeau est offert; ses extras restent payants.</p>
+                  <div className="col-span-2">
+                    <label className="block text-xs font-bold uppercase text-rose-800 mb-1">Seuil minimal panier ($ - Optionnel)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      placeholder="Ex: 0"
+                      className="w-full border border-gray-300 rounded-lg p-2.5 bg-white focus:border-pr focus:ring-1 focus:ring-pr outline-none"
+                      value={formData.bonusThreshold}
+                      onChange={(e) => setFormData({ ...formData, bonusThreshold: Number(e.target.value) })}
+                    />
+                  </div>
+                  <p className="col-span-2 text-xs text-rose-900">
+                    L&apos;article acheté reste au plein prix. Le prix de base du cadeau est offert; ses extras restent payants.
+                    {Number(formData.bonusThreshold) > 0
+                      ? ` Le cadeau exigera aussi un panier d'au moins ${formData.bonusThreshold}$.`
+                      : " Laissez le seuil à 0 pour n'exiger que l'article acheté."}
+                  </p>
                 </div>
               )}
 
