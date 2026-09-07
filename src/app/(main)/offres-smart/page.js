@@ -269,6 +269,7 @@ const OffresSmart = () => {
   const handleOpenConfig = (rule) => {
     setSelectedRule(rule);
     setFormData({
+      name: rule.name,
       strategyId: rule.strategyId,
       group: rule.group,
       segment: rule.segment,
@@ -410,22 +411,14 @@ const OffresSmart = () => {
 
   const getStrategyLabel = (strategyId, score) => {
     if (!strategyId && !score) return <span className="text-gray-400">Non dispo.</span>;
-    const strategies = {
-      1: "Dernière commande >= 30j",
-      2: "Dernière commande 21-29j",
-      3: "Dernière commande 14-20j",
-      4: ">= 8 cmd / 30j (Super Fidélité)",
-      5: "5-7 cmd / 30j (Fidélité)",
-      6: "Panier moyen < 20$",
-      7: "Panier moyen 20-35$",
-      8: "Panier moyen 35-50$",
-      9: "Panier moyen > 50$",
-      10: "Catégorie favorite >= 60%",
-      11: "Découverte catégorie"
-    };
+    const strategyName = rules.find(
+      (rule) => Number(rule.strategyId) === Number(strategyId),
+    )?.name;
     return (
       <div className="flex flex-col leading-tight">
-        <span className="font-semibold text-gray-800 text-[13px]">{strategies[strategyId] || `Stratégie ${strategyId}`}</span>
+        <span className="font-semibold text-gray-800 text-[13px]">
+          S{String(strategyId).padStart(2, "0")} - {strategyName || `Stratégie ${strategyId}`}
+        </span>
         <span className="text-[10px] text-gray-400 font-mono font-medium">Score : {score || 0}</span>
       </div>
     );
@@ -435,6 +428,14 @@ const OffresSmart = () => {
     const days = ["Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi"];
     return days[dayNum] || dayNum;
   };
+
+  const getReactivationProfileLabel = (profile) => ({
+    early_risk: "Risque précoce",
+    early_abandonment: "Abandon précoce",
+    sudden_stop: "Arrêt soudain",
+    low_frequency: "Faible fréquence en retard",
+    not_overdue: "Pas encore en retard",
+  }[profile] || "Non classé");
 
   if (isLoading) {
     return (
@@ -1169,7 +1170,7 @@ const OffresSmart = () => {
 
             {/* Strategies Interactive Table */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 overflow-hidden">
-              <h2 className="text-base font-semibold text-gray-800 mb-3">Les 18 Stratégies d&apos;évaluation comportementale</h2>
+              <h2 className="text-base font-semibold text-gray-800 mb-3">Les 19 stratégies d&apos;évaluation comportementale</h2>
               <div className="overflow-x-auto border border-gray-100 rounded-lg">
                 <table className="min-w-full divide-y divide-gray-100 text-left text-xs text-gray-600">
                   <thead className="bg-gray-50 text-gray-500 font-bold uppercase">
@@ -1185,30 +1186,32 @@ const OffresSmart = () => {
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {[
-                      { strategyId: 2, name: "Rabais 2e commande", condition: "1 commande passée", offerType: "discount_order", offerDesc: "15% de rabais dès 20$", validityHours: 72, baseScore: 98, group: "HABITUDE", segment: "normal", scoreColor: "text-blue-600 bg-blue-50" },
-                      { strategyId: 3, name: "5$ pour la 3e commande", condition: "2 commandes passées", offerType: "bonus_basket", offerDesc: "5$ de rabais", validityHours: 72, baseScore: 96, group: "HABITUDE", segment: "normal", scoreColor: "text-blue-600 bg-blue-50" },
-                      { strategyId: 4, name: "Extra gratuit 4e commande", condition: "3 commandes (30j)", offerType: "free_item", offerDesc: "Dessert offert", validityHours: 72, baseScore: 88, group: "HABITUDE", segment: "loyal", scoreColor: "text-blue-600 bg-blue-50" },
-                      { strategyId: 5, name: "Presque fidèle", condition: "4 commandes (30j)", offerType: "bonus_basket", offerDesc: "7$ de rabais dès 35$", validityHours: 72, baseScore: 82, group: "FIDELITE", segment: "loyal", scoreColor: "text-orange-600 bg-orange-50" },
-                      { strategyId: 6, name: "Fidélité active", condition: "5 à 7 commandes (30j)", offerType: "free_item", offerDesc: "Boisson/dessert offert", validityHours: 72, baseScore: 55, group: "FIDELITE", segment: "loyal", scoreColor: "text-orange-600 bg-orange-50" },
-                      { strategyId: 7, name: "VIP", condition: "≥ 8 commandes (30j)", offerType: "free_item", offerDesc: "VIP offert", validityHours: 72, baseScore: 40, group: "FIDELITE", segment: "very_active", scoreColor: "text-orange-600 bg-orange-50" },
-                      { strategyId: 8, name: "Inactif récent", condition: "10-17 jours inactif", offerType: "free_delivery", offerDesc: "Livraison offerte", validityHours: 48, baseScore: 68, group: "REACTIVATION", segment: "normal", scoreColor: "text-red-600 bg-red-50" },
-                      { strategyId: 9, name: "À risque", condition: "18-29 jours inactif", offerType: "bonus_basket", offerDesc: "5$ de rabais", validityHours: 48, baseScore: 78, group: "REACTIVATION", segment: "normal", scoreColor: "text-red-600 bg-red-50" },
-                      { strategyId: 10, name: "Perdu", condition: "30-59 jours inactif", offerType: "discount_order", offerDesc: "20% de rabais", validityHours: 48, baseScore: 92, group: "REACTIVATION", segment: "inactive", scoreColor: "text-red-600 bg-red-50" },
-                      { strategyId: 11, name: "Très perdu", condition: "60-89 jours inactif", offerType: "discount_order", offerDesc: "25% de rabais", validityHours: 72, baseScore: 94, group: "REACTIVATION", segment: "reactivate", scoreColor: "text-red-600 bg-red-50" },
-                      { strategyId: 12, name: "Ancien client", condition: "≥ 90 jours inactif", offerType: "bonus_basket", offerDesc: "10$ de rabais dès 30$", validityHours: 72, baseScore: 97, group: "REACTIVATION", segment: "reactivate", scoreColor: "text-red-600 bg-red-50" },
-                      { strategyId: 13, name: "Panier 20-30$", condition: "Panier moyen 20-30$", offerType: "bonus_basket", offerDesc: "5$ dès 30$", validityHours: 48, baseScore: 45, group: "PANIER", segment: "normal", scoreColor: "text-purple-600 bg-purple-50" },
-                      { strategyId: 14, name: "Panier 30-40$", condition: "Panier moyen 30-40$", offerType: "free_item", offerDesc: "Extra offert dès 35$", validityHours: 48, baseScore: 40, group: "PANIER", segment: "normal", scoreColor: "text-purple-600 bg-purple-50" },
-                      { strategyId: 15, name: "Panier 40-55$", condition: "Panier moyen 40-55$", offerType: "bonus_basket", offerDesc: "7$ dès 50$", validityHours: 48, baseScore: 30, group: "PANIER", segment: "normal", scoreColor: "text-purple-600 bg-purple-50" },
-                      { strategyId: 16, name: "Panier > 55$", condition: "Panier moyen > 55$", offerType: "bonus_basket", offerDesc: "10$ dès 65$", validityHours: 48, baseScore: 25, group: "PANIER", segment: "normal", scoreColor: "text-purple-600 bg-purple-50" },
-                      { strategyId: 17, name: "Affinité — Catégorie favorite", condition: "Catégorie dominante ≥60% des achats (90j)", offerType: "discount_category", offerDesc: "10% sur la catégorie favorite", validityHours: 48, baseScore: 50, group: "AFFINITE", segment: "normal", scoreColor: "text-green-600 bg-green-50" },
-                      { strategyId: 18, name: "Découverte — Catégorie top resto", condition: "N'a jamais commandé dans la catégorie #1 du resto", offerType: "discount_category", offerDesc: "15% sur la catégorie #1", validityHours: 48, baseScore: 35, group: "DECOUVERTE", segment: "normal", scoreColor: "text-gray-600 bg-gray-50" },
+                      { strategyId: 2, name: "Installer l'habitude de la 2e commande", condition: "1 commande, récence de 4 à 17 jours", offerType: "discount_order", offerDesc: "Offre configurable", validityHours: 72, baseScore: 98, group: "HABITUDE", segment: "normal", scoreColor: "text-blue-600 bg-blue-50" },
+                      { strategyId: 3, name: "Consolider l'habitude de la 3e commande", condition: "2 commandes, récence de 7 à 17 jours", offerType: "bonus_basket", offerDesc: "Offre configurable", validityHours: 72, baseScore: 96, group: "HABITUDE", segment: "normal", scoreColor: "text-blue-600 bg-blue-50" },
+                      { strategyId: 4, name: "Faire franchir le cap de la 4e commande", condition: "3 commandes à vie, récence ≤ 17 jours", offerType: "free_item", offerDesc: "Offre configurable", validityHours: 72, baseScore: 88, group: "HABITUDE", segment: "loyal", scoreColor: "text-blue-600 bg-blue-50" },
+                      { strategyId: 5, name: "Transformer en client fidèle à la 5e commande", condition: "4 commandes à vie, récence ≤ 17 jours", offerType: "bonus_basket", offerDesc: "Offre configurable", validityHours: 72, baseScore: 82, group: "FIDELITE", segment: "loyal", scoreColor: "text-orange-600 bg-orange-50" },
+                      { strategyId: 6, name: "Entretenir la fidélité active", condition: "5 à 7 commandes sur 30 jours", offerType: "free_item", offerDesc: "Offre configurable", validityHours: 72, baseScore: 55, group: "FIDELITE", segment: "loyal", scoreColor: "text-orange-600 bg-orange-50" },
+                      { strategyId: 7, name: "Reconnaître les clients VIP", condition: "Au moins 8 commandes sur 30 jours", offerType: "free_item", offerDesc: "Offre configurable", validityHours: 72, baseScore: 40, group: "FIDELITE", segment: "very_active", scoreColor: "text-orange-600 bg-orange-50" },
+                      { strategyId: 8, name: "Prévenir le décrochage selon la cadence", condition: "80 % de la cadence personnelle, entre 10 et 17 jours", offerType: "discount_order", offerDesc: "Offre configurable", validityHours: 48, baseScore: 68, group: "REACTIVATION", segment: "normal", scoreColor: "text-red-600 bg-red-50" },
+                      { strategyId: 9, name: "Récupérer les nouveaux clients abandonnés", condition: "1 ou 2 commandes, récence de 18 à 29 jours", offerType: "bonus_basket", offerDesc: "Offre configurable", validityHours: 48, baseScore: 78, group: "REACTIVATION", segment: "normal", scoreColor: "text-red-600 bg-red-50" },
+                      { strategyId: 10, name: "Récupérer les nouveaux clients en abandon prolongé", condition: "1 ou 2 commandes, récence de 30 à 59 jours, cooldown S09 respecté", offerType: "bonus_basket", offerDesc: "Offre configurable", validityHours: 48, baseScore: 92, group: "REACTIVATION", segment: "inactive", scoreColor: "text-red-600 bg-red-50" },
+                      { strategyId: 11, name: "Récupérer les nouveaux clients en abandon ancien", condition: "1 ou 2 commandes, récence de 60 à 89 jours, cooldown S10 respecté", offerType: "bonus_basket", offerDesc: "Offre configurable", validityHours: 72, baseScore: 94, group: "REACTIVATION", segment: "reactivate", scoreColor: "text-red-600 bg-red-50" },
+                      { strategyId: 12, name: "Dernière tentative de récupération des nouveaux clients", condition: "1 ou 2 commandes, récence ≥ 90 jours, cooldown S11 respecté, une seule fois", offerType: "bonus_basket", offerDesc: "Offre configurable", validityHours: 72, baseScore: 97, group: "REACTIVATION", segment: "reactivate", scoreColor: "text-red-600 bg-red-50" },
+                      { strategyId: 13, name: "Développer les petits paniers", condition: "Au moins 3 commandes sur 90 jours, panier moyen < 20$", offerType: "bonus_basket", offerDesc: "Offre configurable", validityHours: 48, baseScore: 45, group: "PANIER", segment: "normal", scoreColor: "text-purple-600 bg-purple-50" },
+                      { strategyId: 14, name: "Faire progresser les paniers intermédiaires", condition: "Au moins 3 commandes sur 90 jours, panier moyen de 20 à 34,99$", offerType: "free_item", offerDesc: "Offre configurable", validityHours: 48, baseScore: 40, group: "PANIER", segment: "normal", scoreColor: "text-purple-600 bg-purple-50" },
+                      { strategyId: 15, name: "Faire progresser les grands paniers", condition: "Au moins 3 commandes sur 90 jours, panier moyen de 35 à 50$", offerType: "bonus_basket", offerDesc: "Offre configurable", validityHours: 48, baseScore: 30, group: "PANIER", segment: "normal", scoreColor: "text-purple-600 bg-purple-50" },
+                      { strategyId: 16, name: "Valoriser les très grands paniers", condition: "Au moins 3 commandes sur 90 jours, panier moyen > 50$", offerType: "bonus_basket", offerDesc: "Offre configurable", validityHours: 48, baseScore: 25, group: "PANIER", segment: "normal", scoreColor: "text-purple-600 bg-purple-50" },
+                      { strategyId: 17, name: "Renforcer l'affinité avec la catégorie favorite", condition: "Catégorie dominante ≥ 60 % des achats sur 90 jours", offerType: "discount_category", offerDesc: "Offre configurable", validityHours: 48, baseScore: 50, group: "AFFINITE", segment: "normal", scoreColor: "text-green-600 bg-green-50" },
+                      { strategyId: 18, name: "Développer la découverte de nouvelles catégories", condition: "Catégorie principale du restaurant jamais commandée", offerType: "discount_category", offerDesc: "Offre configurable", validityHours: 48, baseScore: 35, group: "DECOUVERTE", segment: "normal", scoreColor: "text-gray-600 bg-gray-50" },
+                      { strategyId: 19, name: "Réactiver après un arrêt soudain", condition: "≥ 3 commandes, cadence ≤ 30 jours et retard ≥ 50 %", offerType: "bonus_basket", offerDesc: "Offre configurable", validityHours: 48, baseScore: 99, group: "REACTIVATION", segment: "normal", scoreColor: "text-red-600 bg-red-50" },
+                      { strategyId: 20, name: "Réactiver les clients à faible fréquence au bon moment", condition: "≥ 3 commandes, cadence > 30 jours et retard ≥ 20 %", offerType: "bonus_basket", offerDesc: "Offre configurable", validityHours: 48, baseScore: 99, group: "REACTIVATION", segment: "normal", scoreColor: "text-red-600 bg-red-50" },
                     ].map((strat) => {
                       const rule = rules.find((r) => r.strategyId === strat.strategyId);
                       return (
                         <tr key={strat.strategyId} className="hover:bg-gray-50/50 transition">
                           <td className="px-3 py-2.5">
                             <div className="flex flex-col">
-                              <span className="font-semibold text-gray-800 text-sm">S{strat.strategyId.toString().padStart(2, '0')} - {strat.name}</span>
+                              <span className="font-semibold text-gray-800 text-sm">S{strat.strategyId.toString().padStart(2, '0')} - {rule?.name || strat.name}</span>
                               <span className="text-gray-500 text-[11px] mt-0.5">{strat.condition}</span>
                             </div>
                           </td>
@@ -1308,12 +1311,15 @@ const OffresSmart = () => {
                     <th className="px-4 py-3 text-center">60j</th>
                     <th className="px-4 py-3">Panier Moyen</th>
                     <th className="px-4 py-3">Écart-type</th>
+                    <th className="px-4 py-3">Cadence médiane</th>
+                    <th className="px-4 py-3">Profil réactivation</th>
+                    <th className="px-4 py-3 text-center">Stratégie recommandée</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {isProfilesLoading ? (
                     <tr>
-                      <td colSpan="11" className="py-12 text-center">
+                      <td colSpan="14" className="py-12 text-center">
                         <Spinner />
                       </td>
                     </tr>
@@ -1335,11 +1341,31 @@ const OffresSmart = () => {
                         <td className="px-4 py-3 text-center font-medium text-gray-700">{p.ordersCount60d || 0}</td>
                         <td className="px-4 py-3 font-bold text-green-700">{p.averageBasketSize ? `${p.averageBasketSize}$` : "0$"}</td>
                         <td className="px-4 py-3 text-gray-500 text-xs">{p.basketSizeStdDev ? `${p.basketSizeStdDev}$` : "0$"}</td>
+                        <td className="px-4 py-3 text-gray-600 text-xs">
+                          {Number.isFinite(p.medianOrderIntervalDays)
+                            ? `${p.medianOrderIntervalDays.toFixed(1)} j`
+                            : "—"}
+                        </td>
+                        <td className="px-4 py-3 text-gray-600 text-xs">
+                          <div className="flex flex-col">
+                            <span>{getReactivationProfileLabel(p.reactivationProfile)}</span>
+                            {Number.isFinite(p.recencyToCadenceRatio) && (
+                              <span className="text-[10px] text-gray-400">
+                                Récence/cadence : {p.recencyToCadenceRatio.toFixed(2)}×
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-center font-semibold text-red-600">
+                          {p.recommendedReactivationStrategyId
+                            ? `S${String(p.recommendedReactivationStrategyId).padStart(2, "0")}`
+                            : "—"}
+                        </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="11" className="py-8 text-center text-gray-400">Aucun profil client ne correspond à votre recherche.</td>
+                      <td colSpan="14" className="py-8 text-center text-gray-400">Aucun profil client ne correspond à votre recherche.</td>
                     </tr>
                   )}
                 </tbody>
