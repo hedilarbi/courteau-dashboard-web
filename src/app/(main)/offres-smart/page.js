@@ -1186,6 +1186,7 @@ const OffresSmart = () => {
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     {[
+                      { strategyId: 1, name: "Bienvenue 1re commande", condition: "0 commande", offerType: "discount_order", offerDesc: "Offre configurable", validityHours: 72, baseScore: 100, group: "HABITUDE", segment: "normal", scoreColor: "text-blue-600 bg-blue-50" },
                       { strategyId: 2, name: "Installer l'habitude de la 2e commande", condition: "1 commande, récence de 4 à 17 jours", offerType: "discount_order", offerDesc: "Offre configurable", validityHours: 72, baseScore: 98, group: "HABITUDE", segment: "normal", scoreColor: "text-blue-600 bg-blue-50" },
                       { strategyId: 3, name: "Consolider l'habitude de la 3e commande", condition: "2 commandes, récence de 7 à 17 jours", offerType: "bonus_basket", offerDesc: "Offre configurable", validityHours: 72, baseScore: 96, group: "HABITUDE", segment: "normal", scoreColor: "text-blue-600 bg-blue-50" },
                       { strategyId: 4, name: "Faire franchir le cap de la 4e commande", condition: "3 commandes à vie, récence ≤ 17 jours", offerType: "free_item", offerDesc: "Offre configurable", validityHours: 72, baseScore: 88, group: "HABITUDE", segment: "loyal", scoreColor: "text-blue-600 bg-blue-50" },
