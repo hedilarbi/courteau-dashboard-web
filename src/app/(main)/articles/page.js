@@ -49,6 +49,7 @@ const ItemsScreen = () => {
     message: "",
   });
   const [deleteWarningModelState, setDeleteWarningModelState] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   const [categories, setCategories] = useState([]);
   const [refresh, setRefresh] = useState(0);
@@ -164,8 +165,15 @@ const ItemsScreen = () => {
   }, [fetchData, refresh]);
 
   useLayoutEffect(() => {
-    setMenuItems(filterMenuItemsByCategory(menuItemsList, menuItemFilter));
-  }, [menuItemsList, menuItemFilter]);
+    let filteredList = filterMenuItemsByCategory(menuItemsList, menuItemFilter);
+    if (searchQuery.trim() !== "") {
+      const lowerQuery = searchQuery.toLowerCase();
+      filteredList = filteredList.filter((item) =>
+        item.name?.toLowerCase().includes(lowerQuery)
+      );
+    }
+    setMenuItems(filteredList);
+  }, [menuItemsList, menuItemFilter, searchQuery]);
 
   const handleMenuItemFilterChange = (categoryName) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -310,6 +318,15 @@ const ItemsScreen = () => {
 
           <div className="bg-white shadow-default rounded-lg p-4 flex flex-col gap-4">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <div className="flex-1 w-full md:max-w-md">
+                <input
+                  type="text"
+                  placeholder="Rechercher un article..."
+                  className="w-full px-4 py-2 border border-gray-200 rounded-md focus:outline-none focus:border-pr font-roboto text-sm"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                />
+              </div>
               <MenuItemsFilter
                 categories={categories}
                 menuItemFilter={menuItemFilter}
