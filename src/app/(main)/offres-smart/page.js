@@ -37,6 +37,7 @@ const OffresSmart = () => {
     triggerItemSize: "",
     giftItemSize: "",
     targetCategory: "",
+    useFavoriteCategory: false,
     targetMenuItem: "",
     freeItem: "",
     freeItems: [],
@@ -284,7 +285,10 @@ const OffresSmart = () => {
       triggerItem: rule.triggerItem?._id || rule.triggerItem || "",
       triggerItemSize: rule.triggerItemSize || "",
       giftItemSize: rule.giftItemSize || "",
-      targetCategory: rule.targetCategory?._id || rule.targetCategory || "",
+      targetCategory: rule.useFavoriteCategory
+        ? "__favorite__"
+        : rule.targetCategory?._id || rule.targetCategory || "",
+      useFavoriteCategory: Boolean(rule.useFavoriteCategory),
       targetMenuItem: rule.targetMenuItem?._id || rule.targetMenuItem || "",
       freeItem: rule.freeItem?._id || rule.freeItem || "",
       freeItems: rule.freeItems?.map(f => ({
@@ -316,8 +320,10 @@ const OffresSmart = () => {
         setFormData((current) => ({
           ...current,
           ...savedRule,
-          targetCategory:
-            savedRule.targetCategory?._id || savedRule.targetCategory || "",
+          targetCategory: savedRule.useFavoriteCategory
+            ? "__favorite__"
+            : savedRule.targetCategory?._id || savedRule.targetCategory || "",
+          useFavoriteCategory: Boolean(savedRule.useFavoriteCategory),
           targetMenuItem:
             savedRule.targetMenuItem?._id || savedRule.targetMenuItem || "",
           freeItem: savedRule.freeItem?._id || savedRule.freeItem || "",
@@ -811,15 +817,26 @@ const OffresSmart = () => {
                     <select
                       className="w-full border border-gray-300 rounded-lg p-2.5 bg-white focus:border-pr focus:ring-1 focus:ring-pr outline-none"
                       value={formData.targetCategory}
-                      onChange={(e) => setFormData({ ...formData, targetCategory: e.target.value })}
+                      onChange={(e) => setFormData({
+                        ...formData,
+                        targetCategory: e.target.value,
+                        useFavoriteCategory: e.target.value === "__favorite__",
+                      })}
                     >
                       <option value="">Sélectionner une catégorie</option>
+                      <option value="__favorite__">Catégorie favorite du client</option>
                       {categories.map((cat) => (
                         <option key={cat._id} value={cat._id}>{cat.name}</option>
                       ))}
                     </select>
                   </div>
                 </div>
+              )}
+
+              {formData.offerType === "discount_category" && formData.useFavoriteCategory && (
+                <p className="text-xs text-green-700 -mt-2">
+                  La catégorie la plus achetée par chaque client sera affectée à son offre. Utilisez {"{category}"} dans le texte de notification pour afficher son nom.
+                </p>
               )}
 
               {formData.offerType === "discount_product" && (
@@ -1256,7 +1273,10 @@ const OffresSmart = () => {
                                 discountValue: rule?.discountValue ?? 10,
                                 bonusThreshold: rule?.bonusThreshold ?? 0,
                                 bonusPoints: rule?.bonusPoints ?? 0,
-                                targetCategory: rule?.targetCategory || "",
+                                targetCategory: rule?.useFavoriteCategory
+                                  ? "__favorite__"
+                                  : rule?.targetCategory || "",
+                                useFavoriteCategory: Boolean(rule?.useFavoriteCategory),
                                 targetMenuItem: rule?.targetMenuItem || "",
                                 freeItem: rule?.freeItem || "",
                                 freeItems: rule?.freeItems || [],
