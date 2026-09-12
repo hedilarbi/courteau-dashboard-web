@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 
-const APK_URL = "https://expo.dev/artifacts/eas/6Ylx4KGppF1Nq4_iyKdfKgKtJEKfib_Z0vdL3JS3H3k.apk";
+const APK_URL = "https://expo.dev/artifacts/eas/zwDAYDcePjBuSLmZFuB-aXH10UR9BOZ9Ic6B5sRFimI.apk";
 
 export function GET() {
   return NextResponse.redirect(APK_URL, { status: 302 });
