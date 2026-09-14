@@ -651,10 +651,10 @@ const Page = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-3 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 mt-4">
           <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-default">
             <p className="text-xs uppercase tracking-wide text-text-light-gray">
-              Total revenu
+              Total
             </p>
             <p className="text-xl font-semibold text-text-dark-gray mt-1">
               {formatMoney(summary.totalRevenue)}
@@ -662,15 +662,15 @@ const Page = () => {
           </div>
           <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-default">
             <p className="text-xs uppercase tracking-wide text-text-light-gray">
-              Total vente
+              Sous total
             </p>
             <p className="text-xl font-semibold text-text-dark-gray mt-1">
-              {formatMoney(summary.totalNetSales)}
+              {formatMoney(summary.totalSubTotalAfterDiscount > 0 ? summary.totalSubTotalAfterDiscount : summary.totalSubTotal)}
             </p>
           </div>
           <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-default">
             <p className="text-xs uppercase tracking-wide text-text-light-gray">
-              Total frais de livraison
+              Frais de livraison
             </p>
             <p className="text-xl font-semibold text-text-dark-gray mt-1">
               {formatMoney(summary.totalDeliveryFee)}
@@ -678,7 +678,23 @@ const Page = () => {
           </div>
           <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-default">
             <p className="text-xs uppercase tracking-wide text-text-light-gray">
-              Nombre de commandes
+              Pourboire
+            </p>
+            <p className="text-xl font-semibold text-text-dark-gray mt-1">
+              {formatMoney(summary.totalTip)}
+            </p>
+          </div>
+          <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-default">
+            <p className="text-xs uppercase tracking-wide text-text-light-gray">
+              Sous total avec taxes (hors livraison)
+            </p>
+            <p className="text-xl font-semibold text-text-dark-gray mt-1">
+              {formatMoney(summary.totalSubTotalAfterTax)}
+            </p>
+          </div>
+          <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-default">
+            <p className="text-xs uppercase tracking-wide text-text-light-gray">
+              Commandes
             </p>
             <p className="text-xl font-semibold text-text-dark-gray mt-1">
               {summary.totalOrders || 0}
