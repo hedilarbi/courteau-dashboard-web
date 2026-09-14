@@ -670,10 +670,10 @@ const Page = () => {
           </div>
           <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-default">
             <p className="text-xs uppercase tracking-wide text-text-light-gray">
-              Frais de livraison
+              Frais de livraison (avec taxes)
             </p>
             <p className="text-xl font-semibold text-text-dark-gray mt-1">
-              {formatMoney(summary.totalDeliveryFee)}
+              {formatMoney(summary.totalDeliveryFeeWithTax)}
             </p>
           </div>
           <div className="bg-white border border-gray-100 rounded-xl p-4 shadow-default">
