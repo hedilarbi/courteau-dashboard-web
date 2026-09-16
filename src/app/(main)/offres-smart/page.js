@@ -396,7 +396,7 @@ const OffresSmart = () => {
 
   const getRuleRewardLabel = (rule, fallback = "—") => {
     if (!rule) return fallback;
-    const threshold = Number(rule.bonusThreshold) > 0 ? ` dès ${rule.bonusThreshold}$` : "";
+    const threshold = Number(rule.bonusThreshold) > 0 ? ` dès ${rule.bonusThreshold} $` : "";
     if (rule.offerType === "loyalty_points") return `${rule.bonusPoints || 0} points${threshold}`;
     if (rule.offerType === "free_item") {
       const choices = (rule.freeItems || []).map((entry) => {
@@ -1181,13 +1181,13 @@ const OffresSmart = () => {
             <div className="bg-blue-50 border-l-4 border-[#1D4ED8] p-4 rounded-r-xl shadow-sm text-sm text-[#1D4ED8] flex flex-col gap-1">
               <span className="font-bold">Moteur d&apos;Évaluation Comportementale (Dynamic Score Engine) :</span>
               <p>
-                Chaque nuit, l&apos;algorithme calcule les indicateurs comportementaux (récence, fréquence, panier moyen, écart-type, favoris) et évalue <strong>toutes les stratégies</strong> simultanément pour chaque client. Les scores sont calculés dynamiquement — un client inactif à fort historique aura un score de réactivation bien plus élevé qu&apos;un client inactif récent. <strong>Cliquez sur ⚙️ Configurer</strong> pour modifier les paramètres d&apos;une règle.
+                Chaque nuit, le profil client est recalculé à partir de ses commandes. Pour les stratégies panier, la tranche de 5 $ dépend du <strong>sous-total moyen des commandes des 90 derniers jours</strong> (au moins 3 commandes). L&apos;écart-type est affiché à titre indicatif ; il ne choisit pas la tranche. Les règles éligibles sont ensuite départagées selon leur priorité et leur délai de réattribution. <strong>Cliquez sur ⚙️ Configurer</strong> pour modifier une règle.
               </p>
             </div>
 
             {/* Strategies Interactive Table */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 overflow-hidden">
-              <h2 className="text-base font-semibold text-gray-800 mb-3">Les 19 stratégies d&apos;évaluation comportementale</h2>
+              <h2 className="text-base font-semibold text-gray-800 mb-3">Les stratégies d&apos;évaluation comportementale</h2>
               <div className="overflow-x-auto border border-gray-100 rounded-lg">
                 <table className="min-w-full divide-y divide-gray-100 text-left text-xs text-gray-600">
                   <thead className="bg-gray-50 text-gray-500 font-bold uppercase">
@@ -1215,21 +1215,39 @@ const OffresSmart = () => {
                       { strategyId: 10, name: "Récupérer les nouveaux clients en abandon prolongé", condition: "1 ou 2 commandes, récence de 30 à 59 jours, cooldown S09 respecté", offerType: "bonus_basket", offerDesc: "Offre configurable", validityHours: 48, baseScore: 92, group: "REACTIVATION", segment: "inactive", scoreColor: "text-red-600 bg-red-50" },
                       { strategyId: 11, name: "Récupérer les nouveaux clients en abandon ancien", condition: "1 ou 2 commandes, récence de 60 à 89 jours, cooldown S10 respecté", offerType: "bonus_basket", offerDesc: "Offre configurable", validityHours: 72, baseScore: 94, group: "REACTIVATION", segment: "reactivate", scoreColor: "text-red-600 bg-red-50" },
                       { strategyId: 12, name: "Dernière tentative de récupération des nouveaux clients", condition: "1 ou 2 commandes, récence ≥ 90 jours, cooldown S11 respecté, une seule fois", offerType: "bonus_basket", offerDesc: "Offre configurable", validityHours: 72, baseScore: 97, group: "REACTIVATION", segment: "reactivate", scoreColor: "text-red-600 bg-red-50" },
-                      { strategyId: 13, name: "Développer les petits paniers", condition: "Au moins 3 commandes sur 90 jours, panier moyen < 20$", offerType: "bonus_basket", offerDesc: "Offre configurable", validityHours: 48, baseScore: 45, group: "PANIER", segment: "normal", scoreColor: "text-purple-600 bg-purple-50" },
-                      { strategyId: 14, name: "Faire progresser les paniers intermédiaires", condition: "Au moins 3 commandes sur 90 jours, panier moyen de 20 à 34,99$", offerType: "free_item", offerDesc: "Offre configurable", validityHours: 48, baseScore: 40, group: "PANIER", segment: "normal", scoreColor: "text-purple-600 bg-purple-50" },
-                      { strategyId: 15, name: "Faire progresser les grands paniers", condition: "Au moins 3 commandes sur 90 jours, panier moyen de 35 à 50$", offerType: "bonus_basket", offerDesc: "Offre configurable", validityHours: 48, baseScore: 30, group: "PANIER", segment: "normal", scoreColor: "text-purple-600 bg-purple-50" },
-                      { strategyId: 16, name: "Valoriser les très grands paniers", condition: "Au moins 3 commandes sur 90 jours, panier moyen > 50$", offerType: "bonus_basket", offerDesc: "Offre configurable", validityHours: 48, baseScore: 25, group: "PANIER", segment: "normal", scoreColor: "text-purple-600 bg-purple-50" },
+                      { strategyId: 13, name: "Développer les petits paniers — 10 à moins de 15 $", condition: "Au moins 3 commandes sur 90 jours, sous-total moyen 10–<15 $", offerType: "loyalty_points", offerDesc: "Offre configurable", validityHours: 48, baseScore: 45, group: "PANIER", segment: "normal", scoreColor: "text-purple-600 bg-purple-50" },
+                      { strategyId: 14, name: "Faire progresser les paniers intermédiaires — 20 à moins de 25 $", condition: "Au moins 3 commandes sur 90 jours, sous-total moyen 20–<25 $", offerType: "loyalty_points", offerDesc: "Offre configurable", validityHours: 48, baseScore: 40, group: "PANIER", segment: "normal", scoreColor: "text-purple-600 bg-purple-50" },
+                      { strategyId: 15, name: "Faire progresser les grands paniers — 35 à moins de 40 $", condition: "Au moins 3 commandes sur 90 jours, sous-total moyen 35–<40 $", offerType: "loyalty_points", offerDesc: "Offre configurable", validityHours: 48, baseScore: 30, group: "PANIER", segment: "normal", scoreColor: "text-purple-600 bg-purple-50" },
+                      { strategyId: 16, name: "Valoriser les très grands paniers — 50 à moins de 55 $", condition: "Au moins 3 commandes sur 90 jours, sous-total moyen 50–<55 $", offerType: "loyalty_points", offerDesc: "Offre configurable", validityHours: 48, baseScore: 25, group: "PANIER", segment: "normal", scoreColor: "text-purple-600 bg-purple-50" },
                       { strategyId: 17, name: "Renforcer l'affinité avec la catégorie favorite", condition: "Catégorie dominante ≥ 60 % des achats sur 90 jours", offerType: "discount_category", offerDesc: "Offre configurable", validityHours: 48, baseScore: 50, group: "AFFINITE", segment: "normal", scoreColor: "text-green-600 bg-green-50" },
                       { strategyId: 18, name: "Développer la découverte de nouvelles catégories", condition: "Catégorie principale du restaurant jamais commandée", offerType: "discount_category", offerDesc: "Offre configurable", validityHours: 48, baseScore: 35, group: "DECOUVERTE", segment: "normal", scoreColor: "text-gray-600 bg-gray-50" },
                       { strategyId: 19, name: "Réactiver après un arrêt soudain", condition: "≥ 3 commandes, cadence ≤ 30 jours et retard ≥ 50 %", offerType: "bonus_basket", offerDesc: "Offre configurable", validityHours: 48, baseScore: 99, group: "REACTIVATION", segment: "normal", scoreColor: "text-red-600 bg-red-50" },
                       { strategyId: 20, name: "Réactiver les clients à faible fréquence au bon moment", condition: "≥ 3 commandes, cadence > 30 jours et retard ≥ 20 %", offerType: "bonus_basket", offerDesc: "Offre configurable", validityHours: 48, baseScore: 99, group: "REACTIVATION", segment: "normal", scoreColor: "text-red-600 bg-red-50" },
+                      { strategyId: 21, name: "Accompagner les très petits paniers — 5 à moins de 10 $", condition: "Au moins 3 commandes sur 90 jours, sous-total moyen 5–<10 $", offerType: "loyalty_points", offerDesc: "Offre à configurer avant activation", validityHours: 48, baseScore: 46, group: "PANIER", segment: "normal", scoreColor: "text-purple-600 bg-purple-50" },
+                      ...[
+                        [22, 15, 20, 45], [23, 25, 30, 40], [24, 30, 35, 40],
+                        [25, 40, 45, 30], [26, 45, 50, 30], [27, 55, 60, 25],
+                        [28, 60, 65, 25], [29, 65, 70, 25], [30, 70, 75, 25],
+                      ].map(([strategyId, min, max, baseScore]) => ({
+                        strategyId,
+                        name: `Développer les paniers — ${min} à moins de ${max} $`,
+                        condition: `Au moins 3 commandes sur 90 jours, sous-total moyen ${min}–<${max} $`,
+                        offerType: "loyalty_points",
+                        offerDesc: "Offre configurable",
+                        validityHours: 48,
+                        baseScore,
+                        group: "PANIER",
+                        segment: "normal",
+                        scoreColor: "text-purple-600 bg-purple-50",
+                      })),
+                      { strategyId: 31, name: "Valoriser les paniers de 75 $ et plus", condition: "Au moins 3 commandes sur 90 jours, sous-total moyen ≥ 75 $", offerType: "loyalty_points", offerDesc: "Offre configurable", validityHours: 48, baseScore: 25, group: "PANIER", segment: "normal", scoreColor: "text-purple-600 bg-purple-50" },
                     ].map((strat) => {
                       const rule = rules.find((r) => r.strategyId === strat.strategyId);
                       return (
                         <tr key={strat.strategyId} className="hover:bg-gray-50/50 transition">
                           <td className="px-3 py-2.5">
                             <div className="flex flex-col">
-                              <span className="font-semibold text-gray-800 text-sm">S{strat.strategyId.toString().padStart(2, '0')} - {rule?.name || strat.name}</span>
+                              <span className="font-semibold text-gray-800 text-sm">S{strat.strategyId.toString().padStart(2, '0')} - {strat.group === "PANIER" ? strat.name : rule?.name || strat.name}</span>
                               <span className="text-gray-500 text-[11px] mt-0.5">{strat.condition}</span>
                             </div>
                           </td>
@@ -1254,39 +1272,19 @@ const OffresSmart = () => {
                             </span>
                           </td>
                           <td className="px-3 py-2.5 text-center">
-                            {rule && rule.isActive ? (
+                            {rule?.isActive ? (
                               <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-green-100 text-green-700 border border-green-200">Actif</span>
                             ) : (
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-500 border border-gray-200">Non configuré</span>
+                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-gray-100 text-gray-500 border border-gray-200">{rule ? "Désactivé" : "Non configuré"}</span>
                             )}
                           </td>
                           <td className="px-3 py-2.5 text-center">
                             <button
-                              onClick={() => handleOpenConfig({
-                                ...(rule || {}),
-                                strategyId: strat.strategyId,
-                                group: strat.group,
-                                segment: strat.segment,
-                                cooldownDays: rule?.cooldownDays || 7,
-                                validityHours: rule?.validityHours || strat.validityHours,
-                                offerType: rule?.offerType || strat.offerType,
-                                discountValue: rule?.discountValue ?? 10,
-                                bonusThreshold: rule?.bonusThreshold ?? 0,
-                                bonusPoints: rule?.bonusPoints ?? 0,
-                                targetCategory: rule?.useFavoriteCategory
-                                  ? "__favorite__"
-                                  : rule?.targetCategory || "",
-                                useFavoriteCategory: Boolean(rule?.useFavoriteCategory),
-                                targetMenuItem: rule?.targetMenuItem || "",
-                                freeItem: rule?.freeItem || "",
-                                freeItems: rule?.freeItems || [],
-                                notificationTitle: rule?.notificationTitle || `Une offre spéciale pour vous, {name} !`,
-                                notificationBody: rule?.notificationBody || strat.offerDesc,
-                                isActive: rule?.isActive !== undefined ? rule.isActive : false,
-                              })}
-                              className="px-2.5 py-1.5 bg-gray-50 hover:bg-pr/10 hover:text-[#0f172a] border border-gray-200 hover:border-pr/30 rounded-lg text-gray-600 font-semibold text-[11px] transition flex items-center gap-1 mx-auto"
+                              disabled={!rule}
+                              onClick={() => handleOpenConfig(rule)}
+                              className="px-2.5 py-1.5 bg-gray-50 hover:bg-pr/10 hover:text-[#0f172a] border border-gray-200 hover:border-pr/30 rounded-lg text-gray-600 font-semibold text-[11px] transition flex items-center gap-1 mx-auto disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                              <FaEdit size={10} /> Configurer
+                              <FaEdit size={10} /> {rule ? "Configurer" : "En attente de création"}
                             </button>
                           </td>
                         </tr>
@@ -1296,7 +1294,7 @@ const OffresSmart = () => {
                 </table>
               </div>
               <p className="text-[11px] text-gray-400 mt-2 italic">
-                * Le score final est calculé dynamiquement. La colonne &quot;Score de base&quot; est le plancher de départ auquel s&apos;ajoutent les métriques du client (fréquence, panier moyen, écart-type, fidélité catégorie).
+                * Les stratégies panier couvrent chaque tranche de 5 $ de 5 à moins de 75 $, puis 75 $ et plus. S21 (5 à moins de 10 $) reste désactivée tant que sa récompense n&apos;est pas validée ; le moteur peut alors se rabattre sur S13 si elle est active. Une règle absente du serveur apparaît comme non configurée jusqu&apos;à sa création.
               </p>
             </div>
           </div>
@@ -1330,17 +1328,19 @@ const OffresSmart = () => {
                     <th className="px-4 py-3 text-center">Cmd. Total</th>
                     <th className="px-4 py-3 text-center">30j</th>
                     <th className="px-4 py-3 text-center">60j</th>
-                    <th className="px-4 py-3">Panier Moyen</th>
-                    <th className="px-4 py-3">Écart-type</th>
+                    <th className="px-4 py-3">Sous-total moyen (90 j)</th>
+                    <th className="px-4 py-3">Écart-type du sous-total (90 j)</th>
+                    <th className="px-4 py-3">Tranche panier (5 $)</th>
+                    <th className="px-4 py-3">Stratégie panier</th>
                     <th className="px-4 py-3">Cadence médiane</th>
                     <th className="px-4 py-3">Profil réactivation</th>
-                    <th className="px-4 py-3 text-center">Stratégie recommandée</th>
+                    <th className="px-4 py-3 text-center">Réactivation recommandée</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-100">
                   {isProfilesLoading ? (
                     <tr>
-                      <td colSpan="14" className="py-12 text-center">
+                      <td colSpan="16" className="py-12 text-center">
                         <Spinner />
                       </td>
                     </tr>
@@ -1360,8 +1360,10 @@ const OffresSmart = () => {
                         <td className="px-4 py-3 font-semibold text-center text-[#F7A600]">{p.orderCount}</td>
                         <td className="px-4 py-3 text-center font-medium text-gray-700">{p.ordersCount30d || 0}</td>
                         <td className="px-4 py-3 text-center font-medium text-gray-700">{p.ordersCount60d || 0}</td>
-                        <td className="px-4 py-3 font-bold text-green-700">{p.averageBasketSize ? `${p.averageBasketSize}$` : "0$"}</td>
-                        <td className="px-4 py-3 text-gray-500 text-xs">{p.basketSizeStdDev ? `${p.basketSizeStdDev}$` : "0$"}</td>
+                        <td className="px-4 py-3 font-bold text-green-700">{p.ordersCount90d ? `${p.avgBasket90d ?? 0} $` : "—"}</td>
+                        <td className="px-4 py-3 text-gray-500 text-xs">{p.ordersCount90d > 1 ? `${p.basketSizeStdDev90d ?? 0} $` : "—"}</td>
+                        <td className="px-4 py-3 text-gray-500 text-xs">{Number.isFinite(p.basketBand5Min) ? p.basketBand5Min >= 75 ? "75 $ et plus" : `${p.basketBand5Min}–<${p.basketBand5Min + 5} $` : "—"}</td>
+                        <td className="px-4 py-3 text-gray-700 text-xs font-semibold">{p.basketStrategyId ? `S${String(p.basketStrategyId).padStart(2, "0")}` : "—"}</td>
                         <td className="px-4 py-3 text-gray-600 text-xs">
                           {Number.isFinite(p.medianOrderIntervalDays)
                             ? `${p.medianOrderIntervalDays.toFixed(1)} j`
@@ -1386,7 +1388,7 @@ const OffresSmart = () => {
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="14" className="py-8 text-center text-gray-400">Aucun profil client ne correspond à votre recherche.</td>
+                      <td colSpan="16" className="py-8 text-center text-gray-400">Aucun profil client ne correspond à votre recherche.</td>
                     </tr>
                   )}
                 </tbody>
