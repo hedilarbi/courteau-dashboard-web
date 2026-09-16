@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from "react";
 import Spinner from "@/components/spinner/Spinner";
 import ToastNotification from "@/components/ToastNotification";
-import { getRules, createOrUpdateRule, getUserProfiles, getOffersHistory, triggerScan, getCronStatus, toggleCron, getSmartOfferHediStats, createSmartOfferHediPayout, getMonitoringStats } from "@/services/PersonalizedOffersServices";
+import { getRules, createOrUpdateRule, initializeBasketRules, getUserProfiles, getOffersHistory, triggerScan, getCronStatus, toggleCron, getSmartOfferHediStats, createSmartOfferHediPayout, getMonitoringStats } from "@/services/PersonalizedOffersServices";
 import { getCategories, getMenuItems } from "@/services/MenuItemServices";
 import { FaEdit, FaCog, FaHistory, FaUserFriends, FaCheckCircle, FaRegClock, FaChartBar, FaEye, FaShoppingBag, FaBolt, FaPercentage, FaFire, FaPowerOff } from "react-icons/fa";
 import { dateToDDMMYYYYHHMM } from "@/utils/dateFormatters";
@@ -11,6 +11,7 @@ const OffresSmart = () => {
   const [activeTab, setActiveTab] = useState("rules"); // "rules", "profiles", "history", "stats"
   const [isLoading, setIsLoading] = useState(true);
   const [isScanning, setIsScanning] = useState(false);
+  const [isInitializingRules, setIsInitializingRules] = useState(false);
   const [isCronEnabled, setIsCronEnabled] = useState(true);
   const [isTogglingCron, setIsTogglingCron] = useState(false);
   const [rules, setRules] = useState([]);
@@ -265,6 +266,19 @@ const OffresSmart = () => {
   const showToast = (type, message) => {
     setToastData({ show: true, type, message });
     setTimeout(() => setToastData((prev) => ({ ...prev, show: false })), 3000);
+  };
+
+  const handleInitializeBasketRules = async () => {
+    setIsInitializingRules(true);
+    const result = await initializeBasketRules();
+    if (result.status) {
+      const count = result.data.createdStrategyIds?.length || 0;
+      showToast("success", count ? `${count} stratégie(s) panier créée(s), sans générer d'offres.` : "Toutes les stratégies panier existent déjà.");
+      setRefresh((value) => value + 1);
+    } else {
+      showToast("error", result.message || "Impossible de créer les stratégies panier.");
+    }
+    setIsInitializingRules(false);
   };
 
   const handleOpenConfig = (rule) => {
@@ -1184,6 +1198,15 @@ const OffresSmart = () => {
                 Chaque nuit, le profil client est recalculé à partir de ses commandes. Pour les stratégies panier, la tranche de 5 $ dépend du <strong>sous-total moyen des commandes des 90 derniers jours</strong> (au moins 3 commandes). L&apos;écart-type est affiché à titre indicatif ; il ne choisit pas la tranche. Les règles éligibles sont ensuite départagées selon leur priorité et leur délai de réattribution. <strong>Cliquez sur ⚙️ Configurer</strong> pour modifier une règle.
               </p>
             </div>
+
+            {[21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31].some((id) => !rules.some((rule) => Number(rule.strategyId) === id)) && (
+              <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                <span>Des stratégies panier manquent en base. Créez leurs règles pour les configurer dès maintenant, sans lancer le scan ni générer d&apos;offres.</span>
+                <button type="button" disabled={isInitializingRules} onClick={handleInitializeBasketRules} className="rounded-lg bg-amber-900 px-4 py-2 font-semibold text-white disabled:opacity-50">
+                  {isInitializingRules ? "Création…" : "Créer les stratégies manquantes"}
+                </button>
+              </div>
+            )}
 
             {/* Strategies Interactive Table */}
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 overflow-hidden">

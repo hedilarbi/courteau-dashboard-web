@@ -36,6 +36,16 @@ const createOrUpdateRule = async (ruleData) => {
   }
 };
 
+const initializeBasketRules = async () => {
+  try {
+    await applyAuthHeader();
+    const response = await axios.post(`${API_URL}/personalized-offers/rules/initialize-basket`);
+    return { status: true, data: response.data };
+  } catch (error) {
+    return { status: false, message: error.response?.data?.error || error.message };
+  }
+};
+
 const deleteRule = async (id) => {
   try {
     const response = await axios.delete(`${API_URL}/personalized-offers/rules/${id}`);
@@ -153,6 +163,7 @@ const createSmartOfferHediPayout = async ({ amount, paidAt, note }) => {
 export {
   getRules,
   createOrUpdateRule,
+  initializeBasketRules,
   deleteRule,
   getUserProfiles,
   getOffersHistory,
