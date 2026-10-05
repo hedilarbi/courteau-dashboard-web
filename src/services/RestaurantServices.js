@@ -346,6 +346,31 @@ const getRestaurantsSettings = async () => {
   }
 };
 
+const getAllRestaurantsSettings = async () => {
+  try {
+    await applyAuthHeader();
+    const response = await axios.get(`${API_URL}/restaurants/admin/settings`);
+
+    if (response?.status === 200) {
+      return {
+        status: true,
+        message: "restaurants settings data",
+        data: response?.data,
+      };
+    }
+
+    return {
+      status: false,
+      messge: response.data.error,
+    };
+  } catch (error) {
+    return {
+      status: false,
+      message: error?.response?.data?.message || error.message,
+    };
+  }
+};
+
 const updateSettings = async (id, settings) => {
   try {
     await applyAuthHeader();
@@ -420,6 +445,7 @@ export {
   updateRestaurantOfferAvailability,
   updateRestaurantToppingAvailability,
   getRestaurantsSettings,
+  getAllRestaurantsSettings,
   updateSettings,
   sendNotifications,
 };

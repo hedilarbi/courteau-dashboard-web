@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import Spinner from "@/components/spinner/Spinner";
 import ToastNotification from "@/components/ToastNotification";
 import {
-  getRestaurantsSettings,
+  getAllRestaurantsSettings,
   updateSettings,
 } from "@/services/RestaurantServices";
 
@@ -27,7 +27,7 @@ const SettingsScreen = () => {
     setError("");
     setIsLoading(true);
     try {
-      const response = await getRestaurantsSettings();
+      const response = await getAllRestaurantsSettings();
       if (response.status) {
         setRestaurants(response.data);
       } else {
