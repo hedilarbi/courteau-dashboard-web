@@ -19,6 +19,8 @@ const UpdateOfferModal = ({ setShowUpdateOfferModal, setOffers, offer }) => {
   const [image, setImage] = useState(null);
   const [name, setName] = useState(offer.name);
   const [price, setPrice] = useState(offer.price);
+  // Nombre d'articles que le client choisit parmi ceux de l'offre (vide = tous inclus).
+  const [itemsToChoose, setItemsToChoose] = useState(offer.itemsToChoose ? String(offer.itemsToChoose) : "");
   const [expireDate, setExpireDate] = useState(new Date(offer.expireAt));
 
   const [items, setItems] = useState([]);
@@ -111,6 +113,16 @@ const UpdateOfferModal = ({ setShowUpdateOfferModal, setOffers, offer }) => {
 
       return;
     }
+    const itemsToChooseValue = String(itemsToChoose).trim() === "" ? null : Number(itemsToChoose);
+    if (
+      itemsToChooseValue !== null &&
+      (!Number.isInteger(itemsToChooseValue) || itemsToChooseValue < 1 || itemsToChooseValue >= items.length)
+    ) {
+      setError(
+        `Le nombre d'articles à choisir doit être entre 1 et ${Math.max(1, items.length - 1)} (laissez vide pour inclure tous les articles)`
+      );
+      return;
+    }
     setError(null);
     const formData = new FormData();
 
@@ -118,6 +130,7 @@ const UpdateOfferModal = ({ setShowUpdateOfferModal, setOffers, offer }) => {
     formData.append("customizations", JSON.stringify([]));
     formData.append("name", name);
     formData.append("price", price);
+    formData.append("itemsToChoose", itemsToChooseValue === null ? "" : String(itemsToChooseValue));
     formData.append("expireAt", expireDate.toISOString());
     if (image) {
       formData.append("file", image);
@@ -265,6 +278,29 @@ const UpdateOfferModal = ({ setShowUpdateOfferModal, setOffers, offer }) => {
                   value={price}
                   min={0}
                 />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label
+                  htmlFor="itemsToChoose"
+                  className="text-sm font-semibold text-text-dark-gray"
+                >
+                  Nombre d&apos;articles à choisir
+                </label>
+                <input
+                  type="number"
+                  id="itemsToChoose"
+                  className="border border-gray-300 rounded-md w-full py-2 px-3 text-sm focus:outline-none focus:border-pr"
+                  onChange={(e) => setItemsToChoose(e.target.value)}
+                  value={itemsToChoose}
+                  min={1}
+                  step={1}
+                  placeholder="Tous les articles"
+                />
+                <p className="text-xs text-text-light-gray">
+                  {String(itemsToChoose).trim()
+                    ? `Le client choisira ${itemsToChoose} article(s) différent(s) parmi les ${items.length} de l'offre.`
+                    : "Vide : tous les articles de l'offre sont inclus."}
+                </p>
               </div>
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-semibold text-text-dark-gray">

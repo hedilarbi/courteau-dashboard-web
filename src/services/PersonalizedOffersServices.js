@@ -96,6 +96,7 @@ const getMonitoringStats = async () => {
 
 const triggerScan = async () => {
   try {
+    await applyAuthHeader();
     const response = await axios.post(`${API_URL}/personalized-offers/trigger-scan`);
     if (response?.status === 200) {
       return { status: true, message: response?.data?.message };
@@ -106,8 +107,10 @@ const triggerScan = async () => {
   }
 };
 
+// Système smart offers (profilage + création d'offres) : routes réservées aux admins.
 const getCronStatus = async () => {
   try {
+    await applyAuthHeader();
     const response = await axios.get(`${API_URL}/personalized-offers/cron/status`);
     if (response?.status === 200) {
       return { status: true, isEnabled: response?.data?.isEnabled };
@@ -120,6 +123,7 @@ const getCronStatus = async () => {
 
 const toggleCron = async (isEnabled) => {
   try {
+    await applyAuthHeader();
     const response = await axios.post(`${API_URL}/personalized-offers/cron/toggle`, { isEnabled });
     if (response?.status === 200) {
       return { status: true, isEnabled: response?.data?.isEnabled, message: response?.data?.message };

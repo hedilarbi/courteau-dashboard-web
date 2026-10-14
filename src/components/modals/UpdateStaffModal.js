@@ -9,6 +9,7 @@ import { MdAddAPhoto, MdOutlineClose } from "react-icons/md";
 import Image from "next/image";
 import DropDown from "../DropDown";
 import { getRestaurants } from "@/services/RestaurantServices";
+import { getToken } from "@/actions";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -116,8 +117,10 @@ const UpdateStaffModal = ({ setShowUpdateStaffModal, setStaffs, staff }) => {
       formData.append("file", image);
     }
     try {
+      const token = await getToken();
       const response = await fetch(`${API_URL}/staffs/update/${staff._id}`, {
         method: "PUT",
+        headers: { Authorization: `Bearer ${token?.value}` },
         body: formData,
       });
       if (!response.ok) {

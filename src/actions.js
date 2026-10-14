@@ -20,11 +20,11 @@ export async function getToken() {
 
 export async function getStaffData() {
   const data = {
-    name: cookies().get("name").value,
-    role: cookies().get("role").value,
-    image: cookies().get("image").value,
-    id: cookies().get("id").value,
-    restaurant: cookies().get("restaurant").value,
+    name: cookies().get("name")?.value,
+    role: cookies().get("role")?.value,
+    image: cookies().get("image")?.value,
+    id: cookies().get("id")?.value,
+    restaurant: cookies().get("restaurant")?.value,
   };
   return data;
 }

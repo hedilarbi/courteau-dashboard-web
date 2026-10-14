@@ -1,10 +1,18 @@
 import axios from "axios";
+import { getToken } from "@/actions";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
+const getAuthHeaders = async () => {
+  const token = await getToken();
+  return token?.value ? { Authorization: `Bearer ${token.value}` } : {};
+};
+
 const getUsers = async () => {
   try {
-    let getUsersResponse = await axios.get(`${API_URL}/users`);
+    let getUsersResponse = await axios.get(`${API_URL}/users`, {
+      headers: await getAuthHeaders(),
+    });
 
     if (getUsersResponse?.status === 200) {
       return {
@@ -28,7 +36,9 @@ const getUsers = async () => {
 
 const getUser = async (id) => {
   try {
-    let getUserResponse = await axios.get(`${API_URL}/users/${id}`);
+    let getUserResponse = await axios.get(`${API_URL}/users/${id}`, {
+      headers: await getAuthHeaders(),
+    });
 
     if (getUserResponse?.status === 200) {
       return {
@@ -77,7 +87,8 @@ const getUserStats = async (id, params = {}) => {
 const deleteUser = async (id) => {
   try {
     let deleteUserResponse = await axios.delete(
-      `${API_URL}/users/delete/${id}`
+      `${API_URL}/users/delete/${id}`,
+      { headers: await getAuthHeaders() }
     );
 
     if (deleteUserResponse?.status === 200) {
@@ -102,6 +113,7 @@ const deleteUser = async (id) => {
 const getUsersPagination = async (page, limit, name) => {
   try {
     let getUsersResponse = await axios.get(`${API_URL}/users/pagination`, {
+      headers: await getAuthHeaders(),
       params: { page, limit, name },
     });
 
@@ -127,7 +139,11 @@ const getUsersPagination = async (page, limit, name) => {
 
 const banUser = async (id) => {
   try {
-    let banUserResponse = await axios.put(`${API_URL}/users/ban/${id}`);
+    let banUserResponse = await axios.put(
+      `${API_URL}/users/ban/${id}`,
+      null,
+      { headers: await getAuthHeaders() }
+    );
 
     if (banUserResponse?.status === 200) {
       return {

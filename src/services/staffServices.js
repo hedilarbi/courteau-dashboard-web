@@ -1,6 +1,12 @@
 import axios from "axios";
+import { getToken } from "@/actions";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
+const getAuthHeaders = async () => {
+  const token = await getToken();
+  return token?.value ? { Authorization: `Bearer ${token.value}` } : {};
+};
 const loginStaff = async (username, password, expoToken) => {
   try {
     let loginStaffResponse = await axios.post(
@@ -30,7 +36,7 @@ const loginStaff = async (username, password, expoToken) => {
   } catch (error) {
     return {
       status: false,
-      message: error.response.data.message,
+      message: error?.response?.data?.message || "Serveur injoignable. Réessayez dans un instant.",
     };
   }
 };
@@ -40,7 +46,8 @@ const affectOrderToStaff = async (orderId, staffId) => {
       `${API_URL}/staffs/affectOrder/${staffId}`,
       {
         orderId,
-      }
+      },
+      { headers: await getAuthHeaders() }
     );
 
     if (affectOrderToStaffResponse?.status === 200) {
@@ -58,7 +65,7 @@ const affectOrderToStaff = async (orderId, staffId) => {
   } catch (error) {
     return {
       status: false,
-      message: error.response.data.message,
+      message: error?.response?.data?.message || "Serveur injoignable. Réessayez dans un instant.",
     };
   }
 };
@@ -94,7 +101,9 @@ const getStaffByToken = async (token) => {
 
 const getStaffMembers = async () => {
   try {
-    let getStaffMembersResponse = await axios.get(`${API_URL}/staffs/`);
+    let getStaffMembersResponse = await axios.get(`${API_URL}/staffs/`, {
+      headers: await getAuthHeaders(),
+    });
     if (getStaffMembersResponse.status === 200) {
       return {
         status: true,
@@ -110,13 +119,15 @@ const getStaffMembers = async () => {
   } catch (error) {
     return {
       status: false,
-      message: error.response.data.message,
+      message: error?.response?.data?.message || "Serveur injoignable. Réessayez dans un instant.",
     };
   }
 };
 const getStaffMember = async (id) => {
   try {
-    let getStaffMemberResponse = await axios.get(`${API_URL}/staffs/${id}`);
+    let getStaffMemberResponse = await axios.get(`${API_URL}/staffs/${id}`, {
+      headers: await getAuthHeaders(),
+    });
     if (getStaffMemberResponse.status === 200) {
       return {
         status: true,
@@ -132,7 +143,7 @@ const getStaffMember = async (id) => {
   } catch (error) {
     return {
       status: false,
-      message: error.response.data.message,
+      message: error?.response?.data?.message || "Serveur injoignable. Réessayez dans un instant.",
     };
   }
 };
@@ -140,7 +151,8 @@ const updateStaffMember = async (id, name, username, restaurant, role) => {
   try {
     let getStaffMemberResponse = await axios.put(
       `${API_URL}/staffs/update/${id}`,
-      { name, username, restaurant, role }
+      { name, username, restaurant, role },
+      { headers: await getAuthHeaders() }
     );
     if (getStaffMemberResponse.status === 200) {
       return {
@@ -157,14 +169,15 @@ const updateStaffMember = async (id, name, username, restaurant, role) => {
   } catch (error) {
     return {
       status: false,
-      message: error.response.data.message,
+      message: error?.response?.data?.message || "Serveur injoignable. Réessayez dans un instant.",
     };
   }
 };
 const deleteStaffMember = async (id) => {
   try {
     let deleteStaffMemberResponse = await axios.delete(
-      `${API_URL}/staffs/delete/${id}`
+      `${API_URL}/staffs/delete/${id}`,
+      { headers: await getAuthHeaders() }
     );
     if (deleteStaffMemberResponse.status === 200) {
       return {
@@ -181,7 +194,7 @@ const deleteStaffMember = async (id) => {
   } catch (error) {
     return {
       status: false,
-      message: error.response.data.message,
+      message: error?.response?.data?.message || "Serveur injoignable. Réessayez dans un instant.",
     };
   }
 };
@@ -206,7 +219,7 @@ const getAvailableDrivers = async () => {
   } catch (error) {
     return {
       status: false,
-      message: error.response.data.message,
+      message: error?.response?.data?.message || "Serveur injoignable. Réessayez dans un instant.",
     };
   }
 };
@@ -230,7 +243,7 @@ const getStaffOrder = async (id) => {
   } catch (error) {
     return {
       status: false,
-      message: error.response.data.message,
+      message: error?.response?.data?.message || "Serveur injoignable. Réessayez dans un instant.",
     };
   }
 };
@@ -255,7 +268,7 @@ const getDriverOrders = async (id) => {
   } catch (error) {
     return {
       status: false,
-      message: error.response.data.message,
+      message: error?.response?.data?.message || "Serveur injoignable. Réessayez dans un instant.",
     };
   }
 };

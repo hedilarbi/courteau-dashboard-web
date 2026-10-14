@@ -101,7 +101,12 @@ const OrderScreen = ({ params }) => {
     0,
   );
   const orderDiscountPercent = toSafeNumber(order?.discount, 0);
-  const isFirstOrderDiscountApplied = orderDiscountPercent >= 20;
+  const discountAmount = Math.max(
+    0,
+    toSafeNumber(order?.sub_total, 0) -
+    toSafeNumber(order?.sub_total_after_discount, 0),
+  );
+  const isFirstOrderDiscountApplied = orderDiscountPercent >= 20 && discountAmount > 0;
   const showSubscriptionDiscountInfo =
     subscriptionUsed &&
     !isFirstOrderDiscountApplied &&
@@ -110,11 +115,7 @@ const OrderScreen = ({ params }) => {
     subscriptionDiscountPercent > 0
       ? subscriptionDiscountPercent
       : orderDiscountPercent;
-  const discountAmount = Math.max(
-    0,
-    toSafeNumber(order?.sub_total, 0) -
-    toSafeNumber(order?.sub_total_after_discount, 0),
-  );
+
   const normalizedPaymentMethod = String(order?.payment_method || "")
     .trim()
     .toLowerCase();
@@ -216,6 +217,9 @@ const OrderScreen = ({ params }) => {
                         className="grid grid-cols-12 items-center px-4 py-3 text-sm"
                       >
                         <span className="col-span-3 font-semibold text-text-dark-gray truncate">
+                          {(item.isSmartOfferFreeItem || item.isSubscriptionFreeItem || item.isBirthdayFreeItem) && (
+                            <span className="text-amber-500 mr-1" title="Cadeau gratuit">🎁 Cadeau : </span>
+                          )}
                           {item.item.name}
                         </span>
                         <span className="col-span-3 text-text-light-gray truncate">

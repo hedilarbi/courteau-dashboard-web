@@ -28,6 +28,12 @@ const Page = () => {
       const response = await loginStaff(username, password, "");
       if (response.status) {
         const { name, role, image, _id, restaurant } = response.data.staff;
+        // Le middleware n'ouvre le dashboard qu'aux comptes "admin" : sans ce contrôle, un compte
+        // Caissier était renvoyé sur cette page sans aucun message.
+        if (role !== "admin") {
+          setError("Accès réservé aux administrateurs. Connectez-vous avec un compte admin.");
+          return;
+        }
         dispatch(setStaffData({ name, role, image, id: _id, restaurant }));
         dispatch(setStaffToken(response.data.token));
 
@@ -36,7 +42,7 @@ const Page = () => {
         router.push("/dashboard");
       } else {
         console.error(response);
-        setError(response.message);
+        setError(response.message || "Nom d'utilisateur ou mot de passe incorrect");
       }
     } catch (e) {
       console.error(e);

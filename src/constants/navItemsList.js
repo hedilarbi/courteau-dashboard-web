@@ -14,7 +14,7 @@ import {
 } from "react-icons/io5";
 import { HiBuildingStorefront } from "react-icons/hi2";
 import { AiFillNotification } from "react-icons/ai";
-import { FaStar } from "react-icons/fa6";
+import { FaStar, FaBrain } from "react-icons/fa6";
 import { GiArchiveResearch, GiCookingPot } from "react-icons/gi";
 import { MdSubscriptions } from "react-icons/md";
 
@@ -85,6 +85,12 @@ const NavItemsList = () => {
       title: "Offres Smart",
       path: `/offres-smart`,
       icon: <BiSolidOffer size={24} />,
+    },
+    {
+      id: 26,
+      title: "Smart Client",
+      path: `/smart-client`,
+      icon: <FaBrain size={24} />,
     },
     {
       id: 16,

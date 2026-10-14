@@ -52,6 +52,11 @@ const OrderDetails = ({ order }) => {
             : "Aucune Insctruction fournie"}
         </p>
       </div>
+      {data.smartOfferMysteryGiftName && (
+        <div className="mt-8 rounded-md bg-pr p-4 font-roboto font-semibold text-black">
+          Cadeau mystère à préparer : {data.smartOfferMysteryGiftName}
+        </div>
+      )}
       <h2 className="text-2xl font-roboto font-semibold mt-8">Articles</h2>
       <OrderDetailsItemsList items={data.orderItems} />
       <h2 className="text-2xl font-roboto font-semibold mt-8">Offres</h2>
