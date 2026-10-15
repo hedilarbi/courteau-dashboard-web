@@ -3,6 +3,21 @@ import React, { useState } from "react";
 import { FaTimes, FaSave, FaPlus, FaTrash, FaCogs, FaSitemap, FaGift, FaArrowUp, FaArrowDown } from "react-icons/fa";
 import { getToken } from "@/actions";
 import { getMenuItems, getCategories } from "@/services/MenuItemServices";
+import DropDown from "@/components/DropDown";
+
+// Liste déroulante avec recherche (articles, catégories). `options` : [{ _id, name }].
+const SearchablePicker = ({ value, options, onChange, placeholder }) => {
+  const list = (options || []).map((option) => ({ value: option._id, label: option.name }));
+  const selected = list.find((option) => String(option.value) === String(value || "")) || null;
+  return (
+    <DropDown
+      value={selected}
+      setter={(option) => onChange(option?.value || "")}
+      list={list}
+      placeholder={placeholder}
+    />
+  );
+};
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000";
 
@@ -88,7 +103,7 @@ export default function VisualRuleBuilder({ campaign, initialRule, onClose }) {
     distributionMethod: initialRule?.distributionMethod || "priority",
     isActive: initialRule?.isActive ?? true,
     logicalExpression: initialRule?.logicalExpression || "C1",
-    conditions: initialRule?.conditions?.length > 0 ? initialRule.conditions : [{ id: "C1", criteria: "orders_count", operator: "==", value: "0", periodDays: "" }],
+    conditions: initialRule?.conditions?.length > 0 ? initialRule.conditions : [{ conditionId: "C1", criteria: "orders_count", operator: "==", value: "0", periodDays: "" }],
     offers: initialRule?.offers || [],
     tags: initialRule?.tags || []
   });
@@ -104,7 +119,9 @@ export default function VisualRuleBuilder({ campaign, initialRule, onClose }) {
   };
 
   const addCondition = () => {
-    const nextId = `C${ruleData.conditions.length + 1}`;
+    // Prochain numéro libre (après suppression d'une condition, la longueur ne suffit pas).
+    const usedNumbers = ruleData.conditions.map((c, i) => Number(String(c.conditionId || c.id || `C${i + 1}`).replace(/\D/g, "")) || 0);
+    const nextId = `C${Math.max(0, ...usedNumbers) + 1}`;
     setRuleData(prev => ({
       ...prev,
       conditions: [...prev.conditions, { conditionId: nextId, criteria: "orders_count", operator: "==", value: "0", periodDays: "" }]
@@ -320,7 +337,18 @@ export default function VisualRuleBuilder({ campaign, initialRule, onClose }) {
     
     setIsSaving(true);
     try {
-      const payload = { ...ruleData, campaign: campaign._id };
+      // Chaque condition doit avoir un conditionId (anciennes règles : champ `id`).
+      const conditions = ruleData.conditions.map((cond, idx) => {
+        const { id, ...rest } = cond;
+        return { ...rest, conditionId: cond.conditionId || id || `C${idx + 1}` };
+      });
+      const knownIds = new Set(conditions.map((c) => c.conditionId));
+      const unknownIds = (ruleData.logicalExpression.match(/\bC\d+\b/g) || []).filter((cid) => !knownIds.has(cid));
+      if (unknownIds.length) {
+        setIsSaving(false);
+        return alert(`L'expression logique utilise des conditions inexistantes : ${[...new Set(unknownIds)].join(", ")}`);
+      }
+      const payload = { ...ruleData, conditions, campaign: campaign._id };
       
       const url = initialRule?._id ? `${API_URL}/smart-offers-v2/rules/${initialRule._id}` : `${API_URL}/smart-offers-v2/rules`;
       const method = initialRule?._id ? "PUT" : "POST";
@@ -446,7 +474,7 @@ export default function VisualRuleBuilder({ campaign, initialRule, onClose }) {
                   {ruleData.conditions.map((cond, idx) => (
                     <div key={idx} className="flex items-center gap-3 bg-white p-3 rounded-lg border border-gray-200 shadow-sm">
                       <span className="bg-gray-800 text-white font-mono font-bold px-4 py-2 rounded shadow-inner">
-                        {cond.id || `C${idx + 1}`}
+                        {cond.conditionId || cond.id || `C${idx + 1}`}
                       </span>
                       <select 
                         className="flex-1 bg-white border border-gray-300 rounded p-2 text-gray-800 text-sm outline-none focus:border-pr"
@@ -467,23 +495,23 @@ export default function VisualRuleBuilder({ campaign, initialRule, onClose }) {
                         {OPERATORS.map(op => <option key={op.value} value={op.value}>{op.label}</option>)}
                       </select>
                       {cond.criteria === "favorite_category" ? (
-                        <select
-                          className="w-48 bg-white border border-gray-300 rounded p-2 text-gray-800 text-sm outline-none focus:border-pr"
-                          value={cond.value}
-                          onChange={(e) => handleConditionChange(idx, "value", e.target.value)}
-                        >
-                          <option value="">Sélectionner une catégorie</option>
-                          {categories.map(cat => <option key={cat._id} value={cat._id}>{cat.name}</option>)}
-                        </select>
+                        <div className="w-56">
+                          <SearchablePicker
+                            value={cond.value}
+                            options={categories}
+                            onChange={(v) => handleConditionChange(idx, "value", v)}
+                            placeholder="Sélectionner une catégorie"
+                          />
+                        </div>
                       ) : cond.criteria === "favorite_item" ? (
-                        <select
-                          className="w-48 bg-white border border-gray-300 rounded p-2 text-gray-800 text-sm outline-none focus:border-pr"
-                          value={cond.value}
-                          onChange={(e) => handleConditionChange(idx, "value", e.target.value)}
-                        >
-                          <option value="">Sélectionner un produit</option>
-                          {menuItems.map(mi => <option key={mi._id} value={mi._id}>{mi.name}</option>)}
-                        </select>
+                        <div className="w-56">
+                          <SearchablePicker
+                            value={cond.value}
+                            options={menuItems}
+                            onChange={(v) => handleConditionChange(idx, "value", v)}
+                            placeholder="Sélectionner un produit"
+                          />
+                        </div>
                       ) : (
                         <input 
                           type="text" 
@@ -678,27 +706,23 @@ export default function VisualRuleBuilder({ campaign, initialRule, onClose }) {
                                {offer.offerType === "discount_category" && (
                                  <div className="w-1/3">
                                     <label className="block text-xs font-bold text-gray-600 mb-1">Catégorie Ciblée</label>
-                                    <select
-                                      className="w-full bg-white border border-gray-300 rounded p-2 text-gray-800 text-sm outline-none focus:border-pr"
-                                      value={offer.targetCategory || ""}
-                                      onChange={(e) => handleOfferChange(idx, "targetCategory", e.target.value)}
-                                    >
-                                      <option value="">Sélectionner une catégorie</option>
-                                      {categories.map(cat => <option key={cat._id} value={cat._id}>{cat.name}</option>)}
-                                    </select>
+                                    <SearchablePicker
+                                      value={offer.targetCategory}
+                                      options={categories}
+                                      onChange={(v) => handleOfferChange(idx, "targetCategory", v)}
+                                      placeholder="Sélectionner une catégorie"
+                                    />
                                  </div>
                                )}
                                {offer.offerType === "discount_product" && (
                                  <div className="w-1/3">
                                     <label className="block text-xs font-bold text-gray-600 mb-1">Produit Ciblé</label>
-                                    <select
-                                      className="w-full bg-white border border-gray-300 rounded p-2 text-gray-800 text-sm outline-none focus:border-pr"
-                                      value={offer.targetMenuItem || ""}
-                                      onChange={(e) => handleOfferChange(idx, "targetMenuItem", e.target.value)}
-                                    >
-                                      <option value="">Sélectionner un produit</option>
-                                      {menuItems.map(mi => <option key={mi._id} value={mi._id}>{mi.name}</option>)}
-                                    </select>
+                                    <SearchablePicker
+                                      value={offer.targetMenuItem}
+                                      options={menuItems}
+                                      onChange={(v) => handleOfferChange(idx, "targetMenuItem", v)}
+                                      placeholder="Sélectionner un produit"
+                                    />
                                  </div>
                                )}
                                <div className={["discount_category", "discount_product"].includes(offer.offerType) ? "w-1/3" : "w-1/2"}>
@@ -801,22 +825,20 @@ export default function VisualRuleBuilder({ campaign, initialRule, onClose }) {
                                    const selectedItem = menuItems.find(mi => mi._id === fi.item);
                                    const availableSizes = selectedItem?.prices?.map(p => p.size).filter(Boolean) || [];
                                    return (
-                                     <div key={fIdx} className="flex items-center gap-2">
-                                       <select 
-                                         className="flex-1 bg-white border border-gray-300 rounded p-1 text-sm outline-none"
-                                         value={fi.item || ""}
-                                         onChange={(e) => {
+                                     <div key={fIdx} className="flex flex-col gap-2 bg-white border border-gray-200 rounded-lg p-3">
+                                       <SearchablePicker
+                                         value={fi.item}
+                                         options={menuItems}
+                                         onChange={(v) => {
                                            const arr = [...(offer.freeItems || [])];
-                                           arr[fIdx] = { ...arr[fIdx], item: e.target.value, size: "" };
+                                           arr[fIdx] = { ...arr[fIdx], item: v, size: "" };
                                            handleOfferChange(idx, "freeItems", arr);
                                          }}
-                                       >
-                                         <option value="">Sélectionner un article</option>
-                                         {menuItems.map(mi => <option key={mi._id} value={mi._id}>{mi.name}</option>)}
-                                       </select>
-                                       
+                                         placeholder="Sélectionner un article"
+                                       />
+                                       <div className="flex items-center gap-2">
                                        <select
-                                         className="w-1/3 bg-white border border-gray-300 rounded p-1 text-sm outline-none"
+                                         className="flex-1 min-w-0 bg-white border border-gray-300 rounded p-2 text-sm outline-none focus:border-pr"
                                          value={fi.size || ""}
                                          onChange={(e) => {
                                            const arr = [...(offer.freeItems || [])];
@@ -827,16 +849,17 @@ export default function VisualRuleBuilder({ campaign, initialRule, onClose }) {
                                          <option value="">-- Taille --</option>
                                          {availableSizes.map(size => <option key={size} value={size}>{size}</option>)}
                                        </select>
-                                       
                                        <button 
                                          onClick={() => {
                                            const arr = (offer.freeItems || []).filter((_, i) => i !== fIdx);
                                            handleOfferChange(idx, "freeItems", arr);
                                          }} 
-                                         className="text-red-400 hover:text-red-600 p-1"
+                                         className="text-red-400 hover:text-red-600 p-2 shrink-0"
+                                         title="Retirer cet article"
                                        >
                                          <FaTrash />
                                        </button>
+                                       </div>
                                      </div>
                                    );
                                  })}
@@ -854,14 +877,12 @@ export default function VisualRuleBuilder({ campaign, initialRule, onClose }) {
                                  {/* Trigger Item (L'article à acheter) */}
                                  <div className="flex-1 bg-white p-3 rounded-lg border border-gray-300">
                                    <label className="block text-xs font-bold text-gray-600 mb-2">Article à acheter (Déclencheur)</label>
-                                   <select 
-                                     className="w-full bg-white border border-gray-300 rounded p-2 text-gray-800 text-sm outline-none focus:border-pr"
-                                     value={offer.triggerItem || ""}
-                                     onChange={(e) => handleOfferChange(idx, "triggerItem", e.target.value)}
-                                   >
-                                     <option value="">-- Sélectionner l'article --</option>
-                                     {menuItems.map(mi => <option key={mi._id} value={mi._id}>{mi.name}</option>)}
-                                   </select>
+                                   <SearchablePicker
+                                     value={offer.triggerItem}
+                                     options={menuItems}
+                                     onChange={(v) => { handleOfferChange(idx, "triggerItem", v); handleOfferChange(idx, "triggerItemSize", ""); }}
+                                     placeholder="-- Sélectionner l'article --"
+                                   />
                                    {(() => {
                                      const selectedItem = menuItems.find(mi => mi._id === offer.triggerItem);
                                      const availableSizes = selectedItem?.prices?.map(p => p.size).filter(Boolean) || [];
@@ -886,14 +907,12 @@ export default function VisualRuleBuilder({ campaign, initialRule, onClose }) {
                                  {/* Free Item (L'article offert) */}
                                  <div className="flex-1 bg-white p-3 rounded-lg border border-gray-300">
                                    <label className="block text-xs font-bold text-gray-600 mb-2">Article offert (Cadeau)</label>
-                                   <select 
-                                     className="w-full bg-white border border-gray-300 rounded p-2 text-gray-800 text-sm outline-none focus:border-pr"
-                                     value={offer.freeItem || ""}
-                                     onChange={(e) => handleOfferChange(idx, "freeItem", e.target.value)}
-                                   >
-                                     <option value="">-- Sélectionner l'article --</option>
-                                     {menuItems.map(mi => <option key={mi._id} value={mi._id}>{mi.name}</option>)}
-                                   </select>
+                                   <SearchablePicker
+                                     value={offer.freeItem}
+                                     options={menuItems}
+                                     onChange={(v) => { handleOfferChange(idx, "freeItem", v); handleOfferChange(idx, "giftItemSize", ""); }}
+                                     placeholder="-- Sélectionner l'article --"
+                                   />
                                    {(() => {
                                      const selectedItem = menuItems.find(mi => mi._id === offer.freeItem);
                                      const availableSizes = selectedItem?.prices?.map(p => p.size).filter(Boolean) || [];
