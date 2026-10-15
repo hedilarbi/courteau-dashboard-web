@@ -349,7 +349,9 @@ export default function VisualRuleBuilder({ campaign, initialRule, onClose }) {
       // Chaque condition doit avoir un conditionId (anciennes règles : champ `id`).
       const conditions = ruleData.conditions.map((cond, idx) => {
         const { id, ...rest } = cond;
-        return { ...rest, conditionId: cond.conditionId || id || `C${idx + 1}` };
+        // « 1,25 » → « 1.25 » : une virgule rendrait la comparaison toujours fausse.
+        const value = typeof cond.value === "string" && /^\s*-?\d+,\d+\s*$/.test(cond.value) ? cond.value.trim().replace(",", ".") : cond.value;
+        return { ...rest, value, conditionId: cond.conditionId || id || `C${idx + 1}` };
       });
       const knownIds = new Set(conditions.map((c) => c.conditionId));
       const unknownIds = (ruleData.logicalExpression.match(/\bC\d+\b/g) || []).filter((cid) => !knownIds.has(cid));

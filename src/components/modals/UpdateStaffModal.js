@@ -24,6 +24,8 @@ const UpdateStaffModal = ({ setShowUpdateStaffModal, setStaffs, staff }) => {
   });
   const [name, setName] = useState(staff.name);
   const [username, setUsername] = useState(staff.username);
+  // Facultatif : rempli seulement pour remplacer le mot de passe actuel.
+  const [newPassword, setNewPassword] = useState("");
 
   const [role, setRole] = useState({ value: staff.role, label: staff.role });
   const [image, setImage] = useState(null);
@@ -127,13 +129,25 @@ const UpdateStaffModal = ({ setShowUpdateStaffModal, setStaffs, staff }) => {
         throw new Error("HTTP error " + response.status);
       }
       const data = await response.json();
+      // L'ancien mot de passe n'est jamais renvoyé par l'API : on n'envoie que le nouveau.
+      const password = newPassword.trim();
+      if (password) {
+        const passwordResponse = await fetch(`${API_URL}/staffs/updatePassword/${staff._id}`, {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${token?.value}`, "Content-Type": "application/json" },
+          body: JSON.stringify({ password }),
+        });
+        if (!passwordResponse.ok) {
+          throw new Error("Mot de passe non modifié (HTTP " + passwordResponse.status + ")");
+        }
+      }
       setStaffs((prev) =>
         prev.map((top) => (top._id === data._id ? data : top))
       );
       setShowSuccessModel(true);
     } catch (err) {
       console.log(err);
-      setError("Une erreur s'est produite");
+      setError(String(err?.message || "").startsWith("Mot de passe") ? err.message : "Une erreur s'est produite");
       setShowFailModel(true);
     } finally {
       setAddingIsLoading(false);
@@ -216,6 +230,19 @@ const UpdateStaffModal = ({ setShowUpdateStaffModal, setStaffs, staff }) => {
                   className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-pr"
                   onChange={(e) => setUsername(e.target.value)}
                   value={username}
+                />
+              </div>
+              <div className="flex flex-col gap-1 sm:col-span-2">
+                <label className="text-sm text-text-light-gray">
+                  Nouveau mot de passe (laisser vide pour le garder)
+                </label>
+                <input
+                  type="text"
+                  autoComplete="off"
+                  className="border border-gray-300 rounded-md py-2 px-3 focus:outline-none focus:border-pr"
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  value={newPassword}
+                  placeholder="Nouveau mot de passe"
                 />
               </div>
               <div className="flex flex-col gap-1">
