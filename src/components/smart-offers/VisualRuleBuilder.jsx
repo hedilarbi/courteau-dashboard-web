@@ -294,6 +294,11 @@ export default function VisualRuleBuilder({ campaign, initialRule, onClose }) {
         if (!standardOffers.includes(value)) {
           newOffers[index].bonusThreshold = 0;
         }
+        // Points de fidélité : aucun rabais, seulement des points bonus (bonusPoints).
+        if (value === "loyalty_points") {
+          newOffers[index].discountValue = 0;
+          if (!(Number(newOffers[index].bonusPoints) > 0)) newOffers[index].bonusPoints = 100;
+        }
       }
       
       return { ...prev, offers: newOffers };
@@ -334,6 +339,10 @@ export default function VisualRuleBuilder({ campaign, initialRule, onClose }) {
   const handleSave = async () => {
     if (!ruleData.name.trim()) return alert("Le nom de la règle est obligatoire.");
     if (ruleData.offers.length === 0) return alert("Vous devez ajouter au moins une offre à la règle.");
+    // Sans points bonus, l'offre serait refusée au paiement (createOrderService).
+    if (ruleData.offers.some((o) => o.offerType === "loyalty_points" && !(Number(o.bonusPoints) > 0))) {
+      return alert("Offre « Points de fidélité » : indiquez le nombre de points bonus (plus de 0).");
+    }
     
     setIsSaving(true);
     try {
@@ -725,15 +734,29 @@ export default function VisualRuleBuilder({ campaign, initialRule, onClose }) {
                                     />
                                  </div>
                                )}
-                               <div className={["discount_category", "discount_product"].includes(offer.offerType) ? "w-1/3" : "w-1/2"}>
-                                  <label className="block text-xs font-bold text-gray-600 mb-1">Valeur / Rabais</label>
-                                  <input 
-                                    type="number" 
-                                    className="w-full bg-white border border-gray-300 rounded p-2 text-gray-800 text-sm outline-none focus:border-pr"
-                                    value={offer.discountValue || ""}
-                                    onChange={(e) => handleOfferChange(idx, "discountValue", Number(e.target.value))}
-                                  />
-                               </div>
+                               {offer.offerType === "loyalty_points" ? (
+                                 <div className="w-1/2">
+                                    <label className="block text-xs font-bold text-gray-600 mb-1">Points bonus</label>
+                                    <input 
+                                      type="number" 
+                                      min="1"
+                                      step="1"
+                                      className="w-full bg-white border border-gray-300 rounded p-2 text-gray-800 text-sm outline-none focus:border-pr"
+                                      value={offer.bonusPoints || ""}
+                                      onChange={(e) => handleOfferChange(idx, "bonusPoints", Math.floor(Number(e.target.value)))}
+                                    />
+                                 </div>
+                               ) : (
+                                 <div className={["discount_category", "discount_product"].includes(offer.offerType) ? "w-1/3" : "w-1/2"}>
+                                    <label className="block text-xs font-bold text-gray-600 mb-1">{offer.offerType === "bonus_basket" ? "Rabais ($)" : "Rabais (%)"}</label>
+                                    <input 
+                                      type="number" 
+                                      className="w-full bg-white border border-gray-300 rounded p-2 text-gray-800 text-sm outline-none focus:border-pr"
+                                      value={offer.discountValue || ""}
+                                      onChange={(e) => handleOfferChange(idx, "discountValue", Number(e.target.value))}
+                                    />
+                                 </div>
+                               )}
                                <div className={["discount_category", "discount_product"].includes(offer.offerType) ? "w-1/3" : "w-1/2"}>
                                   <label className="block text-xs font-bold text-gray-600 mb-1">Seuil ($)</label>
                                   <input 
