@@ -464,6 +464,20 @@ const OrderScreen = ({ params }) => {
                     {toSafeNumber(order.total_price, 0).toFixed(2)} $
                   </span>
                 </div>
+                {order.uber_courier_tip !== null &&
+                  order.uber_courier_tip !== undefined && (
+                    <div className="flex items-center justify-between pt-2 border-t border-dashed border-gray-200">
+                      <span className="text-text-light-gray">
+                        Pourboire livreur Uber
+                        <span className="block text-xs">
+                          Ajouté par Uber à ses frais de livraison
+                        </span>
+                      </span>
+                      <span className="font-semibold">
+                        {toSafeNumber(order.uber_courier_tip, 0).toFixed(2)} $
+                      </span>
+                    </div>
+                  )}
               </div>
             </section>
 

@@ -95,6 +95,22 @@ const SettingsScreen = () => {
         errorMessage = "Rayon de livraison invalide";
         return;
       }
+
+      const courierTip = getCourierTipConfig(settings);
+      const courierTipValue = Number(courierTip.with_customer_tip.value);
+      const courierTipFixed = Number(courierTip.without_customer_tip_amount);
+      const courierTipMinOrder = Number(courierTip.min_order_amount);
+      if (
+        !Number.isFinite(courierTipValue) ||
+        courierTipValue < 0 ||
+        (courierTip.with_customer_tip.mode === "percent" && courierTipValue > 100) ||
+        !Number.isFinite(courierTipFixed) ||
+        courierTipFixed < 0 ||
+        !Number.isFinite(courierTipMinOrder) ||
+        courierTipMinOrder < 0
+      ) {
+        errorMessage = "Pourboire livreur Uber invalide";
+      }
       if (errorMessage) {
         setToastData({
           show: true,
@@ -105,7 +121,10 @@ const SettingsScreen = () => {
       }
 
       setIsLoading(true);
-      const response = await updateSettings(restaurant._id, settings);
+      const response = await updateSettings(restaurant._id, {
+        ...settings,
+        uber_courier_tip: getCourierTipConfig(settings),
+      });
       if (response.status) {
         setToastData({
           show: true,
@@ -149,6 +168,34 @@ const SettingsScreen = () => {
         3000
       );
     }
+  };
+
+  // Pourboire du livreur Uber Direct : valeurs par défaut si le restaurant n'est pas configuré.
+  const getCourierTipConfig = (settings) => ({
+    with_customer_tip: {
+      mode: settings?.uber_courier_tip?.with_customer_tip?.mode || "fixed",
+      value: settings?.uber_courier_tip?.with_customer_tip?.value ?? 0,
+    },
+    without_customer_tip_amount:
+      settings?.uber_courier_tip?.without_customer_tip_amount ?? 0,
+    min_order_amount: settings?.uber_courier_tip?.min_order_amount ?? 0,
+  });
+
+  const handleCourierTipChange = (index, field, value) => {
+    setRestaurants((prev) =>
+      prev.map((r, i) => {
+        if (i !== index) return r;
+        const current = getCourierTipConfig(r.settings);
+        const next =
+          field === "without_customer_tip_amount" || field === "min_order_amount"
+            ? { ...current, [field]: value }
+            : {
+                ...current,
+                with_customer_tip: { ...current.with_customer_tip, [field]: value },
+              };
+        return { ...r, settings: { ...r.settings, uber_courier_tip: next } };
+      })
+    );
   };
 
   const handleTimeChange = (day, type, index, value) => {
@@ -359,6 +406,108 @@ const SettingsScreen = () => {
                     </span>
                   </div>
                 </div>
+              </div>
+
+              <div className="mt-2">
+                <h3 className="text-sm font-semibold text-text-dark-gray uppercase tracking-wide">
+                  Pourboire livreur Uber Direct
+                </h3>
+                <p className="text-xs text-text-light-gray mt-1">
+                  Envoyé au livreur Uber à la création de la livraison. Si le
+                  montant dépasse le pourboire du client, le restaurant paie la
+                  différence. Aucun pourboire si la commande est sous le seuil.
+                </p>
+                {(() => {
+                  const courierTip = getCourierTipConfig(restaurant.settings);
+                  const isPercent = courierTip.with_customer_tip.mode === "percent";
+                  return (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3">
+                      <div className="flex flex-col gap-1">
+                        <label className="text-sm text-text-light-gray">
+                          Le client laisse un pourboire (1 $ ou plus)
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <select
+                            className="border border-gray-300 rounded-md p-2 text-sm focus:outline-none focus:border-pr"
+                            value={courierTip.with_customer_tip.mode}
+                            onChange={(e) =>
+                              handleCourierTipChange(index, "mode", e.target.value)
+                            }
+                          >
+                            <option value="fixed">Montant fixe</option>
+                            <option value="percent">% du pourboire du client</option>
+                          </select>
+                          <input
+                            type="number"
+                            min="0"
+                            max={isPercent ? 100 : undefined}
+                            step="0.01"
+                            className="w-24 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-pr"
+                            value={courierTip.with_customer_tip.value}
+                            onChange={(e) =>
+                              handleCourierTipChange(index, "value", e.target.value)
+                            }
+                          />
+                          <span className="text-sm font-semibold text-text-dark-gray">
+                            {isPercent ? "%" : "$"}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1 md:col-span-2">
+                        <label className="text-sm text-text-light-gray">
+                          Seuil de commande : pas de pourboire si le sous-total
+                          (après rabais) est inférieur à
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            className="w-24 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-pr"
+                            value={courierTip.min_order_amount}
+                            onChange={(e) =>
+                              handleCourierTipChange(
+                                index,
+                                "min_order_amount",
+                                e.target.value
+                              )
+                            }
+                          />
+                          <span className="text-sm font-semibold text-text-dark-gray">
+                            $
+                          </span>
+                          <span className="text-xs text-text-light-gray">
+                            (0 = aucun seuil)
+                          </span>
+                        </div>
+                      </div>
+                      <div className="flex flex-col gap-1">
+                        <label className="text-sm text-text-light-gray">
+                          Le client ne laisse pas de pourboire (moins de 1 $)
+                        </label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            className="w-24 border border-gray-300 rounded-md p-2 focus:outline-none focus:border-pr"
+                            value={courierTip.without_customer_tip_amount}
+                            onChange={(e) =>
+                              handleCourierTipChange(
+                                index,
+                                "without_customer_tip_amount",
+                                e.target.value
+                              )
+                            }
+                          />
+                          <span className="text-sm font-semibold text-text-dark-gray">
+                            $
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
 
               <div className="mt-2">
