@@ -66,6 +66,13 @@ const formatDelay = (hours) => {
   if (hours < 48) return `${Math.round(hours)} h`;
   return `${Math.round(hours / 24)} j`;
 };
+const signedPct = (value) => `${value >= 0 ? "+" : "−"}${Math.abs(value).toLocaleString("fr-CA")} %`;
+// Panier commandé (avant rabais) comparé à l'habitude des mêmes clients.
+const basketSummary = (row) => {
+  if (!row.orders) return "—";
+  if (!row.usualBasket) return `commandé ${moneyPrecise(row.avgOrdered)} · pas d'historique sans offre`;
+  return `leur habitude ${moneyPrecise(row.usualBasket)} · payé après rabais ${moneyPrecise(row.avgBasket)}`;
+};
 const shortDay = (key) => {
   const [, m, d] = String(key).split("-");
   return `${d}/${m}`;
@@ -155,12 +162,11 @@ const MetricCells = ({ row }) => (
     <td className="px-3 py-2.5 text-right tabular-nums font-semibold">{money(row.revenue)}</td>
     <td className="px-3 py-2.5 text-right tabular-nums">{money(row.cost)}</td>
     <td className="px-3 py-2.5 text-right tabular-nums font-semibold">{formatRoi(row.roi, row.cost)}</td>
-    <td className="px-3 py-2.5 text-right tabular-nums">
-      {row.orders ? moneyPrecise(row.avgBasket) : "—"}
-      {row.basketLift !== null && row.orders > 0 && (
-        <span className={`ml-1 text-xs ${row.basketLift >= 0 ? "text-green-700" : "text-red-600"}`}>
-          {row.basketLift >= 0 ? "+" : ""}
-          {row.basketLift} %
+    <td className="px-3 py-2.5 text-right tabular-nums" title={row.orders ? basketSummary(row) : undefined}>
+      {row.orders ? moneyPrecise(row.avgOrdered) : "—"}
+      {row.orderedLift !== null && row.orders > 0 && (
+        <span className={`block text-xs ${row.orderedLift >= 0 ? "text-green-700" : "text-red-600"}`}>
+          {signedPct(row.orderedLift)} vs leur habitude
         </span>
       )}
     </td>
@@ -197,12 +203,23 @@ const DetailPanel = ({ item, onClose }) => {
         </div>
 
         <div className="mt-5 grid grid-cols-2 gap-3">
-          <StatTile label="CA généré" value={money(item.revenue)} sub={`${item.orders} commande(s)`} />
-          <StatTile label="ROI" value={formatRoi(item.roi, item.cost)} sub={`Coût ${moneyPrecise(item.cost)}`} />
+          <StatTile label="CA généré" value={money(item.revenue)} sub={`montant de ${item.orders} commande(s) avec cette offre`} />
           <StatTile
-            label="Panier moyen"
-            value={item.orders ? moneyPrecise(item.avgBasket) : "—"}
-            sub={item.usualBasket ? `Habituel : ${moneyPrecise(item.usualBasket)}` : "Pas d'historique sans offre"}
+            label="ROI"
+            value={formatRoi(item.roi, item.cost)}
+            sub={item.roi ? `1 $ offert = ${moneyPrecise(item.roi)} de commandes (coût ${moneyPrecise(item.cost)})` : `coût ${moneyPrecise(item.cost)}`}
+          />
+          <StatTile
+            label="Panier commandé"
+            value={item.orders ? moneyPrecise(item.avgOrdered) : "—"}
+            sub={basketSummary(item)}
+            delta={
+              item.orderedLift !== null && item.orders > 0 ? (
+                <span className={`text-xs font-semibold ${item.orderedLift >= 0 ? "text-green-700" : "text-red-600"}`}>
+                  {signedPct(item.orderedLift)} vs leur habitude
+                </span>
+              ) : null
+            }
           />
           <StatTile label="Délai avant commande" value={formatDelay(item.medianDelayHours)} sub="médiane, depuis l'envoi" />
         </div>
@@ -330,8 +347,8 @@ export default function SmartOffersBI() {
   const k = data?.kpis;
   const p = data?.previousKpis;
 
-  const SortHeader = ({ id, children, align = "right" }) => (
-    <th className={`px-3 py-2 ${align === "right" ? "text-right" : "text-left"}`}>
+  const SortHeader = ({ id, children, align = "right", hint }) => (
+    <th className={`px-3 py-2 ${align === "right" ? "text-right" : "text-left"}`} title={hint}>
       <button
         type="button"
         onClick={() => setSortKey(id)}
@@ -413,14 +430,17 @@ export default function SmartOffersBI() {
             <strong>ROI :</strong> CA généré ÷ coût. × 5 = chaque dollar offert accompagne 5 $ de commandes.
           </p>
           <p className="mt-1">
-            <strong>Panier habituel :</strong> panier moyen des mêmes clients sur leurs commandes sans offre.
+            <strong>Panier commandé :</strong> panier moyen <em>avant rabais</em> des clients qui ont utilisé l&apos;offre,
+            comparé à leurs propres commandes sans offre (leur habitude). Il montre si l&apos;offre les fait commander plus.
+            Le montant <em>payé</em> (après rabais) est indiqué à côté.
           </p>
           <p className="mt-1">
-            <strong>Verdict :</strong> 🟢 Rentable si ROI ≥ {data?.settings?.verdict?.goodRoi ?? 3} et au moins{" "}
+            <strong>Verdict :</strong> ⏳ Trop tôt pour juger tant que l&apos;offre n&apos;a pas{" "}
+            {data?.settings?.verdict?.minDays ?? 7} jours et {data?.settings?.verdict?.minResolved ?? 20} offres terminées
+            (utilisées, ignorées ou expirées) · 🟢 Rentable si ROI ≥ {data?.settings?.verdict?.goodRoi ?? 3} et au moins{" "}
             {data?.settings?.verdict?.goodRate ?? 15} % d&apos;offres utilisées · 🔴 À revoir si elle coûte plus
             qu&apos;elle ne rapporte, si ROI &lt; {data?.settings?.verdict?.badRoi ?? 1.5} ou moins de{" "}
-            {data?.settings?.verdict?.badRate ?? 5} % d&apos;utilisation · 🟡 À surveiller entre les deux · Pas de verdict
-            sous {data?.settings?.verdict?.minSent ?? 10} offres envoyées.
+            {data?.settings?.verdict?.badRate ?? 5} % d&apos;utilisation · 🟡 À surveiller entre les deux.
           </p>
         </div>
       )}
@@ -440,35 +460,58 @@ export default function SmartOffersBI() {
                 <h2 className="text-lg font-black text-gray-900">Vue d&apos;ensemble</h2>
                 <VerdictBadge verdict={k.verdict} withReason />
               </div>
+              <p className="mb-3 text-sm leading-relaxed text-gray-700">
+                En résumé : <strong>{k.sent.toLocaleString("fr-CA")}</strong> clients ont reçu une offre,{" "}
+                <strong>{k.used.toLocaleString("fr-CA")}</strong> l&apos;ont utilisée sur une commande
+                {k.orders > 0 && (
+                  <>
+                    {" "}pour <strong>{money(k.revenue)}</strong> de commandes. Les offres ont coûté <strong>{money(k.cost)}</strong>
+                    {k.roi ? <> : chaque 1 $ offert a accompagné <strong>{moneyPrecise(k.roi)}</strong> de commandes</> : null}
+                  </>
+                )}
+                .
+              </p>
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 xl:grid-cols-6">
-                <StatTile label="Offres envoyées" value={k.sent.toLocaleString("fr-CA")} delta={<Delta current={k.sent} previous={p?.sent} />} />
+                <StatTile
+                  label="Offres envoyées"
+                  value={k.sent.toLocaleString("fr-CA")}
+                  sub="clients qui ont reçu une offre"
+                  delta={<Delta current={k.sent} previous={p?.sent} />}
+                />
                 <StatTile
                   label="Utilisées"
                   value={`${k.used.toLocaleString("fr-CA")}`}
-                  sub={`${k.useRate} % des offres envoyées`}
+                  sub={`${k.useRate} % des offres envoyées ont servi à une commande`}
                   delta={<Delta current={k.useRate} previous={p?.useRate} points />}
                 />
                 <StatTile
                   label="CA généré"
                   value={money(k.revenue)}
-                  sub={`${k.orders} commande(s), avant taxes`}
+                  sub={`montant de ${k.orders} commande(s) avec offre, avant taxes`}
                   delta={<Delta current={k.revenue} previous={p?.revenue} />}
                 />
                 <StatTile
                   label="Coût total"
                   value={money(k.cost)}
-                  sub="rabais + cadeaux + livraison + points"
+                  sub="ce que les offres ont coûté : rabais, cadeaux, livraison, points"
                   delta={<Delta current={k.cost} previous={p?.cost} invert />}
                 />
                 <StatTile
                   label="ROI"
                   value={formatRoi(k.roi, k.cost)}
-                  sub={k.roi ? `1 $ offert → ${moneyPrecise(k.roi)} de commandes` : "aucun coût sur la période"}
+                  sub={k.roi ? `1 $ offert = ${moneyPrecise(k.roi)} de commandes (ce n'est pas un profit)` : "aucun coût sur la période"}
                 />
                 <StatTile
-                  label="Panier moyen avec offre"
-                  value={k.orders ? moneyPrecise(k.avgBasket) : "—"}
-                  sub={k.usualBasket ? `habituel ${moneyPrecise(k.usualBasket)}${k.basketLift !== null ? ` (${k.basketLift >= 0 ? "+" : ""}${k.basketLift} %)` : ""}` : "pas d'historique sans offre"}
+                  label="Panier commandé avec offre"
+                  value={k.orders ? moneyPrecise(k.avgOrdered) : "—"}
+                  sub={basketSummary(k)}
+                  delta={
+                    k.orderedLift !== null && k.orders > 0 ? (
+                      <span className={`text-xs font-semibold ${k.orderedLift >= 0 ? "text-green-700" : "text-red-600"}`}>
+                        {signedPct(k.orderedLift)} vs leur habitude
+                      </span>
+                    ) : null
+                  }
                 />
               </div>
             </section>
@@ -477,7 +520,10 @@ export default function SmartOffersBI() {
             <section className="grid gap-4 lg:grid-cols-2">
               <div className="rounded-xl border border-gray-200 bg-white p-5">
                 <h3 className="mb-1 text-base font-black text-gray-900">Où se perdent les clients</h3>
-                <p className="mb-4 text-xs text-gray-500">Chaque barre : nombre d&apos;offres qui atteignent l&apos;étape.</p>
+                <p className="mb-4 text-xs text-gray-500">
+                  Chaque barre : nombre d&apos;offres qui atteignent l&apos;étape. « Vues » ne compte que les ouvertures dans
+                  l&apos;app : une offre lue dans un courriel n&apos;y apparaît pas.
+                </p>
                 <FunnelBars steps={data.funnel} />
                 <p className="mt-4 text-xs text-gray-500">
                   Non utilisées : {data.outcomes.expired} expirées · {data.outcomes.ignored} ignorées (commande passée sans l&apos;offre)
@@ -520,12 +566,17 @@ export default function SmartOffersBI() {
                   <thead className="border-y border-gray-200 bg-gray-50">
                     <tr>
                       <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500">Règle / offre</th>
-                      <SortHeader id="sent">Envoyées</SortHeader>
-                      <SortHeader id="useRate">Utilisées</SortHeader>
-                      <SortHeader id="revenue">CA</SortHeader>
-                      <SortHeader id="cost">Coût</SortHeader>
-                      <SortHeader id="roi">ROI</SortHeader>
-                      <th className="px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-gray-500">Panier moyen</th>
+                      <SortHeader id="sent" hint="Nombre de clients qui ont reçu l'offre">Envoyées</SortHeader>
+                      <SortHeader id="useRate" hint="Offres qui ont servi à une commande (et en % des envoyées)">Utilisées</SortHeader>
+                      <SortHeader id="revenue" hint="Montant des commandes passées avec l'offre, avant taxes">CA</SortHeader>
+                      <SortHeader id="cost" hint="Ce que l'offre t'a coûté : rabais, articles offerts, livraison, points">Coût</SortHeader>
+                      <SortHeader id="roi" hint="CA ÷ coût : × 3 = chaque 1 $ offert a accompagné 3 $ de commandes">ROI</SortHeader>
+                      <th
+                        className="px-3 py-2 text-right text-xs font-bold uppercase tracking-wide text-gray-500"
+                        title="Panier moyen avant rabais des clients qui ont utilisé l'offre, comparé à leurs commandes habituelles sans offre"
+                      >
+                        Panier commandé
+                      </th>
                       <th className="px-3 py-2 text-left text-xs font-bold uppercase tracking-wide text-gray-500">Verdict</th>
                     </tr>
                   </thead>
